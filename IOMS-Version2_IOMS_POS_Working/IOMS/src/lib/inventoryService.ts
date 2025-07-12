@@ -1,4 +1,3 @@
-
 // IMPORTANT: This service uses localStorage and will only work in the browser.
 // Ensure it's called within useEffect or client-side event handlers.
 import { parse as parseDateFns, isValid, format as formatDateFns } from 'date-fns';
@@ -23,12 +22,12 @@ function generateId(): string {
   return `inv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 }
 
-function getUserInventoryStorageKey(userId: string): string {
-  return `${INVENTORY_STORAGE_KEY_BASE}_${userId}`;
+function getUserInventoryStorageKey(userId?: string | null): string {
+  return `${INVENTORY_STORAGE_KEY_BASE}_${userId || 'default'}`;
 }
 
-export function getInventory(userId: string | null): InventoryItem[] {
-  if (typeof window === 'undefined' || !userId) {
+export function getInventory(userId?: string | null): InventoryItem[] {
+  if (typeof window === 'undefined') {
     return [];
   }
   try {
@@ -54,8 +53,8 @@ export function getInventory(userId: string | null): InventoryItem[] {
   }
 }
 
-export function saveInventory(userId: string | null, inventory: InventoryItem[]): void {
-  if (typeof window === 'undefined' || !userId) return;
+export function saveInventory(userId?: string | null, inventory: InventoryItem[]): void {
+  if (typeof window === 'undefined') return;
   try {
     const inventoryStorageKey = getUserInventoryStorageKey(userId);
     localStorage.setItem(inventoryStorageKey, JSON.stringify(inventory));
@@ -70,8 +69,8 @@ export interface RawIngredient {
   unit: string;
 }
 
-export function addIngredientToInventoryIfNotExists(userId: string | null, ingredient: RawIngredient): InventoryItem | null {
-  if (typeof window === 'undefined' || !userId) return null;
+export function addIngredientToInventoryIfNotExists(userId?: string | null, ingredient: RawIngredient): InventoryItem | null {
+  if (typeof window === 'undefined') return null;
   
   const currentInventory = getInventory(userId);
   const existingItem = currentInventory.find(
@@ -101,8 +100,8 @@ export function addIngredientToInventoryIfNotExists(userId: string | null, ingre
   return newItem;
 }
 
-export function recordIngredientUsage(userId: string | null, ingredientName: string, consumedQuantity: number, consumedUnit: string): void {
-  if (typeof window === 'undefined' || !userId) return;
+export function recordIngredientUsage(userId?: string | null, ingredientName: string, consumedQuantity: number, consumedUnit: string): void {
+  if (typeof window === 'undefined') return;
   const currentInventory = getInventory(userId);
   const itemIndex = currentInventory.findIndex(
     item => item.name.toLowerCase() === ingredientName.toLowerCase()
@@ -130,8 +129,8 @@ export function recordIngredientUsage(userId: string | null, ingredientName: str
   }
 }
 
-export function updateInventoryItem(userId: string | null, itemId: string, updates: Partial<Omit<InventoryItem, 'id'>>): InventoryItem | null {
-  if (typeof window === 'undefined' || !userId) return null;
+export function updateInventoryItem(userId?: string | null, itemId: string, updates: Partial<Omit<InventoryItem, 'id'>>): InventoryItem | null {
+  if (typeof window === 'undefined') return null;
   
   const currentInventory = getInventory(userId);
   const itemIndex = currentInventory.findIndex(item => item.id === itemId);
@@ -155,8 +154,8 @@ export function updateInventoryItem(userId: string | null, itemId: string, updat
   }
 }
 
-export function removeInventoryItem(userId: string | null, itemId: string): boolean {
-    if (typeof window === 'undefined' || !userId) return false;
+export function removeInventoryItem(userId?: string | null, itemId: string): boolean {
+    if (typeof window === 'undefined') return false;
     let currentInventory = getInventory(userId);
     const initialLength = currentInventory.length;
     currentInventory = currentInventory.filter(item => item.id !== itemId);
@@ -178,8 +177,8 @@ export interface ProcessedCSVItem {
     aiHint?: string;
 }
 
-export function batchAddOrUpdateInventoryItems(userId: string | null, itemsToProcess: ProcessedCSVItem[]): { added: number; updated: number; errors: number } {
-    if (typeof window === 'undefined' || !userId) return { added: 0, updated: 0, errors: itemsToProcess.length };
+export function batchAddOrUpdateInventoryItems(userId?: string | null, itemsToProcess: ProcessedCSVItem[]): { added: number; updated: number; errors: number } {
+    if (typeof window === 'undefined') return { added: 0, updated: 0, errors: itemsToProcess.length };
 
     const currentInventory = getInventory(userId);
     let addedCount = 0;
