@@ -10,9 +10,7 @@ const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<any | null>(null);
-  const { user } = useAuth(); // ✅ move inside component
-
-  const [userId, setUserId] = useState<string | null>(null);
+  const { currentUser } = useAuth(); // ✅ Get currentUser from AuthContext
   // State variables for scanner functionality
   const [scannedResult, setScannedResult] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -30,6 +28,7 @@ const BarcodeScannerPage: React.FC = () => {
 
   // State for quantity input
   const [quantity, setQuantity] = useState<number>(1);
+  const [weight, setWeight] = useState<string>("1 pcs");
 
   // Effect hook to load the ZXing library dynamically
   useEffect(() => {
@@ -82,7 +81,7 @@ const BarcodeScannerPage: React.FC = () => {
     };
   }, []); // Empty dependency array ensures this runs only once on mount
 
-  // Function to simulate fetching product details from a database
+  // Function to fetch product details from the database
   const fetchProductDetails = async (barcode: string) => {
   setProductLoading(true);
   setProductDetails(null);
@@ -101,6 +100,7 @@ const BarcodeScannerPage: React.FC = () => {
       name: product.name,
       description: product.brand || product.category || "No description available",
       price: product.price,
+      weight: product.weight || "1 pcs", // Get weight from product data
       expiryDate: null,
       manufacturingDate: null,
       batchNumber: null,
@@ -114,48 +114,51 @@ const BarcodeScannerPage: React.FC = () => {
 };
 
 
-  // Handler for manual barcode lookup
-  async function handleManualBarcodeLookup() {
-  const barcode = manualBarcodeInput.trim();
-
-  if (!barcode) {
-    setProductError("Please enter a barcode number.");
-    return;
-  }
-
-  setErrorMessage(null);           // Clear any camera errors
-  setProductError(null);           // Clear previous product errors
-  setProductDetails(null);         // Clear previous product info
-  setProductLoading(true);         // Start loading state
-  setScannedResult(null);          // Reset scanned result for clarity
-
-  try {
-    const details = await fetchProductDetails(barcode); // 🔍 Call CSV-based lookup
-
-    if (details) {
-      setProductDetails(details);
-      setManualBarcodeInput('');  // Clear input field
-    } else {
-      setProductError(`No product found for barcode: ${barcode}`);
+  // Handler for automatic barcode lookup (triggered by input)
+  async function handleAutoBarcodeLookup(barcode: string) {
+    if (!barcode || barcode.length < 3) {
+      return; // Don't lookup if barcode is too short
     }
-  } catch (error) {
-    console.error("Error during barcode lookup:", error);
-    setProductError("An error occurred while fetching product details.");
-  } finally {
-    setProductLoading(false);      // Ensure loading ends
+
+    setErrorMessage(null);           // Clear any camera errors
+    setProductError(null);           // Clear previous product errors
+    setProductDetails(null);         // Clear previous product info
+    setProductLoading(true);         // Start loading state
+    setScannedResult(null);          // Reset scanned result for clarity
+
+    try {
+      const details = await fetchProductDetails(barcode); // 🔍 Call CSV-based lookup
+
+      if (details) {
+        setProductDetails(details);
+        setWeight(details.weight || "1 pcs"); // Set weight from product data
+      } else {
+        setProductError(`No product found for barcode: ${barcode}`);
+      }
+    } catch (error) {
+      console.error("Error during barcode lookup:", error);
+      setProductError("An error occurred while fetching product details.");
+    } finally {
+      setProductLoading(false);      // Ensure loading ends
+    }
   }
-}
+
+  // Handler for manual barcode lookup (kept for backward compatibility)
+  async function handleManualBarcodeLookup() {
+    const barcode = manualBarcodeInput.trim();
+
+    if (!barcode) {
+      setProductError("Please enter a barcode number.");
+      return;
+    }
+
+    await handleAutoBarcodeLookup(barcode);
+  }
 
 
   const handleAddToInventory = async () => {
-  if (!productDetails) {
-    toast({ title: "Error", description: "No product details available.", variant: "destructive" });
-    return;
-  }
-
-  // 1️⃣ Get userId (from localStorage or auth context)
-  const userId = localStorage.getItem('userId'); // ✅ Update this line as per your system
-  if (!userId) {
+  // 1️⃣ Get userId from AuthContext
+  if (!currentUser?.id) {
     toast({ title: "Error", description: "No user session found. Please log in.", variant: "destructive" });
     return;
   }
@@ -166,32 +169,43 @@ const BarcodeScannerPage: React.FC = () => {
     return;
   }
 
-  // 2️⃣ Build correct ingredient object
+  // 2️⃣ If no product details, try to fetch them first
+  let productInfo = productDetails;
+  if (!productInfo) {
+    try {
+      productInfo = await fetchProductDetails(barcodeToAdd);
+      if (!productInfo) {
+        toast({ title: "Error", description: "No product found for this barcode. Please lookup the barcode first.", variant: "destructive" });
+        return;
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to fetch product details. Please lookup the barcode first.", variant: "destructive" });
+      return;
+    }
+  }
+
+  // 3️⃣ Build correct ingredient object matching RawIngredient interface
   const ingredient = {
-    name: productDetails.name,                                // ✅ REQUIRED
+    name: productInfo.name,                                // ✅ REQUIRED
     quantity: quantity,                                       // ✅ REQUIRED
-    unit: 'pcs',                                              // ✅ REQUIRED, fallback
-    category: productDetails.category || 'Pantry',            // optional, fallback
-    price: productDetails.price || null,                     // optional
-    barcode: barcodeToAdd,                                    // optional
-    expiryDate: productDetails.expiryDate || null,            // optional
-    manufacturingDate: productDetails.manufacturingDate || null, // optional
-    batchNumber: productDetails.batchNumber || null,          // optional
-    image: productDetails.imageUrl || "https://placehold.co/60x60.png", // fallback image
+    unit: weight,                                              // ✅ Use weight from product data
   };
 
   try {
-    const addedItem = inventoryService.addIngredientToInventoryIfNotExists(userId, ingredient);
+    const result = inventoryService.addOrUpdateIngredientInInventory(ingredient, currentUser.id);
 
-    if (addedItem) {
-      toast({ title: "Success", description: `${addedItem.name} added to inventory.` });
-    } else {
-      toast({ title: "Info", description: `${ingredient.name} already exists in inventory.` });
-    }
+    // Check if this was an update (quantity is greater than what we just added) or a new item
+    const wasUpdate = result.quantity > quantity;
+    const message = wasUpdate 
+      ? `${result.name} quantity updated to ${result.quantity} ${result.unit} in inventory.`
+      : `${result.name} added to inventory with ${result.quantity} ${result.unit}.`;
+    
+    toast({ title: "Success", description: message });
 
     setManualBarcodeInput('');
     setProductDetails(null);
     setQuantity(1);
+    setWeight("1 pcs");
     setScannedResult(null);
   } catch (error) {
     console.error('Error adding to inventory:', error);
@@ -249,6 +263,7 @@ const BarcodeScannerPage: React.FC = () => {
           const details = await fetchProductDetails(barcodeData);
           if (details) {
             setProductDetails(details);
+            setWeight(details.weight || "1 pcs"); // Set weight from product data
           } else {
             setProductError(`No product found for barcode: ${barcodeData}`);
           }
@@ -284,6 +299,7 @@ const BarcodeScannerPage: React.FC = () => {
     setProductDetails(null);
     setProductError(null);
     setProductLoading(false);
+    setWeight("1 pcs"); // Reset weight field
     // Manual input is kept as is, allowing the user to continue with it
   };
 
@@ -333,34 +349,49 @@ const BarcodeScannerPage: React.FC = () => {
           <input // Barcode input field
             type="text"
             value={manualBarcodeInput}
-            onChange={(e) => setManualBarcodeInput(e.target.value)}
+            onChange={(e) => {
+              const barcode = e.target.value;
+              setManualBarcodeInput(barcode);
+              // Auto-lookup when barcode is entered (minimum 3 characters)
+              if (barcode.trim().length >= 3) {
+                handleAutoBarcodeLookup(barcode.trim());
+              }
+            }}
             placeholder="Enter barcode number"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-center text-lg"
             disabled={!isZxingLoaded} // Disable input until ZXing is loaded
           />
-           <input // Quantity input field
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} // Ensure quantity is at least 1
-            placeholder="Quantity"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-center text-lg"
-            min="1" // HTML5 min attribute for numeric input
-            disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if ZXing not loaded or no barcode entered
-          />
-          <div className="flex space-x-4">
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+              <input // Quantity input field
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} // Ensure quantity is at least 1
+                placeholder="Quantity"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg"
+                min="1" // HTML5 min attribute for numeric input
+                disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if ZXing not loaded or no barcode entered
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weight/Unit</label>
+              <input // Weight/Unit input field
+                type="text"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="Weight/Unit"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg"
+                disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if ZXing not loaded or no barcode entered
+              />
+            </div>
+          </div>
+          <div className="flex justify-center">
             <button
-              onClick={handleManualBarcodeLookup}
-            
-              className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if not loaded or input is empty
-            >
-              Lookup Barcode
-            </button>
-             <button
               onClick={handleAddToInventory}
-              className="flex-1 px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-75 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              // Disable if ZXing not loaded, no barcode (manual or scanned), no product details, or quantity is zero/negative
-              disabled={!isZxingLoaded || !productDetails || quantity <= 0} 
+              className="w-full px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-75 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              // Enable if ZXing is loaded, there's a barcode (manual or scanned), and quantity is valid
+              disabled={!isZxingLoaded || (!manualBarcodeInput.trim() && !scannedResult) || quantity <= 0} 
             >
               Add to Inventory
             </button>
@@ -386,6 +417,7 @@ const BarcodeScannerPage: React.FC = () => {
             <p><strong>Name:</strong> {productDetails.name}</p>
             <p><strong>Description:</strong> {productDetails.description}</p>
             <p><strong>Price:</strong> {productDetails.price}</p>
+            <p><strong>Weight:</strong> {productDetails.weight}</p>
             {productDetails.expiryDate && (
               <p><strong>Expiry Date:</strong> {productDetails.expiryDate}</p>
             )}

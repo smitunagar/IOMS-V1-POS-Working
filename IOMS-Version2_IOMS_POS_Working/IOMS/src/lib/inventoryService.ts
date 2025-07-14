@@ -53,7 +53,7 @@ export function getInventory(userId?: string | null): InventoryItem[] {
   }
 }
 
-export function saveInventory(userId?: string | null, inventory: InventoryItem[]): void {
+export function saveInventory(inventory: InventoryItem[], userId?: string | null): void {
   if (typeof window === 'undefined') return;
   try {
     const inventoryStorageKey = getUserInventoryStorageKey(userId);
@@ -69,7 +69,7 @@ export interface RawIngredient {
   unit: string;
 }
 
-export function addIngredientToInventoryIfNotExists(userId?: string | null, ingredient: RawIngredient): InventoryItem | null {
+export function addIngredientToInventoryIfNotExists(ingredient: RawIngredient, userId?: string | null): InventoryItem | null {
   if (typeof window === 'undefined') return null;
   
   const currentInventory = getInventory(userId);
@@ -96,11 +96,79 @@ export function addIngredientToInventoryIfNotExists(userId?: string | null, ingr
   };
 
   const updatedInventory = [...currentInventory, newItem];
-  saveInventory(userId, updatedInventory);
+  saveInventory(updatedInventory, userId);
   return newItem;
 }
 
-export function recordIngredientUsage(userId?: string | null, ingredientName: string, consumedQuantity: number, consumedUnit: string): void {
+export function addOrUpdateIngredientInInventory(ingredient: RawIngredient, userId?: string | null): InventoryItem {
+  if (typeof window === 'undefined') {
+    throw new Error('Cannot access localStorage in server environment');
+  }
+  
+  const currentInventory = getInventory(userId);
+  const existingItemIndex = currentInventory.findIndex(
+    item => item.name.toLowerCase() === ingredient.name.toLowerCase()
+  );
+
+  if (existingItemIndex > -1) {
+    // Update existing item - add to current quantity
+    const existingItem = currentInventory[existingItemIndex];
+    
+    // Check if units match before adding quantities
+    if (existingItem.unit.toLowerCase() !== ingredient.unit.toLowerCase()) {
+      console.warn(`Unit mismatch for ${ingredient.name}: existing unit ${existingItem.unit}, new unit ${ingredient.unit}. Creating new item instead.`);
+      // If units don't match, create a new item with a modified name
+      const newItem: InventoryItem = {
+        id: generateId(),
+        name: `${ingredient.name} (${ingredient.unit})`,
+        quantity: ingredient.quantity, 
+        unit: ingredient.unit,
+        category: "Pantry", 
+        lowStockThreshold: Math.max(1, Math.floor(ingredient.quantity * 0.2)), 
+        lastRestocked: new Date().toISOString(), 
+        expiryDate: undefined, 
+        quantityUsed: 0,
+        image: "https://placehold.co/60x60.png",
+        aiHint: ingredient.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+      };
+
+      const updatedInventory = [...currentInventory, newItem];
+      saveInventory(updatedInventory, userId);
+      return newItem;
+    }
+    
+    const updatedItem: InventoryItem = {
+      ...existingItem,
+      quantity: existingItem.quantity + ingredient.quantity,
+      lastRestocked: new Date().toISOString(),
+    };
+    
+    currentInventory[existingItemIndex] = updatedItem;
+    saveInventory(currentInventory, userId);
+    return updatedItem;
+  } else {
+    // Add new item
+    const newItem: InventoryItem = {
+      id: generateId(),
+      name: ingredient.name,
+      quantity: ingredient.quantity, 
+      unit: ingredient.unit,
+      category: "Pantry", 
+      lowStockThreshold: Math.max(1, Math.floor(ingredient.quantity * 0.2)), 
+      lastRestocked: new Date().toISOString(), 
+      expiryDate: undefined, 
+      quantityUsed: 0,
+      image: "https://placehold.co/60x60.png",
+      aiHint: ingredient.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+    };
+
+    const updatedInventory = [...currentInventory, newItem];
+    saveInventory(updatedInventory, userId);
+    return newItem;
+  }
+}
+
+export function recordIngredientUsage(ingredientName: string, consumedQuantity: number, consumedUnit: string, userId?: string | null): void {
   if (typeof window === 'undefined') return;
   const currentInventory = getInventory(userId);
   const itemIndex = currentInventory.findIndex(
@@ -123,13 +191,13 @@ export function recordIngredientUsage(userId?: string | null, ingredientName: st
       quantity: newQuantity,
       quantityUsed: newQuantityUsed,
     };
-    saveInventory(userId, currentInventory);
+    saveInventory(currentInventory, userId);
   } else {
     console.warn(`Ingredient "${ingredientName}" not found in inventory (user: ${userId}). Usage not recorded.`);
   }
 }
 
-export function updateInventoryItem(userId?: string | null, itemId: string, updates: Partial<Omit<InventoryItem, 'id'>>): InventoryItem | null {
+export function updateInventoryItem(itemId: string, updates: Partial<Omit<InventoryItem, 'id'>>, userId?: string | null): InventoryItem | null {
   if (typeof window === 'undefined') return null;
   
   const currentInventory = getInventory(userId);
@@ -146,7 +214,7 @@ export function updateInventoryItem(userId?: string | null, itemId: string, upda
     if(updates.quantity !== undefined && originalItem.quantity !== updates.quantity) {
       currentInventory[itemIndex].lastRestocked = new Date().toISOString();
     }
-    saveInventory(userId, currentInventory);
+    saveInventory(currentInventory, userId);
     return currentInventory[itemIndex];
   } else {
     console.warn(`Item with id ${itemId} not found for update (user: ${userId}).`);
@@ -154,13 +222,13 @@ export function updateInventoryItem(userId?: string | null, itemId: string, upda
   }
 }
 
-export function removeInventoryItem(userId?: string | null, itemId: string): boolean {
+export function removeInventoryItem(itemId: string, userId?: string | null): boolean {
     if (typeof window === 'undefined') return false;
     let currentInventory = getInventory(userId);
     const initialLength = currentInventory.length;
     currentInventory = currentInventory.filter(item => item.id !== itemId);
     if (currentInventory.length < initialLength) {
-      saveInventory(userId, currentInventory);
+      saveInventory(currentInventory, userId);
       return true;
     }
     return false;
@@ -177,7 +245,7 @@ export interface ProcessedCSVItem {
     aiHint?: string;
 }
 
-export function batchAddOrUpdateInventoryItems(userId?: string | null, itemsToProcess: ProcessedCSVItem[]): { added: number; updated: number; errors: number } {
+export function batchAddOrUpdateInventoryItems(itemsToProcess: ProcessedCSVItem[], userId?: string | null): { added: number; updated: number; errors: number } {
     if (typeof window === 'undefined') return { added: 0, updated: 0, errors: itemsToProcess.length };
 
     const currentInventory = getInventory(userId);
@@ -230,6 +298,6 @@ export function batchAddOrUpdateInventoryItems(userId?: string | null, itemsToPr
         }
     });
 
-    saveInventory(userId, currentInventory);
+    saveInventory(currentInventory, userId);
     return { added: addedCount, updated: updatedCount, errors: errorCount };
 }
