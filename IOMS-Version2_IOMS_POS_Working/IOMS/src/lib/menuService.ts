@@ -9,7 +9,7 @@ export interface IngredientQuantity {
 export interface Dish {
   id: string;
   name: string;
-  price: number;
+  price: number | string;
   category: string;
   image: string;
   aiHint: string;

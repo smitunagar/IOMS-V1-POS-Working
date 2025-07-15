@@ -1,191 +1,192 @@
-id,name,price,category,image,aiHint,ingredients
-1,Wasser still oder Sprudel,"0,31
-2,50 €",Alkoholfreie Getränke,,,
-2,Wasser still oder Sprudel,"0,41
-3,00 €",Alkoholfreie Getränke,,,
-3,Wasser still oder Sprudel,"0,751
-5,80 €",Alkoholfreie Getränke,,,
-4,"Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light 1,3","0,41
-3,80 €",Alkoholfreie Getränke,,,
-5,"Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light 1,3","0,31
-3,40 €",Alkoholfreie Getränke,,,
-6,Bitter Lemon 3,"0,21
-3,90 €",Alkoholfreie Getränke,,,
-7,Eistee Pfirsich,"4,20 €",Alkoholfreie Getränke,,,
-8,Eistee Zitrone,"4,20 €",Alkoholfreie Getränke,,,
-9,Apfelsaft,"(0,31) 3,80 €
-(0,41) 4,60 €",Säfte und Schorlen,,,
-10,Orangensaft,"(0,31) 3,80 €
-(0,41) 4,60 €",Säfte und Schorlen,,,
-11,Johannisbeer-Fruchtsaftgetränk,"(0,31) 3,80 €
-(0,41) 4,60 €",Säfte und Schorlen,,,
-12,Maracuja-Fruchtsaftgetränk,"(0,31) 3,80 €
-(0,41) 4,60 €",Säfte und Schorlen,,,
-13,Mango-Fruchtsaftgetränk,"(0,31) 3,80 €
-(0,41) 4,60 €",Säfte und Schorlen,,,
-14,Apfelsaftschorle,"(0,41)
-3,90 €",Säfte und Schorlen,,,
-15,Orangensaftschorle,"(0,41)
-3,90 €",Säfte und Schorlen,,,
-16,Johannisbeer-Fruchtsaftschorle,"(0,41)
-3,90 €",Säfte und Schorlen,,,
-17,Maracuja-Fruchtsaftschorle,"(0,41)
-3,90 €",Säfte und Schorlen,,,
-18,Mango-Fruchtsaftschorle,"(0,41)
-3,90 €",Säfte und Schorlen,,,
-19,"Mango-Lassi (Süß) g, 3","(0,31)
-4,20 €",Indische Lassis,,,
-20,"Masala-Lassi (würzig) g, 3","(0,31)
-4,20 €",Indische Lassis,,,
-21,"Kokosnuss-Lassi (Süß) g, 3","(0,31)
-4,20 €",Indische Lassis,,,
-22,Zwiefalter 1521 Helles Vollbier,"(0,31) 3,50 €
+id,name,quantity,price,category,image,aiHint,ingredients
+1,Wasser still oder Sprudel,,"0,31
+2,50 €",Beverages,,,
+2,Wasser still oder Sprudel,,"0,41
+3,00 €",Beverages,,,
+3,Wasser still oder Sprudel,,"0,751
+5,80 €",Beverages,,,
+4,"Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light",,"0,41
+3,80 €",Beverages,,,
+5,"Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light",,"0,31
+3,40 €",Beverages,,,
+6,Bitter Lemon,,"0,21
+3,90 €",Beverages,,,
+7,Eistee Pfirsich,,"4,20 €",Beverages,,,
+8,Eistee Zitrone,,"4,20 €",Beverages,,,
+9,Apfelsaft,,"(0,31) 3,80 €
+(0,41) 4,60 €",Main Courses,,,
+10,Orangensaft,,"(0,31) 3,80 €
+(0,41) 4,60 €",Main Courses,,,
+11,Johannisbeer-Fruchtsaftgetränk,,"(0,31) 3,80 €
+(0,41) 4,60 €",Beverages,,,
+12,Maracuja-Fruchtsaftgetränk,,"(0,31) 3,80 €
+(0,41) 4,60 €",Main Courses,,,
+13,Mango-Fruchtsaftgetränk,,"(0,31) 3,80 €
+(0,41) 4,60 €",Main Courses,,,
+14,Apfelsaftschorle,,"(0,41)
+3,90 €",Main Courses,,,
+15,Orangensaftschorle,,"(0,41)
+3,90 €",Main Courses,,,
+16,Johannisbeer-Fruchtsaftschorle,,"(0,41)
+3,90 €",Beverages,,,
+17,Maracuja-Fruchtsaftschorle,,"(0,41)
+3,90 €",Main Courses,,,
+18,Mango-Fruchtsaftschorle,,"(0,41)
+3,90 €",Main Courses,,,
+19,Mango-Lassi (Süß),,"(0,31)
+4,20 €",Main Courses,,,
+20,Masala-Lassi (würzig),,"(0,31)
+4,20 €",Main Courses,,,
+21,Kokosnuss-Lassi (Süß),,"(0,31)
+4,20 €",Main Courses,,,
+22,Zwiefalter 1521 Helles Vollbier,,"(0,31) 3,50 €
 (0,51)
-4,50 €",Biere,,,
-23,"Zwiefalter Radler, süß oder sauer","(0,31) 3,50 €
+4,50 €",Beverages,,,
+23,"Zwiefalter Radler, süß oder sauer",,"(0,31) 3,50 €
 (0,51)
-4,50 €",Biere,,,
-24,Zwiefalter Hefe trüb,"(0,31) 3,50 €
+4,50 €",Beverages,,,
+24,Zwiefalter Hefe trüb,,"(0,31) 3,50 €
 (0,51)
-4,50 €",Biere,,,
-25,Zwiefalter Cola-Weizen,"(0,31) 3,50 €
+4,50 €",Beverages,,,
+25,Zwiefalter Cola-Weizen,,"(0,31) 3,50 €
 (0,51)
-4,50 €",Biere,,,
-26,Zwiefalter Pils,"(0,31) 3,50 €",Biere,,,
-27,Russ,"(0,31) 3,50 €
-(0,51) 4,50 €",Biere,,,
-28,Zwiefalter-Kristallklar,"(0,51)
-4,20 €",Biere,,,
-29,Zwiefalter-Pilsener alkoholfrei,"(0,331) 3,20 €",Biere,,,
-30,Zwiefalter-Hefe alkoholfrei,"(0,51) 4,20 €",Biere,,,
-31,"Zwiefalter-Engele, helles Bier","(0,331) 3,20 €",Biere,,,
-32,Zwiefalter-Urweizen Dunkel,"(0,51)
-4,20 €",Biere,,,
-33,Indisches Premium Lagerbier,"(0,31)
-4,60 €",Biere,,,
-34,Glas Prosecco 15% vol,"(0,21)
-5,90 €",Aperitifs,,,
-35,"Aperol Spritz 25% vol (Prosecco, Aperol, Soda)","(0,21)
-6,90 €",Aperitifs,,,
-36,"Hugo 15% vol (Prosecco mit Minze, Limette und Mineralwasser)","(0,21)
-6,90 €",Aperitifs,,,
-37,Lillet Wild Berry 15% vol,"(0,21)
-6,90 €",Aperitifs,,,
-38,"Pina Colada: Weißer Rum, Brauner Rum, Kokos, Sahne, Ananassaft","0,401
-8,90 €",Cocktails,,,Weißer Rum;Brauner Rum;Kokos;Sahne;Ananassaft
-39,"Mango Colada: Weißer Rum, Brauner Rum, Mangosaft, Ananassaft, Sahne","0,401
-8,90 €",Cocktails,,,Weißer Rum;Brauner Rum;Mangosaft;Ananassaft;Sahne
-40,"Erdbeer Colada: Weißer Rum, Brauner Rum, Erdbeer-Sirup, Ananassaft, Sahne","0,401
-8,90 €",Cocktails,,,Weißer Rum;Brauner Rum;Erdbeer-Sirup;Ananassaft;Sahne
-41,"Tequila Sunrise: Tequila, Orangensaft, Grenadine","0,401
-8,90 €",Cocktails,,,Tequila;Orangensaft;Grenadine
-42,"Mojito: Havana Club Rum, frische Limetten, Rohrzucker, frische Minze","0,401
-8,90 €",Cocktails,,,Havana Club Rum;frische Limetten;Rohrzucker;frische Minze
-43,"Caipirinha: Cachaca, Limetten, Rohrzucker","0,301
-7,90 €",Cocktails,,,Cachaca;Limetten;Rohrzucker
-44,"Caipiroschka: Vodka, Limetten, Rohrzucker","0,301
-7,90 €",Cocktails,,,Vodka;Limetten;Rohrzucker
-45,"Sex On The Beach: Vodka, Peach Likör, Crannberry Saft, Orangensaft","0,401
-8,90 €",Cocktails,,,Vodka;Peach Likör;Crannberry Saft;Orangensaft
+4,50 €",Beverages,,,
+26,Zwiefalter Pils,,"(0,31) 3,50 €",Beverages,,,
+27,Russ,,"(0,31) 3,50 €
+(0,51)
+4,50 €",Beverages,,,
+28,Zwiefalter-Kristallklar,,"(0,51)
+4,20 €",Beverages,,,
+29,Zwiefalter-Pilsener alkoholfrei,,"(0,331) 3,20 €",Beverages,,,
+30,Zwiefalter-Hefe alkoholfrei,,"(0,51) 4,20 €",Beverages,,,
+31,"Zwiefalter-Engele, helles Bier",,"(0,331) 3,20 €",Beverages,,,
+32,Zwiefalter-Urweizen Dunkel,,"(0,51)
+4,20 €",Beverages,,,
+33,Indisches Premium Lagerbier,,"(0,31)
+4,60 €",Beverages,,,
+34,Glas Prosecco 15% vol,,"(0,21)
+5,90 €",Main Courses,,,
+35,"Aperol Spritz 25% vol (Prosecco, Aperol, Soda)",,"(0,21)
+6,90 €",Beverages,,,
+36,"Hugo 15% vol (Prosecco mit Minze, Limette und Mineralwasser)",,"(0,21)
+6,90 €",Main Courses,,,
+37,Lillet Wild Berry 15% vol,,"(0,21)
+6,90 €",Main Courses,,,
+38,"Pina Colada: Weißer Rum, Brauner Rum, Kokos, Sahne, Ananassaft",,"0,401
+8,90 €",Beverages,,,Weißer Rum;Brauner Rum;Kokos;Sahne;Ananassaft
+39,"Mango Colada: Weißer Rum, Brauner Rum, Mangosaft, Ananassaft, Sahne",,"0,401
+8,90 €",Beverages,,,Weißer Rum;Brauner Rum;Mangosaft;Ananassaft;Sahne
+40,"Erdbeer Colada: Weißer Rum, Brauner Rum, Erdbeer-Sirup, Ananassaft, Sahne",,"0,401
+8,90 €",Beverages,,,Weißer Rum;Brauner Rum;Erdbeer-Sirup;Ananassaft;Sahne
+41,"Tequila Sunrise: Tequila, Orangensaft, Grenadine",,"0,401
+8,90 €",Main Courses,,,Tequila;Orangensaft;Grenadine
+42,"Mojito: Havana Club Rum, frische Limetten, Rohrzucker, frische Minze",,"0,401
+8,90 €",Main Courses,,,Havana Club Rum;frische Limetten;Rohrzucker;frische Minze
+43,"Caipirinha: Cachaca, Limetten, Rohrzucker",,"0,301
+7,90 €",Main Courses,,,Cachaca;Limetten;Rohrzucker
+44,"Caipiroschka: Vodka, Limetten, Rohrzucker",,"0,301
+7,90 €",Main Courses,,,Vodka;Limetten;Rohrzucker
+45,"Sex On The Beach: Vodka, Peach Likör, Crannberry Saft, Orangensaft",,"0,401
+8,90 €",Main Courses,,,Vodka;Peach Likör;Crannberry Saft;Orangensaft
 46,"Swimming Pool:
-Vodka, weißer Rum, Blue Curacao, Kokossirup, Ananassaft, Sahne","0,401
-8,90 €",Cocktails,,,Vodka;weißer Rum;Blue Curacao;Kokossirup;Ananassaft;Sahne
+Vodka, weißer Rum, Blue Curacao, Kokossirup, Ananassaft, Sahne",,"0,401
+8,90 €",Main Courses,,,Vodka;weißer Rum;Blue Curacao;Kokossirup;Ananassaft;Sahne
 47,"Long Island Ice Tea (liit):
-Vodka, Havanna Club, Gin, Tequila, Zitronensaft, Triple Sec, Cola","0,401
-8,90 €",Cocktails,,,Vodka;Havanna Club;Gin;Tequila;Zitronensaft;Triple Sec;Cola
-48,"Moscow Mule: Vodka, Gurke, Limettensaft, Thomas Henry, Spicy Ginger","0,401
-8,90 €",Cocktails,,,Vodka;Gurke;Limettensaft;Thomas Henry;Spicy Ginger
+Vodka, Havanna Club, Gin, Tequila, Zitronensaft, Triple Sec, Cola",,"0,401
+8,90 €",Beverages,,,Vodka;Havanna Club;Gin;Tequila;Zitronensaft;Triple Sec;Cola
+48,"Moscow Mule: Vodka, Gurke, Limettensaft, Thomas Henry, Spicy Ginger",,"0,401
+8,90 €",Main Courses,,,Vodka;Gurke;Limettensaft;Thomas Henry;Spicy Ginger
 49,"Zombie: Rum Braun, Rum Weiß, Old Pascas 73% Overproov
-Rum, Limette, Grenadine, Orange, Ananas","0,401
-8,90 €",Cocktails,,,Rum Braun;Rum Weiß;Old Pascas 73% Overproov;Rum;Limette;Grenadine;Orange;Ananas
-50,"Virgin Caipirinha: Limetten, Rohrzucker, Ginger Ale","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,Limetten;Rohrzucker;Ginger Ale
-51,"Watermelon Mojito: Wassermelonensirup, Limetten, frische Minze, Ginger Ale","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,Wassermelonensirup;Limetten;frische Minze;Ginger Ale
-52,"Coconut Kiss: Ananassaft, Kirschnektar, Sahne, Kokossirup","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,Ananassaft;Kirschnektar;Sahne;Kokossirup
-53,"Strawberry Kiss: Kokos, Sahne, Ananassaft, Erdbeerpüree","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,Kokos;Sahne;Ananassaft;Erdbeerpüree
-54,"Mosquito: frische Limette, Rohrzucker, frische Minze, Soda","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,frische Limette;Rohrzucker;frische Minze;Soda
-55,"Fruit Punch: Mango, Ananas, Maracuja, Orange, Grapefruit, Limette","0,401
-7,50 €",Mocktails (Die ohne Alkohol),,,Mango;Ananas;Maracuja;Orange;Grapefruit;Limette
-56,"Jamaica Kiss: Kokos, Himbeere, Sahne, Ananas, Maracuja, Grenadine","0,401 7,50 €",Mocktails (Die ohne Alkohol),,,Kokos;Himbeere;Sahne;Ananas;Maracuja;Grenadine
-57,"Limonade: frische Limetten Stücke, Rohrzucker, Soda","0,401 7,50 €",Mocktails (Die ohne Alkohol),,,frische Limetten Stücke;Rohrzucker;Soda
-58,Mangolikör,"(2 cl)
-3,50 €",Spirituosen,,,
-59,Kokosnuss-Schnaps,"(2 cl)
-3,50 €",Spirituosen,,,
-60,Indischer Rum,"(2 cl)
-3,50 €",Spirituosen,,,
-61,Ramazotti 30% vol,"(4 cl)
-4,00 €",Spirituosen,,,
-62,Williams Birne 40% vol,"(2 cl)
-2,50 €",Spirituosen,,,
-63,Grappa 40% vol,"(2 cl)
-2,50 €",Spirituosen,,,
-64,Jägermeister 35% vol,"(2 cl)
-2,50 €",Spirituosen,,,
-65,Wodka Lemon 40% vol,"(5 cl)
-7,00 €",Longdrinks,,,
-66,"Gin Tonic 37,5% vol","(5 cl)
-7,00 €",Longdrinks,,,
-67,Jackie Cola 40% vol,"(5 cl)
-7,00 €",Longdrinks,,,
-68,Indischer Weißwein,"(0,21)
+Rum, Limette, Grenadine, Orange, Ananas",,"0,401
+8,90 €",Main Courses,,,Rum Braun;Rum Weiß;Old Pascas 73% Overproov;Rum;Limette;Grenadine;Orange;Ananas
+50,"Virgin Caipirinha: Limetten, Rohrzucker, Ginger Ale",,"0,401
+7,50 €",Main Courses,,,Limetten;Rohrzucker;Ginger Ale
+51,"Watermelon Mojito: Wassermelonensirup, Limetten, frische Minze, Ginger Ale",,"0,401
+7,50 €",Main Courses,,,Wassermelonensirup;Limetten;frische Minze;Ginger Ale
+52,"Coconut Kiss: Ananassaft, Kirschnektar, Sahne, Kokossirup",,"0,401
+7,50 €",Main Courses,,,Ananassaft;Kirschnektar;Sahne;Kokossirup
+53,"Strawberry Kiss: Kokos, Sahne, Ananassaft, Erdbeerpüree",,"0,401
+7,50 €",Beverages,,,Kokos;Sahne;Ananassaft;Erdbeerpüree
+54,"Mosquito: frische Limette, Rohrzucker, frische Minze, Soda",,"0,401
+7,50 €",Beverages,,,frische Limette;Rohrzucker;frische Minze;Soda
+55,"Fruit Punch: Mango, Ananas, Maracuja, Orange, Grapefruit, Limette",,"0,401
+7,50 €",Main Courses,,,Mango;Ananas;Maracuja;Orange;Grapefruit;Limette
+56,"Jamaica Kiss: Kokos, Himbeere, Sahne, Ananas, Maracuja, Grenadine",,"0,401 7,50 €",Beverages,,,Kokos;Himbeere;Sahne;Ananas;Maracuja;Grenadine
+57,"Limonade: frische Limetten Stücke, Rohrzucker, Soda",,"0,401 7,50 €",Beverages,,,frische Limetten Stücke;Rohrzucker;Soda
+58,Mangolikör,,"(2 cl)
+3,50 €",Main Courses,,,
+59,Kokosnuss-Schnaps,,"(2 cl)
+3,50 €",Main Courses,,,
+60,Indischer Rum,,"(2 cl)
+3,50 €",Main Courses,,,
+61,Ramazotti,,"(4 cl)
+4,00 €",Main Courses,,,
+62,Williams Birne,,"(2 cl)
+2,50 €",Main Courses,,,
+63,Grappa,,"(2 cl)
+2,50 €",Main Courses,,,
+64,Jägermeister,,"(2 cl)
+2,50 €",Main Courses,,,
+65,Wodka Lemon,,"(5 cl)
+7,00 €",Beverages,,,
+66,Gin Tonic,,"(5 cl)
+7,00 €",Beverages,,,
+67,Jackie Cola,,"(5 cl)
+7,00 €",Beverages,,,
+68,Indischer Weißwein,,"(0,21)
 6,90 €
 (0,751)
-21,00 €",Indische Weine,,,
-69,Indischer Rotwein,"(0,21) 6,90 €
-(0,751) 21,00 €",Indische Weine,,,
-70,Jechtinger Grauburg,"(0,251)
-5,90 €",Deutsche Weine,,,
-71,Stettener Heuchelberg Riesling,"(0,251)
-5,90 €",Deutsche Weine,,,
-72,Jechtinger Spätburgunder,"(0,251)
-5,90 €",Deutsche Weine,,,
-73,Haberschl D. Trollinger mit Lemberger,"(0,251)
-5,90 €",Deutsche Weine,,,
-74,Jechtinger Spätburgunder Weißherbst,"(0,251)
-5,90 €",Deutsche Weine,,,
-75,Munzinger Attilafelsen Spätburgunder,"(0,251)
-5,90 €",Deutsche Weine,,,
-76,Cellier C. Merlot Cabernet,"(0,251)
-5,90 €",Französische Weine,,,
-77,Cellier C. Syrah Rose,"(0,251)
-5,90 €",Französische Weine,,,
-78,Cellier Colombes Chard,"(0,251)
-5,90 €",Französische Weine,,,
-79,Castelnuovo Pinot Grigio,"(0,251)
-5,90 €",Italienische Weine,,,
-80,Zonin Merlot Le Anfore,"(0,251)
-5,90 €",Italienische Weine,,,
-81,Zonin Montepulc LeAnfore,"(0,251)
-5,90 €",Italienische Weine,,,
-82,Rotweinschorle / Weißweinschorle,"(0,251)
-4,90 €",Weinschorle,,,
-83,Alkoholfreier Wein,"(0,251)
-4,90 €",Weinschorle,,,
-84,Alkoholfreier Sekt,"(0,251) 4,90 €",Weinschorle,,,
-85,Chicken Curry,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Currysoße
-86,Chicken Korma,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Mandeln;Sahne;Kokosnuss;Gewürzen
-87,Chicken Palak,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Zwiebeln;Ingwer;Knoblauch;Gewürzen;Spinat
-88,Chicken Mango,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Mango-Currysoße
-89,Chicken Banana,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Banane-Safran-Cashewnuss-Currysauce
-90,Chicken Vindaloo,"10,00 €",Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Kartoffeln;Currysoße
-91,Lamm Curry,"11,00 €",Spezialitäten vom Lamm mit Reis,,,Lamb;curry sauce
-92,Lamm Korma,"11,00 €",Spezialitäten vom Lamm mit Reis,,,Lammcurry;Sahne;Mandeln;Kokosnuss;Gewürzen
-93,Lamm Madras,"11,00 €",Spezialitäten vom Lamm mit Reis,,,Lammfleisch;Currysauce;Kokosmilch;Champignons
-94,Lamm Tikka Masala,"11,00 €",Spezialitäten vom Lamm mit Reis,,,Lammfleisch;Kräutern
-95,Fish Curry,"10,50 €",Spezialitäten vom Fisch mit Reis,,,Fischfilet;Ingwer;Zwiebeln;Kräutern
-96,Fish Mango,"10,50 €",Spezialitäten vom Fisch mit Reis,,,Fischfilet;Mango;Mango-Safran-Cashewnuss-Sauce
-97,Fish Masala,"10,50 €",Spezialitäten vom Fisch mit Reis,,,Fischfilet;Kräutern
-98,Fish Goa:}},"10,50 €",Spezialitäten vom Fisch mit Reis,,,Fischfilet;Kokos-Sauce;Gewürzen
-99,Gemüse Curry,"10,00 €",Vegetarische und Vegan Spezialitäten,,,Champignons;Erbsen;Ingwer;Knoblauch;Tomaten;Zwiebeln
-100,Dal Channa,"10,00 €",Vegetarische und Vegan Spezialitäten,,,Linsen;Butter;Ingwer;Tomaten;Knoblauch;Gewürzen
-101,Tarka Dal,"10,00 €",Vegetarische und Vegan Spezialitäten,,,Linsen;Zwiebeln;Knoblauch;Ingwer;Tomaten
-102,Chana Masala,"10,00 €",Vegetarische und Vegan Spezialitäten,,,Kichererbsen;Gewürzen;Kräutern
-103,Vegetable Korma,"10,00 €",Vegetarische und Vegan Spezialitäten,,,Gemüse;Mandeln;Kokosnuss;Gewürzen
-104,Vegetable Biryani,"11,00 €",Biryani Reis,,,Reis;Gemüse;Gewürzen
-105,Chicken Biryani,"11,00 €",Biryani Reis,,,Reis;Hähnchenbrustfilet;Gewürzen
-106,Lamm Biryani,"11,00 €",Biryani Reis,,,Reis;Lammfleisch;Gewürzen
+21,00 €",Main Courses,,,
+69,Indischer Rotwein,,"(0,21) 6,90 €
+(0,751) 21,00 €",Main Courses,,,
+70,Jechtinger Grauburg,,"(0,251)
+5,90 €",Main Courses,,,
+71,Stettener Heuchelberg Riesling,,"(0,251)
+5,90 €",Main Courses,,,
+72,Jechtinger Spätburgunder,,"(0,251)
+5,90 €",Main Courses,,,
+73,Haberschl D. Trollinger mit Lemberger,,"(0,251)
+5,90 €",Main Courses,,,
+74,Jechtinger Spätburgunder Weißherbst,,"(0,251)
+5,90 €",Main Courses,,,
+75,Munzinger Attilafelsen Spätburgunder,,"(0,251)
+5,90 €",Main Courses,,,
+76,Cellier C. Merlot Cabernet,,"(0,251)
+5,90 €",Main Courses,,,
+77,Cellier C. Syrah Rose,,"(0,251)
+5,90 €",Main Courses,,,
+78,Cellier Colombes Chard,,"(0,251)
+5,90 €",Main Courses,,,
+79,Castelnuovo Pinot Grigio,,"(0,251)
+5,90 €",Main Courses,,,
+80,Zonin Merlot Le Anfore,,"(0,251)
+5,90 €",Main Courses,,,
+81,Zonin Montepulc LeAnfore,,"(0,251)
+5,90 €",Main Courses,,,
+82,Rotweinschorle / Weißweinschorle,,"(0,251)
+4,90 €",Main Courses,,,
+83,Alkoholfreier Wein,,"(0,251)
+4,90 €",Main Courses,,,
+84,Alkoholfreier Sekt,,"(0,251) 4,90 €",Main Courses,,,
+85,Chicken Curry,,"10,00 €",Main Courses,,,
+86,Chicken Korma,,"10,00 €",Main Courses,,,
+87,Chicken Palak,,"10,00 €",Main Courses,,,
+88,Chicken Mango,,"10,00 €",Main Courses,,,
+89,Chicken Banana,,"10,00 €",Main Courses,,,
+90,Chicken Vindaloo,,"10,00 €",Main Courses,,,
+91,Lamm Curry:,,"11,00 €",Main Courses,,,
+92,Lamm Korma:,,"11,00 €",Main Courses,,,
+93,Lamm Madras:,,"11,00 €",Main Courses,,,
+94,Lamm Tikka Masala:,,"11,00 €",Main Courses,,,
+95,Fish Curry:,,"10,50 €",Main Courses,,,
+96,Fish Mango:,,"10,50 €",Main Courses,,,
+97,Fish Masala:,,"10,50 €",Main Courses,,,
+98,Fish Goa:}},,"10,50 €",Main Courses,,,
+99,Gemüse Curry:,,"10,00 €",Main Courses,,,
+100,Dal Channa:,,"10,00 €",Main Courses,,,
+101,Tarka Dal:,,"10,00 €",Main Courses,,,
+102,Chana Masala:,,"10,00 €",Main Courses,,,
+103,Vegetable Korma:,,"10,00 €",Main Courses,,,
+104,Vegetable Biryani:,,"11,00 €",Main Courses,,,
+105,Chicken Biryani:,,"11,00 €",Main Courses,,,
+106,Lamm Biryani:,,"11,00 €",Main Courses,,,

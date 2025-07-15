@@ -59,7 +59,7 @@ export default function AiOrderAgentPage() {
     } catch (e) { dishes = []; }
     // If still empty, fetch from CSV API and save to localStorage
     if (!dishes || dishes.length === 0) {
-      fetch('/api/menuCsv')
+      fetch(`/api/menuCsv?userId=${currentUser.id}`)
         .then(res => res.json())
         .then(data => {
           if (data.menu && Array.isArray(data.menu) && data.menu.length > 0) {

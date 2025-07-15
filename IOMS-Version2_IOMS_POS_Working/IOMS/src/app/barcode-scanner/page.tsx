@@ -4,7 +4,9 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as inventoryService from '@/lib/inventoryService'; // Assuming an inventory service exists
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';      
+import { useAuth } from '@/contexts/AuthContext';
+import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
+import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';      
 
 const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
@@ -29,6 +31,15 @@ const BarcodeScannerPage: React.FC = () => {
   // State for quantity input
   const [quantity, setQuantity] = useState<number>(1);
   const [weight, setWeight] = useState<string>("1 pcs");
+  
+  // State for expiry date functionality
+  const [expiryDate, setExpiryDate] = useState<string>("");
+  const [suggestedExpiryDate, setSuggestedExpiryDate] = useState<string>("");
+  const [shelfLifeDays, setShelfLifeDays] = useState<number>(0);
+  const [storageRecommendation, setStorageRecommendation] = useState<string>("");
+  const [confidence, setConfidence] = useState<string>("");
+  const [isSuggestingExpiry, setIsSuggestingExpiry] = useState<boolean>(false);
+  const [expiryAgreement, setExpiryAgreement] = useState<'agree' | 'disagree' | null>(null);
 
   // Effect hook to load the ZXing library dynamically
   useEffect(() => {
@@ -132,6 +143,15 @@ const BarcodeScannerPage: React.FC = () => {
       if (details) {
         setProductDetails(details);
         setWeight(details.weight || "1 pcs"); // Set weight from product data
+        
+        // Automatically suggest expiry date if no expiry date is found in product details
+        if (!details.expiryDate) {
+          await handleSuggestExpiryDate();
+        } else {
+          // If expiry date exists in product details, use it
+          setExpiryDate(details.expiryDate);
+          setExpiryAgreement('agree');
+        }
       } else {
         setProductError(`No product found for barcode: ${barcode}`);
       }
@@ -154,6 +174,72 @@ const BarcodeScannerPage: React.FC = () => {
 
     await handleAutoBarcodeLookup(barcode);
   }
+
+  // Function to suggest expiry date using AI
+  const handleSuggestExpiryDate = async () => {
+    if (!productDetails) {
+      toast({ title: "Error", description: "No product details available to suggest expiry date.", variant: "destructive" });
+      return;
+    }
+
+    setIsSuggestingExpiry(true);
+    setSuggestedExpiryDate("");
+    setShelfLifeDays(0);
+    setStorageRecommendation("");
+    setConfidence("");
+    setExpiryAgreement(null);
+
+    try {
+      const input: SuggestExpiryDateInput = {
+        productName: productDetails.name,
+        productCategory: productDetails.description,
+        productWeight: weight,
+        manufacturingDate: productDetails.manufacturingDate || undefined,
+      };
+
+      const result = await suggestExpiryDate(input);
+      
+      setSuggestedExpiryDate(result.suggestedExpiryDate);
+      setShelfLifeDays(result.shelfLifeDays);
+      setStorageRecommendation(result.storageRecommendation);
+      setConfidence(result.confidence);
+      
+      // Auto-fill the expiry date field with the suggestion
+      setExpiryDate(result.suggestedExpiryDate);
+      
+      toast({ 
+        title: "Expiry Date Suggested", 
+        description: `AI suggested expiry date: ${result.suggestedExpiryDate} (${result.confidence} confidence). Please confirm or edit.` 
+      });
+    } catch (error) {
+      console.error('Error suggesting expiry date:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to suggest expiry date. Please enter manually.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setIsSuggestingExpiry(false);
+    }
+  };
+
+  // Function to handle expiry date agreement
+  const handleExpiryAgreement = (agreement: 'agree' | 'disagree') => {
+    if (!expiryDate) {
+      toast({ title: "Error", description: "Please enter an expiry date first.", variant: "destructive" });
+      return;
+    }
+    
+    setExpiryAgreement(agreement);
+    const message = agreement === 'agree' 
+      ? `Expiry date confirmed: ${expiryDate}` 
+      : `Expiry date disagreed. Please edit the date.`;
+    
+    toast({ 
+      title: agreement === 'agree' ? "Expiry Date Confirmed" : "Expiry Date Disagreed", 
+      description: message 
+    });
+  };
 
 
   const handleAddToInventory = async () => {
@@ -189,6 +275,7 @@ const BarcodeScannerPage: React.FC = () => {
     name: productInfo.name,                                // ✅ REQUIRED
     quantity: quantity,                                       // ✅ REQUIRED
     unit: weight,                                              // ✅ Use weight from product data
+    expiryDate: expiryDate || undefined,                      // ✅ Include expiry date if provided
   };
 
   try {
@@ -206,6 +293,12 @@ const BarcodeScannerPage: React.FC = () => {
     setProductDetails(null);
     setQuantity(1);
     setWeight("1 pcs");
+    setExpiryDate("");
+    setSuggestedExpiryDate("");
+    setShelfLifeDays(0);
+    setStorageRecommendation("");
+    setConfidence("");
+    setExpiryAgreement(null);
     setScannedResult(null);
   } catch (error) {
     console.error('Error adding to inventory:', error);
@@ -300,6 +393,12 @@ const BarcodeScannerPage: React.FC = () => {
     setProductError(null);
     setProductLoading(false);
     setWeight("1 pcs"); // Reset weight field
+    setExpiryDate("");
+    setSuggestedExpiryDate("");
+    setShelfLifeDays(0);
+    setStorageRecommendation("");
+    setConfidence("");
+    setExpiryAgreement(null);
     // Manual input is kept as is, allowing the user to continue with it
   };
 
@@ -385,6 +484,73 @@ const BarcodeScannerPage: React.FC = () => {
                 disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if ZXing not loaded or no barcode entered
               />
             </div>
+          </div>
+          
+          {/* Expiry Date Section */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+            </div>
+            <input
+              type="date"
+              value={expiryDate}
+              onChange={(e) => {
+                setExpiryDate(e.target.value);
+                setExpiryAgreement(null); // Reset agreement when user edits
+              }}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg"
+              disabled={!isZxingLoaded || !manualBarcodeInput.trim()}
+            />
+            {isSuggestingExpiry && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                <p className="text-center">🤖 AI is suggesting expiry date...</p>
+              </div>
+            )}
+            {suggestedExpiryDate && !isSuggestingExpiry && (
+              <div className={`mt-2 p-2 border rounded text-sm ${expiryAgreement === 'agree' ? 'bg-green-50 border-green-200' : expiryAgreement === 'disagree' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+                <p><strong>AI Suggestion:</strong> {suggestedExpiryDate}</p>
+                <p><strong>Shelf Life:</strong> {shelfLifeDays} days</p>
+                <p><strong>Storage:</strong> {storageRecommendation}</p>
+                <p><strong>Confidence:</strong> {confidence}</p>
+              </div>
+            )}
+            {expiryDate && !expiryAgreement && (
+              <div className="mt-4 flex flex-col items-center space-y-4">
+                <span className="text-base font-semibold text-gray-700">Do you agree with this expiry date?</span>
+                <div className="flex space-x-6">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={expiryAgreement === 'agree'}
+                      onChange={() => handleExpiryAgreement('agree')}
+                      className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <span className="text-green-700 font-semibold">✅ Agree</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={expiryAgreement === 'disagree'}
+                      onChange={() => handleExpiryAgreement('disagree')}
+                      className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <span className="text-red-700 font-semibold">❌ Disagree</span>
+                  </label>
+                </div>
+              </div>
+            )}
+            {expiryAgreement === 'agree' && expiryDate && (
+              <div className="mt-4 flex items-center space-x-2 justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                <span className="text-green-700 font-semibold text-base">Expiry date agreed.</span>
+              </div>
+            )}
+            {expiryAgreement === 'disagree' && expiryDate && (
+              <div className="mt-4 flex items-center space-x-2 justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                <span className="text-red-700 font-semibold text-base">Expiry date disagreed. Please edit the date.</span>
+              </div>
+            )}
           </div>
           <div className="flex justify-center">
             <button

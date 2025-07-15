@@ -33,11 +33,16 @@ export async function POST(req: NextRequest) {
         ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
       }));
     console.log('FINAL MENU ITEMS TO WRITE:', menuItems);
-    // Save to menu.csv with proper escaping
-    const csvHeader = 'id,name,price,category,image,aiHint,ingredients';
+    console.log('📊 Category breakdown:', menuItems.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>));
+    // Save to menu.csv with proper escaping - match the expected CSV structure
+    const csvHeader = 'id,name,quantity,price,category,image,aiHint,ingredients';
     const csvRows = menuItems.map((item: any) => [
       escapeCsvField(item.id),
       escapeCsvField(item.name),
+      escapeCsvField(item.quantity || ''), // Add quantity field
       escapeCsvField(item.price),
       escapeCsvField(item.category),
       escapeCsvField(item.image),

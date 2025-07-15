@@ -69,12 +69,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false; // User already exists
     }
 
-    const newUser: User = { id: email, email, restaurantName }; // Using email as ID for simplicity
+    // Generate a unique ID for the user
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newUser: User = { id: userId, email, restaurantName };
     usersList.push(newUser);
     localStorage.setItem(LOCAL_STORAGE_USERS_LIST_KEY, JSON.stringify(usersList));
     
-    // For this prototype, we don't auto-login after signup to keep it simple
-    // User will be redirected to login page
+    // Store the new user temporarily for the signup flow
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
+    
     setIsLoading(false);
     return true;
   };
