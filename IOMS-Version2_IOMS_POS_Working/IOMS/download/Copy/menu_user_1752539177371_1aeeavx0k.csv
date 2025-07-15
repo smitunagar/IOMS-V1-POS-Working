@@ -1,0 +1,153 @@
+id,name,quantity,price,category,image,aiHint,ingredients
+1,Wasser still oder Sprudel,,0,31
+2,50 €,Beverages,,,
+2,Wasser still oder Sprudel,,0,41
+3,00 €,Beverages,,,
+3,Wasser still oder Sprudel,,0,751
+5,80 €,Beverages,,,
+4,Coca-Cola Fanta Sprite Spezi Coca-Cola light 13,,0,41
+3,80 €,Beverages,,,
+5,Coca-Cola Fanta Sprite Spezi Coca-Cola light 13,,0,31
+3,40 €,Beverages,,,
+6,Bitter Lemon 3,,0,21
+3,90 €,Beverages,,,
+7,Eistee Pfirsich,,4,20 €,Beverages,,,
+8,Eistee Zitrone,,4,20 €,Beverages,,,
+9,Apfelsaft,,,Main Courses,,,
+10,Orangensaft,,,Main Courses,,,
+11,Johannisbeer-Fruchtsaftgetränk,,,Beverages,,,
+12,Maracuja-Fruchtsaftgetränk,,,Main Courses,,,
+13,Mango-Fruchtsaftgetränk,,,Main Courses,,,
+14,Apfelsaftschorle,,,Main Courses,,,
+15,Orangensaftschorle,,,Main Courses,,,
+16,Johannisbeer-Fruchtsaftschorle,,,Beverages,,,
+17,Maracuja-Fruchtsaftschorle,,,Main Courses,,,
+18,Mango-Fruchtsaftschorle,,,Main Courses,,,
+19,Mango-Lassi (Süß),,,Main Courses,,,
+20,Masala-Lassi (würzig),,,Main Courses,,,
+21,Kokosnuss-Lassi (Süß),,,Main Courses,,,
+22,Zwiefalter 1521 Helles Vollbier,,,Beverages,,,
+23,Zwiefalter Radler süß oder sauer,,,Beverages,,,
+24,Zwiefalter Hefe trüb,,,Beverages,,,
+25,Zwiefalter Cola-Weizen,,,Beverages,,,
+26,Zwiefalter Pils,,,Beverages,,,
+27,Russ,,,Beverages,,,
+28,Zwiefalter-Kristallklar,,,Beverages,,,
+29,Zwiefalter-Pilsener alkoholfrei,,,Beverages,,,
+30,Zwiefalter-Hefe alkoholfrei,,,Beverages,,,
+31,Zwiefalter-Engele helles Bier,,,Beverages,,,
+32,Zwiefalter-Urweizen Dunkel,,,Beverages,,,
+33,Indisches Premium Lagerbier,,,Beverages,,,
+34,Glas Prosecco 15% vol,,,Main Courses,,,
+35,Aperol Spritz 25% vol (Prosecco Aperol Soda),,,Beverages,,,
+36,Hugo 15% vol (Prosecco mit Minze Limette und Mineralwasser),,,Main Courses,,,
+37,Lillet Wild Berry 15% vol,,,Main Courses,,,
+38,Pina Colada: Weißer Rum Brauner Rum Kokos Sahne Ananassaft,,0,401
+8,90 €,Beverages,,,Weißer Rum;Brauner Rum;Kokos;Sahne;Ananassaft
+39,Mango Colada: Weißer Rum Brauner Rum Mangosaft Ananassaft Sahne,,0,401
+8,90 €,Beverages,,,Weißer Rum;Brauner Rum;Mangosaft;Ananassaft;Sahne
+40,Erdbeer Colada: Weißer Rum Brauner Rum Erdbeer-Sirup Ananassaft Sahne,,0,401
+8,90 €,Beverages,,,Weißer Rum;Brauner Rum;Erdbeer-Sirup;Ananassaft;Sahne
+41,Tequila Sunrise: Tequila Orangensaft Grenadine,,0,401
+8,90 €,Main Courses,,,Tequila;Orangensaft;Grenadine
+42,Mojito: Havana Club Rum frische Limetten Rohrzucker frische Minze,,0,401
+8,90 €,Main Courses,,,Havana Club Rum;frische Limetten;Rohrzucker;frische Minze
+43,Caipirinha: Cachaca Limetten Rohrzucker,,0,301
+7,90 €,Main Courses,,,Cachaca;Limetten;Rohrzucker
+44,Caipiroschka: Vodka Limetten Rohrzucker,,0,301
+7,90 €,Main Courses,,,Vodka;Limetten;Rohrzucker
+45,Sex On The Beach: Vodka Peach Likör Crannberry Saft Orangensaft,,0,401
+8,90 €,Main Courses,,,Vodka;Peach Likör;Crannberry Saft;Orangensaft
+46,Swimming Pool:
+Vodka weißer Rum Blue Curacao Kokossirup Ananassaft Sahne,,0,401
+8,90 €,Main Courses,,,Vodka;weißer Rum;Blue Curacao;Kokossirup;Ananassaft;Sahne
+47,Long Island Ice Tea (liit):
+Vodka Havanna Club Gin Tequila Zitronensaft Triple Sec Cola,,0,401
+8,90 €,Beverages,,,Vodka;Havanna Club;Gin;Tequila;Zitronensaft;Triple Sec;Cola
+48,Moscow Mule: Vodka Gurke Limettensaft Thomas Henry Spicy Ginger,,0,401
+8,90 €,Main Courses,,,Vodka;Gurke;Limettensaft;Thomas Henry;Spicy Ginger
+49,Zombie: Rum Braun Rum Weiß Old Pascas 73% Overproov
+Rum Limette Grenadine Orange Ananas,,0,401
+8,90 €,Main Courses,,,Rum Braun;Rum Weiß;Old Pascas 73% Overproov;Rum;Limette;Grenadine;Orange;Ananas
+50,Virgin Caipirinha: Limetten Rohrzucker Ginger Ale,,0,401
+7,50 €,Main Courses,,,Limetten;Rohrzucker;Ginger Ale
+51,Watermelon Mojito: Wassermelonensirup Limetten frische Minze Ginger Ale,,0,401
+7,50 €,Main Courses,,,Wassermelonensirup;Limetten;frische Minze;Ginger Ale
+52,Coconut Kiss: Ananassaft Kirschnektar Sahne Kokossirup,,0,401
+7,50 €,Main Courses,,,Ananassaft;Kirschnektar;Sahne;Kokossirup
+53,Strawberry Kiss: Kokos Sahne Ananassaft Erdbeerpüree,,0,401
+7,50 €,Beverages,,,Kokos;Sahne;Ananassaft;Erdbeerpüree
+54,Mosquito: frische Limette Rohrzucker frische Minze Soda,,0,401
+7,50 €,Beverages,,,frische Limette;Rohrzucker;frische Minze;Soda
+55,Fruit Punch: Mango Ananas Maracuja Orange Grapefruit Limette,,0,401
+7,50 €,Main Courses,,,Mango;Ananas;Maracuja;Orange;Grapefruit;Limette
+56,Jamaica Kiss: Kokos Himbeere Sahne Ananas Maracuja Grenadine,,0,401 7,50 €,Beverages,,,Kokos;Himbeere;Sahne;Ananas;Maracuja;Grenadine
+57,Limonade: frische Limetten Stücke Rohrzucker Soda,,0,401
+7,50 €,Beverages,,,frische Limetten Stücke;Rohrzucker;Soda
+58,Mangolikör,,,Main Courses,,,
+59,Kokosnuss-Schnaps,,,Main Courses,,,
+60,Indischer Rum,,,Main Courses,,,
+61,Ramazotti 30% vol,,,Main Courses,,,
+62,Williams Birne 40% vol,,,Main Courses,,,
+63,Grappa 40% vol,,,Main Courses,,,
+64,Jägermeister 35% vol,,,Main Courses,,,
+65,Wodka Lemon
+40% vol,,,Beverages,,,
+66,Gin Tonic 375% vol,,,Beverages,,,
+67,Jackie Cola 40% vol,,,Beverages,,,
+68,Indischer Weißwein,,,Main Courses,,,
+69,Indischer Rotwein,,,Main Courses,,,
+70,Jechtinger Grauburg,,,Main Courses,,,
+71,Stettener Heuchelberg Riesling,,,Main Courses,,,
+72,Jechtinger Spätburgunder,,,Main Courses,,,
+73,Haberschl D. Trollinger mit Lemberger,,,Main Courses,,,
+74,Jechtinger Spätburgunder Weißherbst,,,Main Courses,,,
+75,Munzinger Attilafelsen Spätburgunder,,,Main Courses,,,
+76,Cellier C. Merlot Cabernet,,,Main Courses,,,
+77,Cellier C. Syrah Rose,,,Main Courses,,,
+78,Cellier Colombes Chard,,,Main Courses,,,
+79,Castelnuovo Pinot Grigio,,,Main Courses,,,
+80,Zonin Merlot Le Anfore,,,Main Courses,,,
+81,Zonin Montepulc LeAnfore,,,Main Courses,,,
+82,Rotweinschorle / Weißweinschorle,,,Main Courses,,,
+83,Alkoholfreier Wein,,,Main Courses,,,
+84,Alkoholfreier Sekt,,,Main Courses,,,
+85,Chicken Curry: Zartes Hähnchenfleisch in einer milden Currysoße,,10,00 €,Main Courses,,,Hähnchenfleisch;Currysoße
+86,Chicken Korma: Zartes Hähnchenfleisch gekocht in einer Soße aus
+Mandeln Sahne Kokosnuss und feinen Gewürzen,,10,00 €,Main Courses,,,Hähnchenfleisch;Mandeln;Sahne;Kokosnuss;Gewürzen
+87,Chicken Palak: Zartes Hähnchenfleisch mit gerösteten Zwiebeln Ingwer
+Knoblauch Gewürzen und Spinat nach nordindischer Art.,,10,00 €,Main Courses,,,Hähnchenfleisch;Zwiebeln;Ingwer;Knoblauch;Gewürzen;Spinat
+88,Chicken Mango: Zartes Hähnchenfleisch in einer Mango-Currysoße,,10,00 €,Main Courses,,,Hähnchenfleisch;Mango-Currysoße
+89,Chicken Banana: Zartes Hähnchenfleisch in einer
+Banane-Safran-Cashewnuss-Currysauce,,10,00 €,Main Courses,,,Hähnchenfleisch;Banane;Safran;Cashewnuss;Currysauce
+90,Chicken Vindaloo: Zartes Hähnchenfleisch mit Kartoffeln in einer
+sehr scharfen Currysoße,,10,00 €,Main Courses,,,Hähnchenfleisch;Kartoffeln;Currysoße
+91,Lamm Curry:
+Lamb in mild curry sauce,,11,00 €,Main Courses,,,Lamb;Curry sauce
+92,Lamm Korma:
+Ein besonders mildes Lammcurry gekocht in einer schmackhaften Sauce aus Sahne
+mit Mandeln Kokosnuss und feinen Gewürzen,,11,00 €,Main Courses,,,Lammcurry;Sahne;Mandeln;Kokosnuss;Gewürzen
+93,Lamm Madras:,,11,00 €,Main Courses,,,
+94,Lamm Tikka Masala:
+Lammfleisch gegrillt in einer köstlich orientalisch gewürzten Sauce mit Kräutern,,11,00 €,Main Courses,,,Lammfleisch;Sauce;Kräutern
+95,Fish Curry:
+Erlesener Fischfilet gebraten mit Ingwer Zwiebeln und frischen Kräutern,,10,50 €,Main Courses,,,Fischfilet;Ingwer;Zwiebeln;Kräutern
+96,Fish Mango:
+Fischfilet mit frischer Mango in Mango-Safran-Cashewnuss-Sauce,,10,50 €,Main Courses,,,Fischfilet;Mango;Safran;Cashewnuss Sauce
+97,Fish Masala:
+Fischfilet nach ostindischer Art (in orientalisch gewürzter Sauce mit Kräutern),,10,50 €,Main Courses,,,Fischfilet;Sauce;Kräutern
+98,Fish Goa:}} 
+Fischfilet in Kokos-Sauce mit ausgew. Gewürzen nach Goa-Art Sehr Scharf,,10,50 €,Main Courses,,,Fischfilet;Kokos-Sauce;Gewürzen
+99,Gemüse Curry: Frische Champignons Erbsen Ingwer Knoblauch
+Tomaten und Zwiebeln mit Orientalischen Sauce,,10,00 €,Main Courses,,,Champignons;Erbsen;Ingwer;Knoblauch;Tomaten;Zwiebeln;Sauce
+100,Dal Channa:
+Gelbe Linsen gekocht in Butter mit Ingwer Tomaten Knoblauch und Gewürzen,,10,00 €,Main Courses,,,Linsen;Butter;Ingwer;Tomaten;Knoblauch;Gewürzen
+101,Tarka Dal:
+Gelbe Linsen zubereitet mit gerösteten Zwiebeln Knoblauch Ingwer und Tomaten,,10,00 €,Main Courses,,,Linsen;Zwiebeln;Knoblauch;Ingwer;Tomaten
+102,Chana Masala: Kichererbsen zubereitet mit frischen
+Gewürzen und Kräutern,,10,00 €,Main Courses,,,Kichererbsen;Gewürzen;Kräutern
+103,Vegetable Korma: Frisches Gemüse gekocht in einer schmackhaften
+Soße aus Mandeln Kokosnuss und feinen Gewürzen (sehr mild),,10,00 €,Main Courses,,,Gemüse;Soße;Mandeln;Kokosnuss;Gewürzen
+104,Vegetable Biryani: Basmati-Reis zubereitet mit Gemüse und Gewürzen,,11,00 €,Main Courses,,,Basmati-Reis;Gemüse;Gewürzen
+105,Chicken Biryani: Basmati-Reis zubereitet mit gebratenem Hähnchenbrustfilet und Gewürzen,,11,00 €,Main Courses,,,Basmati-Reis;Hähnchenbrustfilet;Gewürzen
+106,Lamm Biryani: Basmati-Reis zubereitet mit gebratenem Lammfleisch und Gewürzen,,11,00 €,Main Courses,,,Basmati-Reis;Lammfleisch;Gewürzen

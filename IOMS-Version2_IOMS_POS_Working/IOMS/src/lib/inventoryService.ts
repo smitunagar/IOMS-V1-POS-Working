@@ -67,6 +67,7 @@ export interface RawIngredient {
   name: string;
   quantity: number;
   unit: string;
+  expiryDate?: string; // Optional expiry date in YYYY-MM-DD format
 }
 
 export function addIngredientToInventoryIfNotExists(ingredient: RawIngredient, userId?: string | null): InventoryItem | null {
@@ -156,7 +157,7 @@ export function addOrUpdateIngredientInInventory(ingredient: RawIngredient, user
       category: "Pantry", 
       lowStockThreshold: Math.max(1, Math.floor(ingredient.quantity * 0.2)), 
       lastRestocked: new Date().toISOString(), 
-      expiryDate: undefined, 
+      expiryDate: ingredient.expiryDate || undefined, 
       quantityUsed: 0,
       image: "https://placehold.co/60x60.png",
       aiHint: ingredient.name.toLowerCase().split(' ').slice(0, 2).join(' '),

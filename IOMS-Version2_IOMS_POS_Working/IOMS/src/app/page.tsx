@@ -20,10 +20,10 @@ import { PlusCircle, Trash2, Utensils, Loader2, Car, Store, Info } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
 import { recordIngredientUsage } from '@/lib/inventoryService';
-import { getDishes, Dish } from '@/lib/menuService'; 
+import { getDishes, Dish, IngredientQuantity } from '@/lib/menuService'; 
 import { addOrder, OrderItem as ServiceOrderItem, DEFAULT_TAX_RATE, setOccupiedTable, OrderType, NewOrderData } from '@/lib/orderService'; 
 import { useAuth } from '@/contexts/AuthContext';
-import { getIngredientsForDish } from '@/lib/ingredientToolService'; // You may need to implement this service if not present
+import { getIngredientsForDish } from '@/lib/ingredientToolService';
 
 interface CurrentOrderItem extends Dish { 
   orderQuantity: number; 
@@ -54,11 +54,11 @@ export default function OrderEntryPage() {
 
   // Add state for menu correction modal and draft
   const [showCorrectionModal, setShowCorrectionModal] = useState(false);
-  const [menuDraft, setMenuDraft] = useState<Dish[]>([]);
+  const [menuDraft, setMenuDraft] = useState<ExtendedDish[]>([]);
   const [originalMenuInput, setOriginalMenuInput] = useState<string>("");
 
   // Ingredients tooltip state
-  const [ingredientsCache, setIngredientsCache] = useState<Record<string, string[]>>({});
+  const [ingredientsCache, setIngredientsCache] = useState<Record<string, (string | IngredientQuantity)[]>>({});
   const [hoveredDishId, setHoveredDishId] = useState<string | null>(null);
   const [loadingIngredients, setLoadingIngredients] = useState<string | null>(null);
 
@@ -70,7 +70,7 @@ export default function OrderEntryPage() {
       // Always try to fetch from /api/menuCsv first
       (async () => {
         try {
-          const res = await fetch('/api/menuCsv');
+          const res = await fetch(`/api/menuCsv?userId=${currentUser.id}`);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data.menu) && data.menu.length > 0) {
@@ -152,7 +152,17 @@ export default function OrderEntryPage() {
   };
 
   const calculateSubtotal = () => {
-    return currentOrder.reduce((sum, item) => sum + item.price * item.orderQuantity, 0);
+    return currentOrder.reduce((sum, item) => {
+      let price = 0;
+      if (item.price) {
+        if (typeof item.price === 'string') {
+          price = parseFloat(item.price.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        } else if (typeof item.price === 'number') {
+          price = item.price;
+        }
+      }
+      return sum + price * item.orderQuantity;
+    }, 0);
   };
 
   const handlePlaceOrder = () => {
@@ -245,7 +255,16 @@ export default function OrderEntryPage() {
     }
   };
   
-  const categories = Array.from(new Set(menuDishes.map(dish => dish.category)));
+  const categories = Array.from(new Set(menuDishes.map(dish => dish.category || 'Other')));
+  
+  // Debug: Log categories and menu dishes
+  console.log('🔍 Menu dishes loaded:', menuDishes.length);
+  console.log('📊 Categories found:', categories);
+  console.log('📋 Sample menu items:', menuDishes.slice(0, 3).map(dish => ({
+    name: dish.name,
+    category: dish.category,
+    price: dish.price
+  })));
 
   // Utility: Clear menu for current user
   function clearMenu() {
@@ -257,7 +276,7 @@ export default function OrderEntryPage() {
   }
 
   // Helper to get ingredients for a dish (from dish or AI)
-  async function fetchIngredients(dish) {
+  async function fetchIngredients(dish: Dish) {
     if (dish.ingredients && dish.ingredients.length > 0) {
       setIngredientsCache(prev => ({ ...prev, [dish.id]: dish.ingredients }));
       return;
@@ -294,13 +313,14 @@ export default function OrderEntryPage() {
 
 
   // Utility: Check if any item in the order uses euro pricing
-  function orderHasEuro(currentOrder) {
+  function orderHasEuro(currentOrder: CurrentOrderItem[]) {
     return currentOrder.some(item => {
-      let priceStr = item.price && item.price.toString().trim() ? item.price : (() => {
+      let priceStr = item.price ? item.price.toString().trim() : '';
+      if (!priceStr) {
         const match = item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i);
-        return match ? match[1] + ' EUR' : null;
-      })();
-      return priceStr && /(\d+[.,]?\d*)\s*(EUR|€)/i.test(priceStr.toString());
+        priceStr = match ? match[1] + ' EUR' : '';
+      }
+      return priceStr && /(\d+[.,]?\d*)\s*(EUR|€)/i.test(priceStr);
     });
   }
 
@@ -314,11 +334,11 @@ export default function OrderEntryPage() {
           <CardContent>
             <ScrollArea className="h-[calc(100vh-20rem)] lg:h-[calc(100vh-22rem)] pr-4">
               {categories.length === 0 && <p className="text-muted-foreground">No dishes available in the menu. Try adding some via the AI Ingredient Tool!</p>}
-              {categories.map((category, catIdx) => (
+              {categories.filter(cat => cat && cat.trim()).map((category, catIdx) => (
                 <div key={category + '-' + catIdx} className="mb-6">
                   <h3 className="text-xl font-semibold mb-3 font-headline text-primary">{category}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {menuDishes.filter(dish => dish.category === category).map((dish, dishIdx) => (
+                    {menuDishes.filter(dish => (dish.category || 'Other') === category).map((dish, dishIdx) => (
                       <Card key={(dish.id || dish.name) + '-' + dishIdx} className="overflow-hidden hover:shadow-lg transition-shadow relative">
                         <Image 
                           src={isValidHttpUrl(dish.image) ? dish.image.trim() : "https://placehold.co/100x100.png"} 
@@ -358,7 +378,7 @@ export default function OrderEntryPage() {
                                   ) : (
                                     <ul className="list-disc pl-4">
                                       {(ingredientsCache[dish.id] || ["No ingredient data available."]).map((ing, i) => (
-                                        <li key={i}>{ing}</li>
+                                        <li key={i}>{typeof ing === 'string' ? ing : ing.inventoryItemName}</li>
                                       ))}
                                     </ul>
                                   )}
@@ -693,7 +713,7 @@ export default function OrderEntryPage() {
                     }} />
                   </td>
                   <td className="border px-2 py-1">
-                    <input className="w-full border rounded px-1" value={Array.isArray(dish.ingredients) ? dish.ingredients.map(ing => typeof ing === 'string' ? ing : ing.name).join(', ') : (dish.ingredients || '')} onChange={e => {
+                    <input className="w-full border rounded px-1" value={Array.isArray(dish.ingredients) ? dish.ingredients.map(ing => typeof ing === 'string' ? ing : (ing as any).name || '').join(', ') : (dish.ingredients || '')} onChange={e => {
                       const newDraft = [...menuDraft];
                       newDraft[idx].ingredients = e.target.value.split(',').map(s => s.trim());
                       setMenuDraft(newDraft);
@@ -753,7 +773,7 @@ export default function OrderEntryPage() {
             }
             // Always reload from API
             fetch('/api/menuCsv').then(res => res.json()).then(data => {
-              if (Array.isArray(data.menu)) setMenuDishes(data.menu);
+              if (Array.isArray(data.menu)) setMenuDishes(data.menu as Dish[]);
               setIsLoadingMenu(false);
             }).catch(() => setIsLoadingMenu(false));
           }}>Save Corrections</Button>
@@ -766,8 +786,8 @@ export default function OrderEntryPage() {
   );
 }
 
-// Patch: Extend Dish type to allow quantity and flexible price for modal parsing
-export interface Dish {
+// Extended Dish interface for modal parsing with flexible types
+interface ExtendedDish {
   id?: string;
   name: string;
   category?: string;
@@ -824,7 +844,7 @@ function extractQuantityAndPrice(str: string): { quantity: string, price: string
 }
 
 // When importing menu, always extract price and quantity for all rows
-function processMenuDraft(rawMenuDraft: any[]): Dish[] {
+function processMenuDraft(rawMenuDraft: any[]): ExtendedDish[] {
   return (rawMenuDraft || [])
     .filter((dish: any) => dish && typeof dish === 'object') // skip null/undefined
     .map((dish: any) => {
