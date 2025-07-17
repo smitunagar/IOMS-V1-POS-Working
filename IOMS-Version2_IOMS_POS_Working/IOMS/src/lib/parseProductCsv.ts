@@ -27,7 +27,7 @@ export function parseProductCsv(): Record<string, ParsedProduct> {
 
   for (const row of records) {
     const barcode = row['Barcode']?.trim();
-    if (!barcode) continue;
+    if (!barcode || barcode === '-') continue;
 
     db[barcode] = {
       barcode,

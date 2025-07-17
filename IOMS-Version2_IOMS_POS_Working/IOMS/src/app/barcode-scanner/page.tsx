@@ -7,6 +7,17 @@ import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';      
 import { QRCodeCanvas } from 'qrcode.react';
+import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date'; // TODO: Uncomment when available
+// import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
+
+// Try to import SuggestExpiryDateInput, otherwise define inline
+// import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
+type SuggestExpiryDateInput = {
+  productName: string;
+  productCategory: string;
+  productWeight: string;
+  manufacturingDate?: string;
+};
 
 const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
@@ -14,7 +25,7 @@ const BarcodeScannerPage: React.FC = () => {
   const codeReader = useRef<any | null>(null);
   const { currentUser } = useAuth();
   const searchParams = useSearchParams();
-  const urlUserId = searchParams.get('userId');
+  const urlUserId = searchParams ? searchParams.get('userId') : null;
 
   // Determine the effective userId: prefer logged-in user, else use userId from URL
   const effectiveUserId = currentUser?.id || urlUserId || null;
@@ -36,6 +47,16 @@ const BarcodeScannerPage: React.FC = () => {
 
   // State for quantity input
   const [quantity, setQuantity] = useState<number>(1);
+
+  // Add state for expiry date suggestion and agreement
+  const [expiryDate, setExpiryDate] = useState<string>("");
+  const [suggestedExpiryDate, setSuggestedExpiryDate] = useState<string>("");
+  const [isSuggestingExpiry, setIsSuggestingExpiry] = useState<boolean>(false);
+  const [expiryAgreement, setExpiryAgreement] = useState<'agree' | 'disagree' | null>(null);
+
+  // Add state for expiry prediction error
+  const [expiryPredictionError, setExpiryPredictionError] = useState<string>("");
+  const [expiryReason, setExpiryReason] = useState<string>("");
 
   // Effect hook to load the ZXing library dynamically
   useEffect(() => {
@@ -138,11 +159,19 @@ const BarcodeScannerPage: React.FC = () => {
 
 
   // Handler for manual barcode lookup
-  async function handleManualBarcodeLookup() {
-  const barcode = manualBarcodeInput.trim();
+  async function handleManualBarcodeLookup(barcode: string) {
+  setProductLoading(true);
+  setProductDetails(null);
+  setProductError(null);
+  setScannedResult(null);
+  setExpiryDate("");
+  setSuggestedExpiryDate("");
+  setExpiryAgreement(null);
+  setExpiryPredictionError("");
 
   if (!barcode) {
     setProductError("Please enter a barcode number.");
+    setProductLoading(false);
     return;
   }
 
@@ -157,7 +186,45 @@ const BarcodeScannerPage: React.FC = () => {
 
     if (details) {
       setProductDetails(details);
-      setManualBarcodeInput('');  // Clear input field
+      // If expiryDate is present in CSV, use it
+      if (details.expiryDate) {
+        setExpiryDate(details.expiryDate);
+        setSuggestedExpiryDate("");
+        setExpiryAgreement('agree');
+        setExpiryPredictionError("");
+      } else {
+        // Integrate Gemini expiry date suggestion here
+        setIsSuggestingExpiry(true);
+        setExpiryPredictionError("");
+        const weight = (details as any).weight ? (details as any).weight : '1 pcs';
+        const input: SuggestExpiryDateInput = {
+          productName: details.name,
+          productCategory: details.description,
+          productWeight: weight,
+          manufacturingDate: details.manufacturingDate || undefined,
+        };
+        try {
+          const result = await suggestExpiryDate(input);
+          if (result && result.suggestedExpiryDate) {
+            setSuggestedExpiryDate(result.suggestedExpiryDate);
+            setExpiryDate(result.suggestedExpiryDate);
+            setExpiryAgreement(null);
+            setExpiryPredictionError("");
+            // If Gemini returns a reason/explanation, set it in a new state and display it in the UI
+            setExpiryReason(result.reason || "");
+          } else {
+            setSuggestedExpiryDate("");
+            setExpiryDate("");
+            setExpiryPredictionError("Expiry date cannot be predicted due to lack of information about the product.");
+          }
+        } catch (e) {
+          setSuggestedExpiryDate("");
+          setExpiryDate("");
+          setExpiryPredictionError("Expiry date cannot be predicted due to lack of information about the product.");
+        } finally {
+          setIsSuggestingExpiry(false);
+        }
+      }
     } else {
       setProductError(`No product found for barcode: ${barcode}`);
     }
@@ -195,7 +262,7 @@ const BarcodeScannerPage: React.FC = () => {
       category: productDetails.category || 'Pantry',            // optional, fallback
       price: productDetails.price || null,                     // optional
       barcode: barcodeToAdd,                                    // optional
-      expiryDate: productDetails.expiryDate || null,            // optional
+      expiryDate: expiryDate || null,            // optional
       manufacturingDate: productDetails.manufacturingDate || null, // optional
       batchNumber: productDetails.batchNumber || null,          // optional
       image: productDetails.imageUrl || "https://placehold.co/60x60.png", // fallback image
@@ -365,7 +432,16 @@ const BarcodeScannerPage: React.FC = () => {
           <input // Barcode input field
             type="text"
             value={manualBarcodeInput}
-            onChange={(e) => setManualBarcodeInput(e.target.value)}
+            onChange={async (e) => {
+              const barcode = e.target.value;
+              setManualBarcodeInput(barcode);
+              if (barcode.trim().length >= 3) {
+                await handleManualBarcodeLookup(barcode.trim());
+              } else {
+                setProductDetails(null);
+                setProductError(null);
+              }
+            }}
             placeholder="Enter barcode number"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 text-center text-lg"
             disabled={!isZxingLoaded} // Disable input until ZXing is loaded
@@ -379,16 +455,69 @@ const BarcodeScannerPage: React.FC = () => {
             min="1" // HTML5 min attribute for numeric input
             disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if ZXing not loaded or no barcode entered
           />
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+            </div>
+            <input
+              type="date"
+              value={expiryDate}
+              onChange={(e) => {
+                setExpiryDate(e.target.value);
+                setExpiryAgreement(null); // Reset agreement when user edits
+              }}
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg"
+              disabled={!isZxingLoaded || !manualBarcodeInput.trim()}
+            />
+            {isSuggestingExpiry && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+                <p className="text-center">🤖 AI is suggesting expiry date...</p>
+              </div>
+            )}
+            {suggestedExpiryDate && !isSuggestingExpiry && (
+              <div className={`mt-2 p-2 border rounded text-sm ${expiryAgreement === 'agree' ? 'bg-green-50 border-green-200' : expiryAgreement === 'disagree' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+                <p><strong>AI Suggestion:</strong> {suggestedExpiryDate}</p>
+                <div className="mt-2 flex space-x-6 justify-center">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={expiryAgreement === 'agree'}
+                      onChange={() => {
+                        setExpiryAgreement('agree');
+                        setExpiryDate(suggestedExpiryDate);
+                      }}
+                      className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <span className="text-green-700 font-semibold">✅ Accept</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={expiryAgreement === 'disagree'}
+                      onChange={() => {
+                        setExpiryAgreement('disagree');
+                        setExpiryDate("");
+                      }}
+                      className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <span className="text-red-700 font-semibold">❌ Reject</span>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+          {expiryPredictionError && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 text-center">
+              {expiryPredictionError}
+            </div>
+          )}
+          {expiryReason && (
+            <div className="mt-2 text-xs text-gray-600 text-center">
+              <strong>Reason:</strong> {expiryReason}
+            </div>
+          )}
           <div className="flex space-x-4">
             <button
-              onClick={handleManualBarcodeLookup}
-            
-              className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={!isZxingLoaded || !manualBarcodeInput.trim()} // Disable if not loaded or input is empty
-            >
-              Lookup Barcode
-            </button>
-             <button
               onClick={handleAddToInventory}
               className="flex-1 px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-75 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               // Disable if ZXing not loaded, no barcode (manual or scanned), no product details, or quantity is zero/negative
@@ -418,6 +547,7 @@ const BarcodeScannerPage: React.FC = () => {
             <p><strong>Name:</strong> {productDetails.name}</p>
             <p><strong>Description:</strong> {productDetails.description}</p>
             <p><strong>Price:</strong> {productDetails.price}</p>
+            {productDetails.weight && <p><strong>Weight:</strong> {productDetails.weight}</p>}
             {productDetails.expiryDate && (
               <p><strong>Expiry Date:</strong> {productDetails.expiryDate}</p>
             )}
