@@ -1,25 +1,19 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { addIngredientToInventoryIfNotExists } from '@/lib/inventoryService';
+import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
+import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
+import * as inventoryService from '@/lib/inventoryService'; // Assuming an inventory service exists
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';      
 import { QRCodeCanvas } from 'qrcode.react';
-import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
-import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
 
 const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<any | null>(null);
-  const { currentUser } = useAuth();
-  const searchParams = useSearchParams();
-  const urlUserId = searchParams ? searchParams.get('userId') : null;
-
-  // Determine the effective userId: prefer logged-in user, else use userId from URL
-  const effectiveUserId = currentUser?.id || urlUserId || null;
+  const { currentUser } = useAuth(); // ✅ Get currentUser from AuthContext
   // State variables for scanner functionality
   const [scannedResult, setScannedResult] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -251,54 +245,68 @@ const BarcodeScannerPage: React.FC = () => {
 
 
   const handleAddToInventory = async () => {
-    if (!productDetails) {
-      toast({ title: "Error", description: "No product details available.", variant: "destructive" });
-      return;
-    }
+  // 1️⃣ Get userId from AuthContext
+  if (!currentUser?.id) {
+    toast({ title: "Error", description: "No user session found. Please log in.", variant: "destructive" });
+    return;
+  }
 
-    if (!effectiveUserId) {
-      toast({ title: "Error", description: "No user session or userId found. Please log in or use a valid QR code.", variant: "destructive" });
-      return;
-    }
+  const barcodeToAdd = manualBarcodeInput.trim() || scannedResult;
+  if (!barcodeToAdd) {
+    toast({ title: "Error", description: "No barcode available to add to inventory.", variant: "destructive" });
+    return;
+  }
 
-    const barcodeToAdd = manualBarcodeInput.trim() || scannedResult;
-    if (!barcodeToAdd) {
-      toast({ title: "Error", description: "No barcode available to add to inventory.", variant: "destructive" });
-      return;
-    }
-
-    // 2️⃣ Build correct ingredient object
-    const ingredient = {
-      name: productDetails.name,                                // ✅ REQUIRED
-      quantity: quantity,                                       // ✅ REQUIRED
-      unit: 'pcs',                                              // ✅ REQUIRED, fallback
-      category: productDetails.category || 'Pantry',            // optional, fallback
-      price: productDetails.price || null,                     // optional
-      barcode: barcodeToAdd,                                    // optional
-      expiryDate: expiryDate || null,            // optional
-      manufacturingDate: productDetails.manufacturingDate || null, // optional
-      batchNumber: productDetails.batchNumber || null,          // optional
-      image: productDetails.imageUrl || "https://placehold.co/60x60.png", // fallback image
-    };
-
+  // 2️⃣ If no product details, try to fetch them first
+  let productInfo = productDetails;
+  if (!productInfo) {
     try {
-      const addedItem = addIngredientToInventoryIfNotExists(effectiveUserId, ingredient);
-
-      if (addedItem) {
-        toast({ title: "Success", description: `${addedItem.name} added to inventory.` });
-      } else {
-        toast({ title: "Info", description: `${ingredient.name} already exists in inventory.` });
+      productInfo = await fetchProductDetails(barcodeToAdd);
+      if (!productInfo) {
+        toast({ title: "Error", description: "No product found for this barcode. Please lookup the barcode first.", variant: "destructive" });
+        return;
       }
-
-      setManualBarcodeInput('');
-      setProductDetails(null);
-      setQuantity(1);
-      setScannedResult(null);
     } catch (error) {
-      console.error('Error adding to inventory:', error);
-      toast({ title: "Error", description: "Failed to add item to inventory.", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to fetch product details. Please lookup the barcode first.", variant: "destructive" });
+      return;
     }
+  }
+
+  // 3️⃣ Build correct ingredient object matching RawIngredient interface
+  const ingredient = {
+    name: productInfo.name,                                // ✅ REQUIRED
+    quantity: quantity,                                       // ✅ REQUIRED
+    unit: weight,                                              // ✅ Use weight from product data
+    expiryDate: expiryDate || undefined,                      // ✅ Include expiry date if provided
   };
+
+  try {
+    const result = inventoryService.addOrUpdateIngredientInInventory(ingredient, currentUser.id);
+
+    // Check if this was an update (quantity is greater than what we just added) or a new item
+    const wasUpdate = result.quantity > quantity;
+    const message = wasUpdate 
+      ? `${result.name} quantity updated to ${result.quantity} ${result.unit} in inventory.`
+      : `${result.name} added to inventory with ${result.quantity} ${result.unit}.`;
+    
+    toast({ title: "Success", description: message });
+
+    setManualBarcodeInput('');
+    setProductDetails(null);
+    setQuantity(1);
+    setWeight("1 pcs");
+    setExpiryDate("");
+    setSuggestedExpiryDate("");
+    setShelfLifeDays(0);
+    setStorageRecommendation("");
+    setConfidence("");
+    setExpiryAgreement(null);
+    setScannedResult(null);
+  } catch (error) {
+    console.error('Error adding to inventory:', error);
+    toast({ title: "Error", description: "Failed to add item to inventory.", variant: "destructive" });
+  }
+};
 
 
   // Function to start the camera scanning process
@@ -310,25 +318,6 @@ const BarcodeScannerPage: React.FC = () => {
     if (!videoRef.current || !codeReader.current) {
       setErrorMessage("Video element or scanner not initialized.");
       return;
-    }
-
-    // Camera permission check
-    if (navigator.permissions && navigator.permissions.query) {
-      try {
-        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
-        if (result.state === 'denied') {
-          setErrorMessage('Camera access is denied. Please allow camera access in your browser settings.');
-          return;
-        }
-        // If prompt or granted, proceed
-      } catch (e) {
-        // Permissions API may not support 'camera' in all browsers
-        setErrorMessage('Unable to check camera permissions. Your browser may not support the Permissions API.');
-        // Optionally, proceed to try camera access anyway
-      }
-    } else {
-      setErrorMessage('Your browser does not support the Permissions API. Camera access may not work as expected.');
-      // Optionally, proceed to try camera access anyway
     }
 
     // Reset relevant states before starting a new scan
@@ -424,22 +413,13 @@ const BarcodeScannerPage: React.FC = () => {
         </p>
         <h2>Scan this QR code to open the Barcode Scanner on another device</h2>
         {currentUser ? (
-          <QRCodeCanvas 
-            value={`https://ioms-v1-pos-working.vercel.app/barcode-scanner?userId=${encodeURIComponent(currentUser.id)}`} 
-            size={180} 
-          />
+          <QRCodeCanvas value={`https://ioms-v1-pos-working.vercel.app/barcode-scanner?userId=${encodeURIComponent(currentUser.id)}`} size={180} />
         ) : (
           <p>Please log in to see your unique QR code.</p>
         )}
       </div>
       <div className="flex flex-col items-center p-5 bg-gray-100 min-h-screen font-inter">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 rounded-md p-2">Barcode Scanner</h1>
-
-        {/* Scan Product Barcode Section */}
-        <div className="w-full max-w-lg mb-6 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-300 p-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Scan Product Barcode</h2>
-          <p className="mb-2 text-gray-600">Use your mobile device camera to scan the barcode on a product. The product will be looked up and you can add it to your inventory.</p>
-        </div>
 
         {/* Video Scanner Section */}
         <div className="w-full max-w-lg mb-6 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-300">
@@ -638,6 +618,11 @@ const BarcodeScannerPage: React.FC = () => {
         {errorMessage && (
           <div className="mt-4 p-4 bg-red-100 text-red-800 font-medium text-center rounded-lg shadow-md">
             Error: {errorMessage}
+          </div>
+        )}
+        {autoLoginError && (
+          <div className="mt-4 p-4 bg-red-100 text-red-800 font-medium text-center rounded-lg shadow-md">
+            {autoLoginError}
           </div>
         )}
 
