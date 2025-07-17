@@ -49,6 +49,7 @@ const navItems: NavItem[] = [
   { href: "/order-history", label: "Order History", icon: History },
   { href: "/ingredient-tool", label: "AI Ingredient Tool", icon: Sparkles },
   { href: "/inventory", label: "Inventory", icon: Boxes },
+  { href: "/serving-availability", label: "Serving Availability", icon: UtensilsCrossed },
   { href: "/ai-order-agent", label: "AI Order Agent", icon: MessageSquareQuote }, // New Item
   { href: "/barcode-scanner", label: "Barcode Scanner", icon: Barcode }, // New Item for Barcode Scanner
   { href: "/dashboard", label: "Analytics", icon: BarChartBig },
@@ -76,7 +77,7 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
                 className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
               >
                 <UtensilsCrossed className="h-5 w-5 transition-all group-hover:scale-110" />
-                <span className="sr-only">Webmeister360AI</span>
+                <span className="sr-only">IOMS</span>
               </Link>
               {navItems.map((item) => (
                 <Link
@@ -114,7 +115,7 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
             <SidebarTrigger className="hidden md:flex" />
             {pageTitle && <h1 className="text-xl font-semibold">{pageTitle}</h1>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {currentUser && <NotificationBell />}
           {currentUser && (
               <Button variant="outline" onClick={logout} size="sm">
@@ -161,7 +162,7 @@ export function AppLayout({
           <Link href="/" className="flex items-center gap-2">
             <UtensilsCrossed className="h-8 w-8 text-sidebar-primary" />
             <h1 className="text-2xl font-semibold text-sidebar-foreground font-headline">
-              Webmeister360AI
+              IOMS
             </h1>
           </Link>
         </SidebarHeader>

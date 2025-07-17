@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'Webmeister360AI',
+  title: 'IOMS',
   description: 'A POS system for restaurants with AI-powered ingredient management.',
 };
 

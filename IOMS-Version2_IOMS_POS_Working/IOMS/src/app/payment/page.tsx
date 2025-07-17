@@ -10,6 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { useToast } from "@/hooks/use-toast";
 import { DollarSign, CreditCardIcon, SmartphoneNfcIcon, ReceiptTextIcon, PrinterIcon, Loader2, Home, Phone } from "lucide-react";
 import { getPendingOrders, updateOrderStatus, Order, clearOccupiedTable } from '@/lib/orderService';
+import { 
+  recordIngredientUsageWithValidation, 
+  validateDishAvailability 
+} from '@/lib/posInventoryIntegration';
+import { getDishes } from '@/lib/menuService';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -99,7 +104,7 @@ export default function PaymentPage() {
       if (headerElement) {
         let tableInfo = selectedOrder.orderType === 'delivery' ? `Delivery to: ${selectedOrder.customerName}` : `Table: ${selectedOrder.table}`;
         headerElement.innerHTML = `
-          <h1>${currentUser?.restaurantName || 'Webmeister360AI'} Receipt</h1>
+          <h1>${currentUser?.restaurantName || 'IOMS'} Receipt</h1>
           <p>Order ID: ${selectedOrder.id}</p>
           <p>${tableInfo}</p>
           <p>Date: ${new Date(selectedOrder.createdAt).toLocaleString()}</p>
@@ -129,13 +134,58 @@ export default function PaymentPage() {
        return;
     }
 
+    // 🔥 PROCESS INVENTORY UPDATES WHEN PAYMENT IS COMPLETED
+    console.log('💳 Processing payment - updating inventory for order:', selectedOrder.id);
+    const allDishes = getDishes(currentUser.id);
+    const inventoryWarnings: string[] = [];
+    
+    selectedOrder.items.forEach(orderItem => {
+      // Find the dish details from the menu
+      const dish = allDishes.find(d => d.id === orderItem.dishId || d.name === orderItem.name);
+      if (dish) {
+        console.log('📦 Updating inventory for dish:', dish.name, 'quantity:', orderItem.quantity);
+        const result = recordIngredientUsageWithValidation(currentUser.id, dish, orderItem.quantity);
+        if (!result.success) {
+          console.warn('⚠️ Failed to update inventory for:', dish.name, result.warnings);
+          inventoryWarnings.push(`${dish.name}: ${result.warnings.join(', ')}`);
+        } else {
+          console.log('✅ Successfully updated inventory for:', dish.name);
+          if (result.warnings.length > 0) {
+            inventoryWarnings.push(...result.warnings);
+          }
+        }
+      } else {
+        console.warn('⚠️ Dish not found in menu for inventory update:', orderItem.name);
+        inventoryWarnings.push(`Dish "${orderItem.name}" not found in menu for inventory update`);
+      }
+    });
+
     const processedOrder = updateOrderStatus(currentUser.id, selectedOrder.id, 'Completed');
     if (processedOrder) {
       if (processedOrder.orderType === 'dine-in' && processedOrder.tableId) {
         clearOccupiedTable(currentUser.id, processedOrder.tableId);
       }
+      
+      // Show success message with inventory update info
       let successMessageTableInfo = processedOrder.orderType === 'delivery' ? `Delivery for ${processedOrder.customerName}` : `Table ${processedOrder.table} is now free`;
-      toast({ title: "Payment Successful!", description: `Processed $${(typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2)} for order ${selectedOrder.id.substring(0,12)}... via ${paymentMethod}. ${successMessageTableInfo}.` });
+      let inventoryMessage = inventoryWarnings.length > 0 ? ` Note: ${inventoryWarnings.length} inventory warning(s).` : ' Inventory updated successfully.';
+      
+      toast({ 
+        title: "Payment Successful!", 
+        description: `Processed $${(typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2)} for order ${selectedOrder.id.substring(0,12)}... via ${paymentMethod}. ${successMessageTableInfo}.${inventoryMessage}` 
+      });
+      
+      // Show inventory warnings if any
+      if (inventoryWarnings.length > 0) {
+        setTimeout(() => {
+          toast({ 
+            title: "Inventory Warnings", 
+            description: inventoryWarnings.slice(0, 3).join('; ') + (inventoryWarnings.length > 3 ? '...' : ''),
+            variant: "default"
+          });
+        }, 2000);
+      }
+      
       loadPendingOrders(); 
       setSelectedOrderId("");
       setPaymentMethod("card");
