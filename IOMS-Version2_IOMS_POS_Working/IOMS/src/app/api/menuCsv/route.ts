@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(req: NextRequest) {
-  const csvPath = 'C:\\Users\\Noman Alvi\\Test_IOMS\\IOMS-main\\IOMS-main\\download\\Copy\\menu.csv';
+  const csvPath = './download/Copy/menu.csv';
   if (!fs.existsSync(csvPath)) {
     return new Response(JSON.stringify({ error: 'Menu CSV not found' }), { status: 404 });
   }
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const csvPath = 'C:\\Users\\Noman Alvi\\Test_IOMS\\IOMS-main\\IOMS-main\\download\\Copy\\menu.csv';
+    const csvPath = './download/Copy/menu.csv';
     console.log('POST /api/menuCsv: Writing to', csvPath); // DEBUG: log the absolute path
     const body = await req.json();
     if (!body || !Array.isArray(body.menu)) {
