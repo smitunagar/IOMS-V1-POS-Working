@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
 import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';      
+import { QRCodeSVG } from 'qrcode.react';
 
 const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
@@ -318,6 +319,25 @@ const BarcodeScannerPage: React.FC = () => {
       return;
     }
 
+    // Camera permission check
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        if (result.state === 'denied') {
+          setErrorMessage('Camera access is denied. Please allow camera access in your browser settings.');
+          return;
+        }
+        // If prompt or granted, proceed
+      } catch (e) {
+        // Permissions API may not support 'camera' in all browsers
+        setErrorMessage('Unable to check camera permissions. Your browser may not support the Permissions API.');
+        // Optionally, proceed to try camera access anyway
+      }
+    } else {
+      setErrorMessage('Your browser does not support the Permissions API. Camera access may not work as expected.');
+      // Optionally, proceed to try camera access anyway
+    }
+
     // Reset relevant states before starting a new scan
     setIsScanning(true);
     setScannedResult(null);
@@ -407,6 +427,12 @@ const BarcodeScannerPage: React.FC = () => {
     <AppLayout>
       <div className="flex flex-col items-center p-5 bg-gray-100 min-h-screen font-inter">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 rounded-md p-2">Barcode Scanner</h1>
+
+        {/* Scan Product Barcode Section */}
+        <div className="w-full max-w-lg mb-6 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-300 p-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Scan Product Barcode</h2>
+          <p className="mb-2 text-gray-600">Use your mobile device camera to scan the barcode on a product. The product will be looked up and you can add it to your inventory.</p>
+        </div>
 
         {/* Video Scanner Section */}
         <div className="w-full max-w-lg mb-6 bg-white shadow-lg rounded-lg overflow-hidden border border-gray-300">

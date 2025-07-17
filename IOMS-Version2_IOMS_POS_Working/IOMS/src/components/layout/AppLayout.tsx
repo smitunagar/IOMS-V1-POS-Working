@@ -33,8 +33,9 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NotificationBell } from "./NotificationBell";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface NavItem {
   href: string;
@@ -55,9 +56,47 @@ const navItems: NavItem[] = [
   { href: "/menu-upload", label: "Menu Upload", icon: Boxes }, // <-- Added Menu Upload here
 ];
 
+function UserProfileModal({ open, onClose, user, onSave, onLogout }: { open: boolean, onClose: () => void, user: any, onSave: (data: any) => void, onLogout: () => void }) {
+  const [email, setEmail] = useState(user?.email || "");
+  const [restaurantName, setRestaurantName] = useState(user?.restaurantName || "");
+  useEffect(() => {
+    setEmail(user?.email || "");
+    setRestaurantName(user?.restaurantName || "");
+  }, [user]);
+  if (!user) return null;
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>User Profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium">Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Restaurant Name</label>
+            <input type="text" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} className="w-full border rounded p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Password</label>
+            <input type="password" value={"********"} disabled className="w-full border rounded p-2 bg-gray-100" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => onSave({ email, restaurantName })}>Save</Button>
+          <Button variant="outline" onClick={onLogout}>Logout</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SiteHeader({ pageTitle }: { pageTitle?: string }) {
   const { isMobile } = useSidebar();
   const { logout, currentUser } = useAuth();
+  // Remove UserProfileModal and all related state/handlers
 
   if (isMobile) {
     return (
@@ -95,15 +134,14 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
             </nav>
           </SheetContent>
         </Sheet>
-        {pageTitle && <h1 className="text-xl font-semibold">{pageTitle}</h1>}
-         <div className="flex items-center gap-2 sm:hidden">
-            {currentUser && <NotificationBell />}
-            {currentUser && (
-              <Button variant="ghost" size="icon" onClick={logout} title="Logout">
-                <LogOut className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
+        {currentUser && (
+  <Link href="/profile">
+    <Button variant="outline" size="sm">
+      <UtensilsCrossed className="mr-2 h-4 w-4" />
+      User Profile
+    </Button>
+  </Link>
+)}
       </header>
     );
   }
@@ -117,10 +155,16 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
         <div className="flex items-center gap-2">
           {currentUser && <NotificationBell />}
           {currentUser && (
-              <Button variant="outline" onClick={logout} size="sm">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout ({currentUser.email?.split('@')[0]})
-              </Button>
+              <>
+                {currentUser && (
+  <Link href="/profile">
+    <Button variant="outline" size="sm">
+      <UtensilsCrossed className="mr-2 h-4 w-4" />
+      User Profile
+    </Button>
+  </Link>
+)}
+              </>
           )}
         </div>
     </header>
@@ -138,6 +182,7 @@ export function AppLayout({
   const pathname = usePathname();
   const { currentUser, isLoading, logout } = useAuth();
   const router = useRouter();
+  // Remove UserProfileModal and all related state/handlers
 
   useEffect(() => {
     if (!isLoading && !currentUser) {
@@ -194,19 +239,20 @@ export function AppLayout({
            <SidebarMenu>
              <SidebarMenuItem>
                 <SidebarMenuButton
-                    onClick={logout}
+                    // onClick={() => setProfileOpen(true)} // Removed as per edit hint
                     className={cn(
                         "justify-start w-full",
                         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
                     tooltip={{
-                        children: "Logout",
+                        children: "User Profile",
                         className: "bg-background text-foreground border-border",
                     }}
                 >
-                    <LogOut className="mr-2 h-5 w-5 shrink-0" />
-                    <span className="truncate">Logout</span>
+                    <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
+                    <span className="truncate">User Profile</span>
                 </SidebarMenuButton>
+                {/* <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} user={currentUser} onSave={handleSaveProfile} onLogout={logout} /> */}
              </SidebarMenuItem>
            </SidebarMenu>
         </SidebarHeader>
