@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import * as inventoryService from '@/lib/inventoryService'; // Assuming an inventory service exists
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
@@ -12,13 +13,17 @@ const BarcodeScannerPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<any | null>(null);
   const { currentUser } = useAuth();
+  const searchParams = useSearchParams();
+  const urlUserId = searchParams.get('userId');
 
-  const [userId, setUserId] = useState<string | null>(null);
+  // Determine the effective userId: prefer logged-in user, else use userId from URL
+  const effectiveUserId = currentUser?.id || urlUserId || null;
   // State variables for scanner functionality
   const [scannedResult, setScannedResult] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isZxingLoaded, setIsZxingLoaded] = useState<boolean>(false);
+  const [autoLoginError, setAutoLoginError] = useState<string | null>(null);
 
   // States for product details and inventory actions
   const { toast } = useToast(); // Hook for displaying toast notifications
@@ -82,6 +87,23 @@ const BarcodeScannerPage: React.FC = () => {
       }
     };
   }, []); // Empty dependency array ensures this runs only once on mount
+
+  // Auto-login logic: if userId is in URL and no current user, set user session
+  useEffect(() => {
+    if (!currentUser && urlUserId) {
+      // Try to find the user in the local users list
+      const usersListStr = localStorage.getItem('gastronomeUsersList');
+      const usersList = usersListStr ? JSON.parse(usersListStr) : [];
+      const foundUser = usersList.find((u: any) => u.id === urlUserId);
+      if (foundUser) {
+        localStorage.setItem('gastronomeCurrentUser', JSON.stringify(foundUser));
+        setAutoLoginError(null);
+        window.location.reload();
+      } else {
+        setAutoLoginError('No user found for the provided userId in the QR code. Please check the QR code or contact support.');
+      }
+    }
+  }, [currentUser, urlUserId]);
 
   // Function to simulate fetching product details from a database
   const fetchProductDetails = async (barcode: string) => {
@@ -149,56 +171,54 @@ const BarcodeScannerPage: React.FC = () => {
 
 
   const handleAddToInventory = async () => {
-  if (!productDetails) {
-    toast({ title: "Error", description: "No product details available.", variant: "destructive" });
-    return;
-  }
-
-  // 1️⃣ Get userId (from localStorage or auth context)
-  const userId = localStorage.getItem('userId'); // ✅ Update this line as per your system
-  if (!userId) {
-    toast({ title: "Error", description: "No user session found. Please log in.", variant: "destructive" });
-    return;
-  }
-
-  const barcodeToAdd = manualBarcodeInput.trim() || scannedResult;
-  if (!barcodeToAdd) {
-    toast({ title: "Error", description: "No barcode available to add to inventory.", variant: "destructive" });
-    return;
-  }
-
-  // 2️⃣ Build correct ingredient object
-  const ingredient = {
-    name: productDetails.name,                                // ✅ REQUIRED
-    quantity: quantity,                                       // ✅ REQUIRED
-    unit: 'pcs',                                              // ✅ REQUIRED, fallback
-    category: productDetails.category || 'Pantry',            // optional, fallback
-    price: productDetails.price || null,                     // optional
-    barcode: barcodeToAdd,                                    // optional
-    expiryDate: productDetails.expiryDate || null,            // optional
-    manufacturingDate: productDetails.manufacturingDate || null, // optional
-    batchNumber: productDetails.batchNumber || null,          // optional
-    image: productDetails.imageUrl || "https://placehold.co/60x60.png", // fallback image
-  };
-
-  try {
-    const addedItem = inventoryService.addIngredientToInventoryIfNotExists(userId, ingredient);
-
-    if (addedItem) {
-      toast({ title: "Success", description: `${addedItem.name} added to inventory.` });
-    } else {
-      toast({ title: "Info", description: `${ingredient.name} already exists in inventory.` });
+    if (!productDetails) {
+      toast({ title: "Error", description: "No product details available.", variant: "destructive" });
+      return;
     }
 
-    setManualBarcodeInput('');
-    setProductDetails(null);
-    setQuantity(1);
-    setScannedResult(null);
-  } catch (error) {
-    console.error('Error adding to inventory:', error);
-    toast({ title: "Error", description: "Failed to add item to inventory.", variant: "destructive" });
-  }
-};
+    if (!effectiveUserId) {
+      toast({ title: "Error", description: "No user session or userId found. Please log in or use a valid QR code.", variant: "destructive" });
+      return;
+    }
+
+    const barcodeToAdd = manualBarcodeInput.trim() || scannedResult;
+    if (!barcodeToAdd) {
+      toast({ title: "Error", description: "No barcode available to add to inventory.", variant: "destructive" });
+      return;
+    }
+
+    // 2️⃣ Build correct ingredient object
+    const ingredient = {
+      name: productDetails.name,                                // ✅ REQUIRED
+      quantity: quantity,                                       // ✅ REQUIRED
+      unit: 'pcs',                                              // ✅ REQUIRED, fallback
+      category: productDetails.category || 'Pantry',            // optional, fallback
+      price: productDetails.price || null,                     // optional
+      barcode: barcodeToAdd,                                    // optional
+      expiryDate: productDetails.expiryDate || null,            // optional
+      manufacturingDate: productDetails.manufacturingDate || null, // optional
+      batchNumber: productDetails.batchNumber || null,          // optional
+      image: productDetails.imageUrl || "https://placehold.co/60x60.png", // fallback image
+    };
+
+    try {
+      const addedItem = inventoryService.addIngredientToInventoryIfNotExists(effectiveUserId, ingredient);
+
+      if (addedItem) {
+        toast({ title: "Success", description: `${addedItem.name} added to inventory.` });
+      } else {
+        toast({ title: "Info", description: `${ingredient.name} already exists in inventory.` });
+      }
+
+      setManualBarcodeInput('');
+      setProductDetails(null);
+      setQuantity(1);
+      setScannedResult(null);
+    } catch (error) {
+      console.error('Error adding to inventory:', error);
+      toast({ title: "Error", description: "Failed to add item to inventory.", variant: "destructive" });
+    }
+  };
 
 
   // Function to start the camera scanning process
@@ -419,6 +439,11 @@ const BarcodeScannerPage: React.FC = () => {
         {errorMessage && (
           <div className="mt-4 p-4 bg-red-100 text-red-800 font-medium text-center rounded-lg shadow-md">
             Error: {errorMessage}
+          </div>
+        )}
+        {autoLoginError && (
+          <div className="mt-4 p-4 bg-red-100 text-red-800 font-medium text-center rounded-lg shadow-md">
+            {autoLoginError}
           </div>
         )}
 
