@@ -18,11 +18,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Disable static generation for pages that use client-side features
-  experimental: {
-    // This helps with SSR issues
-    serverComponentsExternalPackages: ['@genkit-ai/core', 'genkit'],
-  },
+  // External packages for server components
+  serverExternalPackages: ['@genkit-ai/core', 'genkit'],
 };
 
 export default nextConfig;
