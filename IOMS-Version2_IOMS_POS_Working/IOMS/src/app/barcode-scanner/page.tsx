@@ -5,12 +5,13 @@ import * as inventoryService from '@/lib/inventoryService'; // Assuming an inven
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';      
+import { QRCodeCanvas } from 'qrcode.react';
 
 const BarcodeScannerPage: React.FC = () => {
   // References for video element and ZXing code reader
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReader = useRef<any | null>(null);
-  const { user } = useAuth(); // ✅ move inside component
+  const { currentUser } = useAuth();
 
   const [userId, setUserId] = useState<string | null>(null);
   // State variables for scanner functionality
@@ -290,6 +291,17 @@ const BarcodeScannerPage: React.FC = () => {
   return (
     // AppLayout provides a consistent layout for the page
     <AppLayout>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+        <p style={{ maxWidth: 400, textAlign: 'center', marginBottom: 8 }}>
+          This QR code, when scanned, will open the barcode scanner page of this app in a browser. The link is unique to your account and includes your user ID in the URL for personalized access or tracking.
+        </p>
+        <h2>Scan this QR code to open the Barcode Scanner on another device</h2>
+        {currentUser ? (
+          <QRCodeCanvas value={`https://ioms-v1-pos-working.vercel.app/barcode-scanner?userId=${encodeURIComponent(currentUser.id)}`} size={180} />
+        ) : (
+          <p>Please log in to see your unique QR code.</p>
+        )}
+      </div>
       <div className="flex flex-col items-center p-5 bg-gray-100 min-h-screen font-inter">
         <h1 className="text-3xl font-bold text-gray-800 mb-6 rounded-md p-2">Barcode Scanner</h1>
 
