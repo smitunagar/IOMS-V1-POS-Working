@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "i18next": "^25.3.2",
+    "qrcode.react": "^4.2.0",
+    "react-i18next": "^15.6.0"
+  },
+  "devDependencies": {
+    "@types/react-i18next": "^7.8.3"
+  }
+}

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const csvPath = path.join(process.cwd(), 'download', 'Copy', 'menu.csv');
+  const csvPath = './download/Copy/menu.csv';
   if (!fs.existsSync(csvPath)) {
     return res.status(404).json({ error: 'Menu CSV not found' });
   }
