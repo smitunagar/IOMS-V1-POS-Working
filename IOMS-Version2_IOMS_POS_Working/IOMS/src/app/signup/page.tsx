@@ -52,7 +52,7 @@ export default function SignupPage() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-primary">Create Account</CardTitle>
-          <CardDescription>Join Webmeister360AI to manage your restaurant.</CardDescription>
+          <CardDescription>Join IOMS to manage your restaurant.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

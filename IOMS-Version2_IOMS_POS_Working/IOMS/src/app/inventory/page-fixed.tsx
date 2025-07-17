@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
@@ -25,7 +25,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { PlusCircle, RefreshCw, Pencil, Trash2, AlertTriangle, Upload, Download, X, Mic, MicOff, MessageCircle, Send } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/hooks/use-toast';
 import { getInventory, updateInventoryItem, removeInventoryItem, addInventoryItem, clearAllInventory, InventoryItem } from '@/lib/inventoryService'; 
@@ -35,116 +37,6 @@ import { format, differenceInDays, parseISO, isValid } from 'date-fns';
 const defaultCategories = ["Pantry", "Produce", "Dairy", "Meat", "Seafood", "Frozen", "Beverages", "Spices", "Other"];
 const CSV_TEMPLATE_HEADERS = "Name,Quantity,Unit,Category,LowStockThreshold,ExpiryDate (YYYY-MM-DD),ImageURL,SmartSuggestions";
 const CSV_TEMPLATE_EXAMPLE_ROW = "Example Tomato,10,kg,Produce,2,2024-12-31,https://placehold.co/60x60.png,fresh tomato";
-
-// Helper function to format numbers cleanly - moved outside component to prevent recreation
-const formatNumber = (value: number | string): string => {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  if (isNaN(num)) return '0';
-  return num % 1 === 0 ? num.toString() : num.toFixed(2).replace(/\.?0+$/, '');
-};
-
-// Memoized inventory row to prevent unnecessary re-renders
-const InventoryRow = React.memo(({ 
-  item, 
-  onEdit, 
-  onDelete,
-  formatNumber 
-}: { 
-  item: InventoryItem;
-  onEdit: (item: InventoryItem) => void;
-  onDelete: (id: string, name: string) => void;
-  formatNumber: (num: number) => string;
-}) => {
-  return (
-    <TableRow>
-      {/* Image */}
-      <TableCell>
-        <Image
-          src={item.image || "/placeholder.svg"}
-          alt={item.name}
-          width={40}
-          height={40}
-          className="rounded"
-        />
-      </TableCell>
-      
-      {/* Item Name */}
-      <TableCell>
-        <div className="font-medium">{item.name}</div>
-        <div 
-          className="text-xs text-gray-500 cursor-help"
-          title="Storage: Keep refrigerated at 2-4°C. Best stored in original packaging."
-        >
-          ❄️ Storage info available
-        </div>
-      </TableCell>
-      
-      {/* Category */}
-      <TableCell>
-        <Badge variant="outline">{item.category}</Badge>
-      </TableCell>
-      
-      {/* Stock */}
-      <TableCell className="text-right">
-        {formatNumber(item.quantity)}
-      </TableCell>
-      
-      {/* Unit */}
-      <TableCell>
-        {item.unit}
-      </TableCell>
-      
-      {/* Used */}
-      <TableCell className="text-right">
-        {formatNumber(item.quantityUsed || 0)}
-      </TableCell>
-      
-      {/* Stock Level - Simplified */}
-      <TableCell>
-        <Badge variant="secondary">
-          {item.quantity === 0 ? 'Empty' : 
-           item.quantity <= 5 ? 'Low' : 'Good'}
-        </Badge>
-      </TableCell>
-      
-      {/* Expiry Date - Simplified */}
-      <TableCell>
-        <span className="text-gray-600">
-          {item.expiryDate ? format(parseISO(item.expiryDate), "PP") : "N/A"}
-        </span>
-      </TableCell>
-      
-      {/* Last Restocked */}
-      <TableCell>
-        <span className="text-gray-600">
-          {item.lastRestocked ? format(parseISO(item.lastRestocked), "PP") : "N/A"}
-        </span>
-      </TableCell>
-      
-      {/* Actions */}
-      <TableCell>
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(item)}
-            className="btn-3d"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(item.id, item.name)}
-            className="btn-3d"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-});
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -190,6 +82,13 @@ export default function InventoryPage() {
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
+  // Helper function to format numbers cleanly
+  const formatNumber = (value: number | string): string => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(num)) return '0';
+    return num % 1 === 0 ? num.toString() : num.toFixed(2).replace(/\.?0+$/, '');
+  };
+
   // Auto-hide new user guide after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -214,6 +113,78 @@ export default function InventoryPage() {
   useEffect(() => {
     loadInventoryAndNotify();
   }, [loadInventoryAndNotify]);
+
+  // Helper functions
+  const getStockLevel = (item: InventoryItem): 'critical' | 'low' | 'medium' | 'high' => {
+    const threshold = item.lowStockThreshold || 5;
+    const current = item.quantity || 0;
+    
+    if (current === 0) return 'critical';
+    if (current <= threshold * 0.5) return 'critical';
+    if (current <= threshold) return 'low';
+    if (current <= threshold * 2) return 'medium';
+    return 'high';
+  };
+
+  const calculateProgressValue = (item: InventoryItem) => {
+    const effectiveThreshold = item.lowStockThreshold > 0 ? item.lowStockThreshold : 1;
+    const maxStockGuess = Math.max(item.quantity + (item.quantityUsed || 0), effectiveThreshold * 5, 1);
+    if (maxStockGuess === 0 && item.quantity === 0) return 0;
+    if (maxStockGuess === 0 && item.quantity > 0) return 100; 
+    return (item.quantity / maxStockGuess) * 100;
+  };
+
+  const getExpiryStatus = (expiryDateStr?: string): { status: "expired" | "soon" | "ok" | "none"; days?: number; formattedDate?: string } => {
+    if (!expiryDateStr) return { status: "none" };
+    const expiry = parseISO(expiryDateStr);
+    if (!isValid(expiry)) return { status: "none" };
+    
+    const days = differenceInDays(expiry, new Date());
+    const formatted = format(expiry, "PP");
+
+    if (days < 0) return { status: "expired", days, formattedDate: formatted };
+    if (days <= 7) return { status: "soon", days, formattedDate: formatted };
+    return { status: "ok", days, formattedDate: formatted };
+  };
+
+  const getSmartStorageInfo = (item: InventoryItem) => {
+    const category = item.category?.toLowerCase() || '';
+    const name = item.name?.toLowerCase() || '';
+    
+    if (category.includes('meat') || name.includes('chicken') || name.includes('beef')) {
+      return {
+        temperature: '🧊 Cold Storage: 0-4°C (32-40°F)',
+        tips: 'Store in refrigerator. Use within 1-2 days for fresh meat.',
+        type: 'cold',
+        icon: '🧊'
+      };
+    }
+    
+    if (category.includes('dairy') || name.includes('milk') || name.includes('cheese')) {
+      return {
+        temperature: '🧊 Cold Storage: 0-4°C (32-40°F)',
+        tips: 'Keep refrigerated. Check expiry dates regularly.',
+        type: 'cold',
+        icon: '🥛'
+      };
+    }
+    
+    if (category.includes('produce') || category.includes('vegetables') || category.includes('fruits')) {
+      return {
+        temperature: '🌡️ Cool Storage: 4-8°C (39-46°F)',
+        tips: 'Some items can be stored at room temperature until ripe.',
+        type: 'cool',
+        icon: '🥬'
+      };
+    }
+    
+    return {
+      temperature: '🌡️ Room Temperature: 18-25°C (64-77°F)',
+      tips: 'Store in cool, dry place away from direct sunlight.',
+      type: 'room',
+      icon: '📦'
+    };
+  };
 
   // Voice functions
   const testVoiceRecognition = () => {
@@ -420,15 +391,14 @@ export default function InventoryPage() {
     setCurrentMessage('');
   };
 
-  const filteredInventory = useMemo(() => {
-    return inventory.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [inventory, searchTerm]);
+  const filteredInventory = inventory.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <AppLayout>
+    <TooltipProvider>
+      <AppLayout>
         <div className="space-y-6 p-6">
           {/* New User Guide with Auto-hide */}
           {showNewUserGuide && (
@@ -623,7 +593,7 @@ export default function InventoryPage() {
                   No items in inventory. Add some items to get started!
                 </div>
               ) : (
-                <Table className="inventory-table">
+                <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Image</TableHead>
@@ -639,15 +609,132 @@ export default function InventoryPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredInventory.map((item) => (
-                      <InventoryRow 
-                        key={item.id}
-                        item={item}
-                        onEdit={handleOpenEditDialog}
-                        onDelete={handleDeleteItem}
-                        formatNumber={formatNumber}
-                      />
-                    ))}
+                    {filteredInventory.map((item) => {
+                      const stockLevel = getStockLevel(item);
+                      const storageInfo = getSmartStorageInfo(item);
+                      const expiryStatus = getExpiryStatus(item.expiryDate);
+                      
+                      return (
+                        <TableRow key={item.id}>
+                          {/* Image */}
+                          <TableCell>
+                            <Image
+                              src={item.image || "/placeholder.svg"}
+                              alt={item.name}
+                              width={40}
+                              height={40}
+                              className="rounded"
+                            />
+                          </TableCell>
+                          
+                          {/* Item Name */}
+                          <TableCell>
+                            <div className="font-medium">{item.name}</div>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <div className="flex items-center mt-1 text-xs text-gray-500">
+                                  {storageInfo.icon} Storage info available
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="p-2">
+                                  <p className="font-semibold">{storageInfo.temperature}</p>
+                                  <p className="text-sm">{storageInfo.tips}</p>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                          
+                          {/* Category */}
+                          <TableCell>
+                            <Badge variant="outline">{item.category}</Badge>
+                          </TableCell>
+                          
+                          {/* Stock */}
+                          <TableCell className="text-right">
+                            {formatNumber(item.quantity)}
+                          </TableCell>
+                          
+                          {/* Unit */}
+                          <TableCell>
+                            {item.unit}
+                          </TableCell>
+                          
+                          {/* Used */}
+                          <TableCell className="text-right">
+                            {formatNumber(item.quantityUsed || 0)}
+                          </TableCell>
+                          
+                          {/* Stock Level */}
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                stockLevel === 'critical' ? 'bg-red-500' :
+                                stockLevel === 'low' ? 'bg-yellow-500' :
+                                stockLevel === 'medium' ? 'bg-blue-500' : 'bg-green-500'
+                              }`}></div>
+                              <Progress 
+                                value={calculateProgressValue(item)} 
+                                className="w-16 h-2"
+                              />
+                              <Badge variant={
+                                stockLevel === 'critical' ? 'destructive' :
+                                stockLevel === 'low' ? 'default' : 'secondary'
+                              }>
+                                {stockLevel}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          
+                          {/* Expiry Date */}
+                          <TableCell>
+                            {expiryStatus.status === 'none' ? (
+                              <span className="text-gray-400">N/A</span>
+                            ) : (
+                              <div className="flex items-center space-x-1">
+                                {expiryStatus.status === 'expired' && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                                {expiryStatus.status === 'soon' && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                                <span className={
+                                  expiryStatus.status === 'expired' ? 'text-red-600 font-medium' :
+                                  expiryStatus.status === 'soon' ? 'text-yellow-600 font-medium' : 'text-gray-600'
+                                }>
+                                  {expiryStatus.formattedDate}
+                                </span>
+                              </div>
+                            )}
+                          </TableCell>
+                          
+                          {/* Last Restocked */}
+                          <TableCell>
+                            <span className="text-gray-600">
+                              {item.lastRestocked ? format(parseISO(item.lastRestocked), "PPP") : "N/A"}
+                            </span>
+                          </TableCell>
+                          
+                          {/* Actions */}
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleOpenEditDialog(item)}
+                                className="btn-3d"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteItem(item.id, item.name)}
+                                className="btn-3d"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
@@ -745,7 +832,7 @@ export default function InventoryPage() {
                   <div className="col-span-3">
                     <DatePicker
                       date={editFormState.expiryDate ? new Date(editFormState.expiryDate) : undefined}
-                      setDate={handleDateChange}
+                      onDateChange={handleDateChange}
                     />
                   </div>
                 </div>
@@ -760,5 +847,6 @@ export default function InventoryPage() {
           </Dialog>
         </div>
       </AppLayout>
-    );
-  }
+    </TooltipProvider>
+  );
+}

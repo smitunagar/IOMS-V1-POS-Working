@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, ShoppingBag, Users, TrendingUp, Clock, Repeat, Smile, TrendingDown, Info as InfoIcon, Utensils, Percent } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming cn is correctly imported
+import { InventoryPosInsights } from '@/components/inventory/InventoryPosInsights';
 
 // Data Interfaces
 interface DailyOrdersData {
@@ -180,7 +181,8 @@ export default function DashboardPage() {
           <TabsTrigger value="sales_trends">Sales Trends</TabsTrigger>
           <TabsTrigger value="menu_performance">Menu Performance</TabsTrigger>
           <TabsTrigger value="operations">Operational Metrics</TabsTrigger>
- <TabsTrigger value="inventory_stats">Inventory Stats</TabsTrigger>
+          <TabsTrigger value="inventory_stats">Inventory Stats</TabsTrigger>
+          <TabsTrigger value="pos_inventory">POS-Inventory Integration</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -457,6 +459,18 @@ export default function DashboardPage() {
                 </div>
             </CardContent>
            </Card>
+        </TabsContent>
+
+        <TabsContent value="pos_inventory" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>POS-Inventory Integration Insights</CardTitle>
+              <CardDescription>Data synced between POS and Inventory systems.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InventoryPosInsights />
+            </CardContent>
+          </Card>
         </TabsContent>
 
       </Tabs>
