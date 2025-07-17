@@ -1,0 +1,132 @@
+id,name,quantity,price,category,image,aiHint,ingredients
+1,Wasser still oder Sprudel,,0,31
+2,50 €,Alkoholfreie Getränke,,,
+2,Wasser still oder Sprudel,,0,41
+3,00 €,Alkoholfreie Getränke,,,
+3,Wasser still oder Sprudel,,0,751
+5,80 €,Alkoholfreie Getränke,,,
+4,Coca-Cola Fanta Sprite Spezi Coca-Cola light 13,,0,41
+3,80 €,Alkoholfreie Getränke,,,
+5,Coca-Cola Fanta Sprite Spezi Coca-Cola light 13,,0,31
+3,40 €,Alkoholfreie Getränke,,,
+6,Bitter Lemon 3,,0,21
+3,90 €,Alkoholfreie Getränke,,,
+7,Eistee Pfirsich,,4,20 €,Alkoholfreie Getränke,,,
+8,Eistee Zitrone,,4,20 €,Alkoholfreie Getränke,,,
+9,Apfelsaft,,,Säfte und Schorlen,,,
+10,Orangensaft,,,Säfte und Schorlen,,,
+11,Johannisbeer-Fruchtsaftgetränk,,,Säfte und Schorlen,,,
+12,Maracuja-Fruchtsaftgetränk,,,Säfte und Schorlen,,,
+13,Mango-Fruchtsaftgetränk,,,Säfte und Schorlen,,,
+14,Apfelsaftschorle,,,Säfte und Schorlen,,,
+15,Orangensaftschorle,,,Säfte und Schorlen,,,
+16,Johannisbeer-Fruchtsaftschorle,,,Säfte und Schorlen,,,
+17,Maracuja-Fruchtsaftschorle,,,Säfte und Schorlen,,,
+18,Mango-Fruchtsaftschorle,,,Säfte und Schorlen,,,
+19,Mango-Lassi (Süß),,,Indische Lassis,,,
+20,Masala-Lassi (würzig),,,Indische Lassis,,,
+21,Kokosnuss-Lassi (Süß),,,Indische Lassis,,,
+22,Zwiefalter 1521 Helles Vollbier,,,Biere,,,
+23,Zwiefalter Radler süß oder sauer,,,Biere,,,
+24,Zwiefalter Hefe trüb,,,Biere,,,
+25,Zwiefalter Cola-Weizen,,,Biere,,,
+26,Zwiefalter Pils,,,Biere,,,
+27,Russ,,,Biere,,,
+28,Zwiefalter-Kristallklar,,,Biere,,,
+29,Zwiefalter-Pilsener alkoholfrei,,,Biere,,,
+30,Zwiefalter-Hefe alkoholfrei,,,Biere,,,
+31,Zwiefalter-Engele helles Bier,,,Biere,,,
+32,Zwiefalter-Urweizen Dunkel,,,Biere,,,
+33,Indisches Premium Lagerbier,,,Biere,,,
+34,Glas Prosecco 15% vol,,,Aperitifs,,,
+35,Aperol Spritz 25% vol (Prosecco Aperol Soda),,,Aperitifs,,,
+36,Hugo 15% vol (Prosecco mit Minze Limette und Mineralwasser),,,Aperitifs,,,
+37,Lillet Wild Berry 15% vol,,,Aperitifs,,,
+38,Pina Colada,,0,401
+8,90 €,Cocktails,,,Weißer Rum;Brauner Rum;Kokos;Sahne;Ananassaft
+39,Mango Colada,,0,401
+8,90 €,Cocktails,,,Weißer Rum;Brauner Rum;Mangosaft;Ananassaft;Sahne
+40,Erdbeer Colada,,0,401
+8,90 €,Cocktails,,,Weißer Rum;Brauner Rum;Erdbeer-Sirup;Ananassaft;Sahne
+41,Tequila Sunrise,,0,401
+8,90 €,Cocktails,,,Tequila;Orangensaft;Grenadine
+42,Mojito,,0,401
+8,90 €,Cocktails,,,Havana Club Rum;frische Limetten;Rohrzucker;frische Minze
+43,Caipirinha,,0,301
+7,90 €,Cocktails,,,Cachaca;Limetten;Rohrzucker
+44,Caipiroschka,,0,301
+7,90 €,Cocktails,,,Vodka;Limetten;Rohrzucker
+45,Sex On The Beach,,0,401
+8,90 €,Cocktails,,,Vodka;Peach Likör;Crannberry Saft;Orangensaft
+46,Swimming Pool,,0,401
+8,90 €,Cocktails,,,Vodka;weißer Rum;Blue Curacao;Kokossirup;Ananassaft;Sahne
+47,Long Island Ice Tea (liit),,0,401
+8,90 €,Cocktails,,,Vodka;Havanna Club;Gin;Tequila;Zitronensaft;Triple Sec;Cola
+48,Moscow Mule,,0,401
+8,90 €,Cocktails,,,Vodka;Gurke;Limettensaft;Thomas Henry;Spicy Ginger
+49,Zombie,,0,401
+8,90 €,Cocktails,,,Rum Braun;Rum Weiß;Old Pascas 73% Overproov
+Rum;Limette;Grenadine;Orange;Ananas
+50,Virgin Caipirinha,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,Limetten;Rohrzucker;Ginger Ale
+51,Watermelon Mojito,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,Wassermelonensirup;Limetten;frische Minze;Ginger Ale
+52,Coconut Kiss,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,Ananassaft;Kirschnektar;Sahne;Kokossirup
+53,Strawberry Kiss,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,Kokos;Sahne;Ananassaft;Erdbeerpüree
+54,Mosquito,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,frische Limette;Rohrzucker;frische Minze;Soda
+55,Fruit Punch,,0,401
+7,50 €,Mocktails (Die ohne Alkohol),,,Mango;Ananas;Maracuja;Orange;Grapefruit;Limette
+56,Jamaica Kiss,,0,401 7,50 €,Mocktails (Die ohne Alkohol),,,Kokos;Himbeere;Sahne;Ananas;Maracuja;Grenadine
+57,Limonade,,0,401 7,50 €,Mocktails (Die ohne Alkohol),,,frische Limetten Stücke;Rohrzucker;Soda
+58,Mangolikör,,,Spirituosen,,,
+59,Kokosnuss-Schnaps,,,Spirituosen,,,
+60,Indischer Rum,,,Spirituosen,,,
+61,Ramazotti 30% vol,,,Spirituosen,,,
+62,Williams Birne 40% vol,,,Spirituosen,,,
+63,Grappa 40% vol,,,Spirituosen,,,
+64,Jägermeister 35% vol,,,Spirituosen,,,
+65,Wodka Lemon,,,Longdrinks,,,
+66,Gin Tonic,,,Longdrinks,,,
+67,Jackie Cola,,,Longdrinks,,,
+68,Indischer Weißwein,,,Indische Weine,,,grünem Pfeffer;frisch geschnittenem Gras;Note Gewürz
+69,Indischer Rotwein,,,Indische Weine,,,reife Kirschen;Pflaumen;Aromen schwarzen Pfeffers
+70,Jechtinger Grauburg,,,Deutsche Weine,,,
+71,Stettener Heuchelberg Riesling,,,Deutsche Weine,,,
+72,Jechtinger Spätburgunder,,,Deutsche Weine,,,roten Beeren;Kirschen
+73,Haberschl D. Trollinger mit Lemberger,,,Deutsche Weine,,,
+74,Jechtinger Spätburgunder Weißherbst,,,Deutsche Weine,,,Fruchtaromen
+75,Munzinger Attilafelsen Spätburgunder,,,Deutsche Weine,,,
+76,Cellier C. Merlot Cabernet,,,Französische Weine,,,Kirscharoma
+77,Cellier C. Syrah Rose,,,Französische Weine,,,
+78,Cellier Colombes Chard,,,Französische Weine,,,
+79,Castelnuovo Pinot Grigio,,,Italienische Weine,,,
+80,Zonin Merlot Le Anfore,,,Italienische Weine,,,
+81,Zonin Montepulc LeAnfore,,,Italienische Weine,,,
+82,Rotweinschorle / Weißweinschorle,,,Weinschorle,,,
+83,Alkoholfreier Wein,,,Weinschorle,,,
+84,Alkoholfreier Sekt,,,Weinschorle,,,
+85,Chicken Curry,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Currysoße
+86,Chicken Korma,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Mandeln;Sahne;Kokosnuss;Gewürzen
+87,Chicken Palak,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Zwiebeln;Ingwer;Knoblauch;Gewürzen;Spinat
+88,Chicken Mango,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Mango-Currysoße
+89,Chicken Banana,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Banane-Safran-Cashewnuss-Currysauce
+90,Chicken Vindaloo,,10,00 €,Spezialitäten vom Huhn mit Reis,,,Hähnchenfleisch;Kartoffeln;Currysoße
+91,Lamm Curry,,11,00 €,Spezialitäten vom Lamm mit Reis,,,Lamb;curry sauce
+92,Lamm Korma,,11,00 €,Spezialitäten vom Lamm mit Reis,,,Lammcurry;Sahne;Mandeln;Kokosnuss;Gewürzen
+93,Lamm Madras,,11,00 €,Spezialitäten vom Lamm mit Reis,,,Lammfleisch;Currysauce;Kokosmilch;Champignons
+94,Lamm Tikka Masala,,11,00 €,Spezialitäten vom Lamm mit Reis,,,Lammfleisch;Kräutern
+95,Fish Curry,,10,50 €,Spezialitäten vom Fisch mit Reis,,,Fischfilet;Ingwer;Zwiebeln;Kräutern
+96,Fish Mango,,10,50 €,Spezialitäten vom Fisch mit Reis,,,Fischfilet;Mango;Mango-Safran-Cashewnuss-Sauce
+97,Fish Masala,,10,50 €,Spezialitäten vom Fisch mit Reis,,,Fischfilet;Kräutern
+98,Fish Goa:}},,10,50 €,Spezialitäten vom Fisch mit Reis,,,Fischfilet;Kokos-Sauce;Gewürzen
+99,Gemüse Curry,,10,00 €,Vegetarische und Vegan Spezialitäten,,,Champignons;Erbsen;Ingwer;Knoblauch;Tomaten;Zwiebeln;Orientalischen Sauce
+100,Dal Channa,,10,00 €,Vegetarische und Vegan Spezialitäten,,,Linsen;Butter;Ingwer;Tomaten;Knoblauch;Gewürzen
+101,Tarka Dal,,10,00 €,Vegetarische und Vegan Spezialitäten,,,Linsen;Zwiebeln;Knoblauch;Ingwer;Tomaten
+102,Chana Masala,,10,00 €,Vegetarische und Vegan Spezialitäten,,,Kichererbsen;Gewürzen;Kräutern
+103,Vegetable Korma,,10,00 €,Vegetarische und Vegan Spezialitäten,,,Gemüse;Mandeln;Kokosnuss;Gewürzen
+104,Vegetable Biryani,,11,00 €,Biryani Reis,,,Basmati-Reis;Gemüse;Gewürzen
+105,Chicken Biryani,,11,00 €,Biryani Reis,,,Basmati-Reis;Hähnchenbrustfilet;Gewürzen
+106,Lamm Biryani,,11,00 €,Biryani Reis,,,Basmati-Reis;Lammfleisch;Gewürzen

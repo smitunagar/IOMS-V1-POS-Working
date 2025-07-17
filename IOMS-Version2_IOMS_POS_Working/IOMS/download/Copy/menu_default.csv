@@ -1,0 +1,10 @@
+id,name,quantity,price,category,image,aiHint,ingredients
+1,Chicken Biryani,12.90,12.90 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Chicken%20Biryani,,Basmati Rice;Chicken Breast;Onions;Tomatoes;Olive Oil
+2,Dal Masoor Tadka,9.90,9.90 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Dal%20Masoor%20Tadka,,Masoor Dal;Onions;Tomatoes;Olive Oil
+3,Grilled Chicken with Mozzarella Crust,13.90,13.90 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Grilled%20Chicken%20with%20Mozzarella%20Crust,,Chicken Breast;Mozzarella Cheese;Olive Oil;Onions
+4,Tomato & Onion Curry,8.90,8.90 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Tomato%20%26%20Onion%20Curry,,Tomatoes;Onions;Olive Oil
+5,Samosa Chaat,6.50,6.50 €,Appetizers,https://dummyimage.com/256x256/eee/333&text=Samosa%20Chaat,,Samosa (Frozen);Onions;Tomatoes
+6,Cheesy Samosa Bake,7.00,7.00 €,Appetizers,https://dummyimage.com/256x256/eee/333&text=Cheesy%20Samosa%20Bake,,Samosa (Frozen);Mozzarella Cheese;Olive Oil
+7,Plain Basmati Rice,3.50,3.50 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Plain%20Basmati%20Rice,,Basmati Rice
+8,Moong-Masoor Lentil Mix,4.50,4.50 €,Main Courses,https://dummyimage.com/256x256/eee/333&text=Moong-Masoor%20Lentil%20Mix,,Masoor Dal;Moong Dal;Onions;Tomatoes
+9,Tomato & Onion Salad,4.00,4.00 €,Salads,https://dummyimage.com/256x256/eee/333&text=Tomato%20%26%20Onion%20Salad,,Tomatoes;Onions;Olive Oil
