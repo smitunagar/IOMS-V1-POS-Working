@@ -90,6 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Store the new user temporarily for the signup flow
     localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(newUser));
     
+    // Set the current user
+    setCurrentUser(newUser);
+    
     setIsLoading(false);
     return true;
   };

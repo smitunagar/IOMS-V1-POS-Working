@@ -49,7 +49,7 @@ export default function SignupPage() {
   };
 
   const handleComplete = () => {
-    router.push('/login');
+    router.push('/');
   };
   
   if (authIsLoading) {
