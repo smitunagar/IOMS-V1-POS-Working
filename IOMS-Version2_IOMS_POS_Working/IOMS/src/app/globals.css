@@ -91,3 +91,130 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* 3D Effects and Enhanced Shadows */
+@layer utilities {
+  .shadow-3xl {
+    box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  
+  .shadow-4xl {
+    box-shadow: 
+      0 45px 100px -12px rgba(0, 0, 0, 0.25),
+      0 20px 40px -12px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .card-3d {
+    transform-style: preserve-3d;
+    /* Disabled transition to prevent flickering */
+    /* transition: all 0.3s ease; */
+  }
+  
+  .card-3d:hover {
+    /* Disabled 3D transform to prevent flickering */
+    /* transform: perspective(1000px) rotateX(5deg) rotateY(5deg) translateZ(20px); */
+  }
+  
+  .text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .btn-3d {
+    /* Simplified to prevent flickering */
+    /* transform: perspective(1000px) translateZ(0); */
+    /* transition: all 0.3s ease; */
+    box-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-3d:hover {
+    /* Simplified hover to prevent flickering */
+    /* transform: perspective(1000px) translateZ(10px) translateY(-2px); */
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .pulse-ring {
+    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+  }
+  
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  /* Table stability fixes to prevent flickering */
+  table {
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  table tr {
+    will-change: auto;
+  }
+  
+  table tr:hover {
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* Tooltip stability */
+  [title] {
+    position: relative;
+  }
+  
+  /* Disable all transforms on table elements */
+  table * {
+    will-change: auto !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  
+  /* Inventory page specific stability */
+  .inventory-table,
+  .inventory-table * {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+  
+  /* Prevent any hover effects on table rows */
+  .inventory-table tr:hover {
+    transform: none !important;
+    will-change: auto !important;
+    backface-visibility: hidden !important;
+  }
+}
