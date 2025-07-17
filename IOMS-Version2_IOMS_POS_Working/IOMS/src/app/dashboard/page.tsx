@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { DollarSign, ShoppingBag, Users, TrendingUp, Clock, Repeat, Smile, TrendingDown, Info as InfoIcon, Utensils, Percent } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Assuming cn is correctly imported
+import { QRCodeSVG } from 'qrcode.react';
 
 // Data Interfaces
 interface DailyOrdersData {
@@ -76,6 +77,13 @@ const mockTopSellingDishes: TopSellingDishData[] = [
   { id: '3', name: 'Caesar Salad', category: 'Appetizers', unitsSold: 80, totalRevenue: 800, profitMargin: 65 },
   { id: '4', name: 'Chocolate Lava Cake', category: 'Desserts', unitsSold: 70, totalRevenue: 560, profitMargin: 50 },
   { id: '5', name: 'Iced Tea', category: 'Beverages', unitsSold: 150, totalRevenue: 450, profitMargin: 70 },
+];
+
+// Mock customer list
+const mockCustomers = [
+  { id: 'cust001', name: 'John Doe' },
+  { id: 'cust002', name: 'Jane Smith' },
+  { id: 'cust003', name: 'Acme Corp.' },
 ];
 
 // Helper function for KPI card styling
@@ -180,7 +188,8 @@ export default function DashboardPage() {
           <TabsTrigger value="sales_trends">Sales Trends</TabsTrigger>
           <TabsTrigger value="menu_performance">Menu Performance</TabsTrigger>
           <TabsTrigger value="operations">Operational Metrics</TabsTrigger>
- <TabsTrigger value="inventory_stats">Inventory Stats</TabsTrigger>
+          <TabsTrigger value="inventory_stats">Inventory Stats</TabsTrigger>
+          <TabsTrigger value="customer_qr">Customer QR Codes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -457,6 +466,27 @@ export default function DashboardPage() {
                 </div>
             </CardContent>
            </Card>
+        </TabsContent>
+
+        <TabsContent value="customer_qr" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {mockCustomers.map((customer) => (
+              <Card key={customer.id} className="flex flex-col items-center p-4">
+                <CardHeader>
+                  <CardTitle>{customer.name}</CardTitle>
+                  <CardDescription>Customer ID: {customer.id}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <QRCodeSVG value={`${window.location.origin}/scan/${customer.id}`} size={180} />
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/scan/${customer.id}`)}>
+                    Copy QR Link
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
       </Tabs>
