@@ -72,6 +72,7 @@ export interface RawIngredient {
   name: string;
   quantity: number;
   unit: string;
+  expiryDate?: string; // Optional expiry date in YYYY-MM-DD format
 }
 
 /**
@@ -314,7 +315,7 @@ export function addIngredientToInventoryIfNotExists(
       lowStockThreshold: 5, // Default threshold
       quantityUsed: 0,
       lastRestocked: new Date().toISOString(),
-      expiryDate: undefined,
+      expiryDate: ingredient.expiryDate || undefined,
       image: "https://placehold.co/60x60.png",
       aiHint: ingredient.name.toLowerCase().split(' ').slice(0, 2).join(' '),
     };
@@ -382,4 +383,72 @@ export function addOrUpdateIngredientInInventory(
     saveInventory(inventory, userId);
     return newItem;
   }
+}
+
+export interface ProcessedCSVItem {
+  name: string;
+  quantity: number;
+  unit: string;
+  category?: string;
+  lowStockThreshold?: number;
+  expiryDate?: string; // YYYY-MM-DD
+  imageURL?: string;
+  aiHint?: string;
+}
+
+export function batchAddOrUpdateInventoryItems(itemsToProcess: ProcessedCSVItem[], userId?: string | null): { added: number; updated: number; errors: number } {
+  if (typeof window === 'undefined') return { added: 0, updated: 0, errors: itemsToProcess.length };
+
+  const currentInventory = getInventory(userId);
+  let addedCount = 0;
+  let updatedCount = 0;
+  let errorCount = 0;
+
+  itemsToProcess.forEach(csvItem => {
+    try {
+      const existingItemIndex = currentInventory.findIndex(
+        invItem => invItem.name.toLowerCase() === csvItem.name.toLowerCase()
+      );
+
+      if (existingItemIndex > -1) {
+        // Update existing item
+        const originalItem = currentInventory[existingItemIndex];
+        const updates: Partial<InventoryItem> = {
+          quantity: csvItem.quantity,
+          unit: csvItem.unit,
+          category: csvItem.category || originalItem.category,
+          lowStockThreshold: csvItem.lowStockThreshold || originalItem.lowStockThreshold,
+          expiryDate: csvItem.expiryDate || originalItem.expiryDate,
+          image: csvItem.imageURL || originalItem.image,
+          aiHint: csvItem.aiHint || originalItem.aiHint || csvItem.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+          lastRestocked: originalItem.quantity !== csvItem.quantity ? new Date().toISOString() : originalItem.lastRestocked,
+        };
+        currentInventory[existingItemIndex] = { ...originalItem, ...updates };
+        updatedCount++;
+      } else {
+        // Add new item
+        const newItem: InventoryItem = {
+          id: generateId(),
+          name: csvItem.name,
+          quantity: csvItem.quantity,
+          unit: csvItem.unit,
+          category: csvItem.category || "Pantry",
+          lowStockThreshold: csvItem.lowStockThreshold || Math.max(1, Math.floor(csvItem.quantity * 0.2)),
+          lastRestocked: new Date().toISOString(),
+          expiryDate: csvItem.expiryDate,
+          quantityUsed: 0,
+          image: csvItem.imageURL || "https://placehold.co/60x60.png",
+          aiHint: csvItem.aiHint || csvItem.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+        };
+        currentInventory.push(newItem);
+        addedCount++;
+      }
+    } catch (e) {
+      console.error("Error processing CSV item:", csvItem.name, e);
+      errorCount++;
+    }
+  });
+
+  saveInventory(currentInventory, userId);
+  return { added: addedCount, updated: updatedCount, errors: errorCount };
 }
