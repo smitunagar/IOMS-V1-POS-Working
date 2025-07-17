@@ -2,12 +2,12 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import * as inventoryService from '@/lib/inventoryService'; // Assuming an inventory service exists
+import { addIngredientToInventoryIfNotExists } from '@/lib/inventoryService';
 import { AppLayout } from '../../components/layout/AppLayout';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';      
 import { QRCodeCanvas } from 'qrcode.react';
-import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date'; // TODO: Uncomment when available
+import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
 // import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
 
 // Try to import SuggestExpiryDateInput, otherwise define inline
@@ -269,7 +269,7 @@ const BarcodeScannerPage: React.FC = () => {
     };
 
     try {
-      const addedItem = inventoryService.addIngredientToInventoryIfNotExists(effectiveUserId, ingredient);
+      const addedItem = addIngredientToInventoryIfNotExists(effectiveUserId, ingredient);
 
       if (addedItem) {
         toast({ title: "Success", description: `${addedItem.name} added to inventory.` });
@@ -384,7 +384,10 @@ const BarcodeScannerPage: React.FC = () => {
         </p>
         <h2>Scan this QR code to open the Barcode Scanner on another device</h2>
         {currentUser ? (
-          <QRCodeCanvas value={`https://ioms-v1-pos-working.vercel.app/barcode-scanner?userId=${encodeURIComponent(currentUser.id)}`} size={180} />
+          <QRCodeCanvas 
+            value={`https://ioms-v1-pos-working.vercel.app/barcode-scanner?userId=${encodeURIComponent(currentUser.id)}`} 
+            size={180} 
+          />
         ) : (
           <p>Please log in to see your unique QR code.</p>
         )}
