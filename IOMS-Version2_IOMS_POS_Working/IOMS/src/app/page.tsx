@@ -120,8 +120,10 @@ export default function OrderEntryPage() {
         setMenuDishes(dishesFromService);
       }
     }
-    window.addEventListener('menu-imported', handleMenuImported);
-    return () => window.removeEventListener('menu-imported', handleMenuImported);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('menu-imported', handleMenuImported);
+      return () => window.removeEventListener('menu-imported', handleMenuImported);
+    }
   }, [currentUser]);
 
 
@@ -216,13 +218,23 @@ export default function OrderEntryPage() {
       }
     });
 
-    const orderItemsForService: ServiceOrderItem[] = currentOrder.map(item => ({
-      dishId: item.id,
-      name: item.name,
-      quantity: item.orderQuantity,
-      unitPrice: item.price,
-      totalPrice: item.price * item.orderQuantity,
-    }));
+    const orderItemsForService: ServiceOrderItem[] = currentOrder.map(item => {
+      let price = 0;
+      if (item.price) {
+        if (typeof item.price === 'string') {
+          price = parseFloat(item.price.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        } else if (typeof item.price === 'number') {
+          price = item.price;
+        }
+      }
+      return {
+        dishId: item.id,
+        name: item.name,
+        quantity: item.orderQuantity,
+        unitPrice: price,
+        totalPrice: price * item.orderQuantity,
+      };
+    });
 
     const subtotal = calculateSubtotal();
     

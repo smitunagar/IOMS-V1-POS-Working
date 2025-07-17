@@ -105,6 +105,7 @@ export default function DashboardPage() {
   const [tableTurnover, setTableTurnover] = useState(0);
   const [csatScore, setCsatScore] = useState(0);
   const [occupancyRate, setOccupancyRate] = useState(0);
+  const [isClient, setIsClient] = useState(false);
   
   // Dummy Inventory Data
   const dummyInventoryTurnoverRate = parseFloat((Math.random() * 10 + 5).toFixed(1)); // e.g., 7.5
@@ -124,6 +125,9 @@ export default function DashboardPage() {
   const [salesTrendPeriod, setSalesTrendPeriod] = useState('weekly');
 
   useEffect(() => {
+    // Set client flag
+    setIsClient(true);
+    
     // Simulate fetching data
     setTotalOrdersToday(Math.floor(Math.random() * 100) + 50);
     const currentMonthData = mockMonthlyRevenue[mockMonthlyRevenue.length - 1];
@@ -477,12 +481,16 @@ export default function DashboardPage() {
                   <CardDescription>Customer ID: {customer.id}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <QRCodeSVG value={`${window.location.origin}/scan/${customer.id}`} size={180} />
+                  {isClient && (
+                    <QRCodeSVG value={`${window.location.origin}/scan/${customer.id}`} size={180} />
+                  )}
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/scan/${customer.id}`)}>
-                    Copy QR Link
-                  </Button>
+                  {isClient && (
+                    <Button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/scan/${customer.id}`)}>
+                      Copy QR Link
+                    </Button>
+                  )}
                 </CardFooter>
               </Card>
             ))}
