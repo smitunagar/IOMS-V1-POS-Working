@@ -260,7 +260,8 @@ export class SmartSAMService {
    * 💳 Payment Guidance
    */
   private static getPaymentGuidance(msg: string): string {
-    return "� **Payment Processing in IOMS:**\n\n**Supported Methods:**\n• 💳 Credit/Debit Cards\n• 📱 Mobile payments (Apple Pay, Google Pay)\n• 💵 Cash transactions\n• 🎫 Gift cards and vouchers\n• 🔄 Split payments\n\n**Features:**\n✅ Secure payment processing\n✅ Automatic receipt generation\n✅ Tip management\n✅ Tax calculation\n✅ Refund processing\n✅ Payment analytics\n\n**How Payment Works:**\n1. Complete order in **Order Entry**\n2. Go to **Payment** screen\n3. Select payment method\n4. Process transaction\n5. Print/email receipt\n\n**Integration:** Payments automatically update inventory, generate reports, and track customer spending patterns!";
+return "💳 **Payment Processing in IOMS:**\n\n**Supported Methods:**\n 💳 Credit/Debit Cards\n 📲 Mobile payments (Apple Pay, Google Pay)\n 💵 Cash transactions\n 🎟️ Gift cards and vouchers\n";
+
   }
 
   /**
@@ -291,8 +292,9 @@ export class SmartSAMService {
       {
         id: '1',
         type: 'sam',
-        message: "👋 **Welcome to Smart SAM!**\n\nI'm your complete IOMS assistant, ready to help with:\n\n🏪 **Order Management** - Place orders, manage menus\n📊 **Analytics** - Reports and business insights\n🤖 **AI Tools** - Smart ingredient detection\n📅 **Order History** - Track all transactions\n� **Payments** - Process all payment types\n🪑 **Table Management** - Reservations and seating\n� **Barcode Scanner** - Quick inventory updates\n📦 **Inventory** - Stock management and storage\n\n**Ask me anything about IOMS features!**\nTry: \"How do I place an order?\" or \"How do reservations work?\"",
-        timestamp: new Date()
+message: "👋 **Welcome to Smart SAM!**\n\nI'm your complete IOMS assistant, ready to help with:\n\n🏪 **Order Management** - Place orders, manage menus\n📊 **Analytics** - Reports and business insights\n🤖 **AI Tools** - Smart ingredient detection\n📅 **Order History** - Track all transactions\n💳 **Payments** - Process all payment types\n🪑 **Table Management** - Reservations and seating\n📱 **Barcode Scanner** - Quick inventory updates\n📦 **Inventory** - Stock management and storage\n\n**Ask me anything about IOMS features!**\nTry: \"How do I place an order?\" or \"How do reservations work?\"",
+timestamp: new Date()
+
       }
     ];
   }
