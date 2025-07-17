@@ -1,4 +1,3 @@
-
 // IMPORTANT: This service uses localStorage and will only work in the browser.
 // Ensure it's called within useEffect or client-side event handlers.
 import { parse as parseDateFns, isValid, format as formatDateFns } from 'date-fns';
@@ -59,6 +58,11 @@ export function saveInventory(userId: string | null, inventory: InventoryItem[])
   try {
     const inventoryStorageKey = getUserInventoryStorageKey(userId);
     localStorage.setItem(inventoryStorageKey, JSON.stringify(inventory));
+    
+    // 🔥 NEW: Trigger inventory update event to refresh menu availability
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('inventory-updated'));
+    }
   } catch (error) {
     console.error(`Error saving inventory to localStorage (user: ${userId}):`, error);
   }
@@ -68,6 +72,34 @@ export interface RawIngredient {
   name: string;
   quantity: number;
   unit: string;
+}
+
+export function addInventoryItem(userId: string | null, itemData: Omit<InventoryItem, 'id' | 'lastRestocked' | 'quantityUsed'>): InventoryItem | null {
+  if (typeof window === 'undefined' || !userId) return null;
+  
+  const currentInventory = getInventory(userId);
+  
+  // Check if item with same name already exists
+  const existingItem = currentInventory.find(
+    item => item.name.toLowerCase() === itemData.name.toLowerCase()
+  );
+
+  if (existingItem) {
+    throw new Error(`Item "${itemData.name}" already exists in inventory`);
+  }
+
+  const newItem: InventoryItem = {
+    id: generateId(),
+    ...itemData,
+    lastRestocked: new Date().toISOString(),
+    quantityUsed: 0,
+    image: itemData.image || "https://placehold.co/60x60.png",
+    aiHint: itemData.aiHint || itemData.name.toLowerCase().split(' ').slice(0, 2).join(' '),
+  };
+
+  const updatedInventory = [...currentInventory, newItem];
+  saveInventory(userId, updatedInventory);
+  return newItem;
 }
 
 export function addIngredientToInventoryIfNotExists(userId: string | null, ingredient: RawIngredient): InventoryItem | null {
@@ -103,30 +135,81 @@ export function addIngredientToInventoryIfNotExists(userId: string | null, ingre
 
 export function recordIngredientUsage(userId: string | null, ingredientName: string, consumedQuantity: number, consumedUnit: string): void {
   if (typeof window === 'undefined' || !userId) return;
+  console.log(`📉 Recording usage: ${consumedQuantity} ${consumedUnit} of ${ingredientName}`);
+  
   const currentInventory = getInventory(userId);
-  const itemIndex = currentInventory.findIndex(
-    item => item.name.toLowerCase() === ingredientName.toLowerCase()
-  );
+  
+  // 🔥 ENHANCED: Use fuzzy matching to find the ingredient
+  let foundItem = currentInventory.find(item => item.name.toLowerCase() === ingredientName.toLowerCase());
+  
+  // If not found, try partial matching
+  if (!foundItem) {
+    foundItem = currentInventory.find(item => {
+      const itemName = item.name.toLowerCase().trim();
+      const searchName = ingredientName.toLowerCase().trim();
+      return itemName.includes(searchName) || searchName.includes(itemName);
+    });
+  }
+  
+  // Try synonym matching for common ingredients
+  if (!foundItem) {
+    const synonyms: { [key: string]: string[] } = {
+      'paneer': ['cottage cheese', 'cheese'],
+      'ginger garlic paste': ['ginger-garlic paste'],
+      'green chili': ['green chilies'],
+      'tomato': ['tomatoes'],
+      'onion': ['onions'],
+    };
+    
+    const normalizedSearch = ingredientName.toLowerCase().trim();
+    const searchSynonyms = synonyms[normalizedSearch] || [];
+    
+    for (const synonym of searchSynonyms) {
+      foundItem = currentInventory.find(item => item.name.toLowerCase().trim() === synonym);
+      if (foundItem) break;
+    }
+  }
 
-  if (itemIndex > -1) {
-    const item = currentInventory[itemIndex];
-
-    if (item.unit.toLowerCase() !== consumedUnit.toLowerCase()) {
-      console.warn(`Unit mismatch for ${ingredientName}: inventory unit ${item.unit}, consumed unit ${consumedUnit}. Ingredient usage not recorded.`);
-      return;
+  if (foundItem) {
+    const itemIndex = currentInventory.findIndex(item => item.id === foundItem!.id);
+    
+    // 🔥 ENHANCED: Handle unit conversion
+    let actualConsumedQuantity = consumedQuantity;
+    
+    if (foundItem.unit.toLowerCase() !== consumedUnit.toLowerCase()) {
+      // Try to convert units
+      const conversions: { [key: string]: { [key: string]: number } } = {
+        'kg': { 'g': 1000, 'grams': 1000 },
+        'g': { 'kg': 0.001, 'grams': 1 },
+        'grams': { 'kg': 0.001, 'g': 1 },
+      };
+      
+      const fromUnit = consumedUnit.toLowerCase();
+      const toUnit = foundItem.unit.toLowerCase();
+      
+      if (conversions[fromUnit] && conversions[fromUnit][toUnit]) {
+        actualConsumedQuantity = consumedQuantity * conversions[fromUnit][toUnit];
+        console.log(`🔄 Converted ${consumedQuantity} ${consumedUnit} to ${actualConsumedQuantity} ${foundItem.unit}`);
+      } else {
+        console.warn(`Unit mismatch for ${ingredientName}: inventory unit ${foundItem.unit}, consumed unit ${consumedUnit}. Using 1:1 conversion.`);
+      }
     }
 
-    const newQuantity = Math.max(0, item.quantity - consumedQuantity);
-    const newQuantityUsed = (item.quantityUsed || 0) + consumedQuantity;
+    const newQuantity = Math.max(0, foundItem.quantity - actualConsumedQuantity);
+    const newQuantityUsed = (foundItem.quantityUsed || 0) + actualConsumedQuantity;
+
+    console.log(`📊 ${foundItem.name}: ${foundItem.quantity} → ${newQuantity} ${foundItem.unit} (used: ${actualConsumedQuantity})`);
 
     currentInventory[itemIndex] = {
-      ...item,
+      ...foundItem,
       quantity: newQuantity,
       quantityUsed: newQuantityUsed,
     };
+    
     saveInventory(userId, currentInventory);
+    console.log(`✅ Successfully recorded usage for ${foundItem.name}`);
   } else {
-    console.warn(`Ingredient "${ingredientName}" not found in inventory (user: ${userId}). Usage not recorded.`);
+    console.warn(`❌ Ingredient "${ingredientName}" not found in inventory. Available:`, currentInventory.map(item => item.name));
   }
 }
 
@@ -233,4 +316,17 @@ export function batchAddOrUpdateInventoryItems(userId: string | null, itemsToPro
 
     saveInventory(userId, currentInventory);
     return { added: addedCount, updated: updatedCount, errors: errorCount };
+}
+
+export function clearAllInventory(userId: string | null): boolean {
+  if (typeof window === 'undefined' || !userId) return false;
+  
+  try {
+    const inventoryStorageKey = getUserInventoryStorageKey(userId);
+    localStorage.removeItem(inventoryStorageKey);
+    return true;
+  } catch (error) {
+    console.error('Error clearing inventory:', error);
+    return false;
+  }
 }
