@@ -165,9 +165,10 @@ console.log('✅ Test menu created with 3 dishes');
 // Calculate expected results
 console.log('\n📊 EXPECTED TEST RESULTS:');
 
-console.log('\n🍽️ CHICKEN BIRYANI ANALYSIS:');
+console.log('\n🧪 CHICKEN BIRYANI ANALYSIS:');
 console.log('   Available ingredients: 5/10');
 console.log('   Missing ingredients: 5/10');
+
 console.log('   ✅ Available: Basmati Rice, Chicken, Onions, Yogurt, Salt');
 console.log('   ❌ Missing: Ginger Garlic Paste, Green Chilies, Red Chili Powder, Turmeric Powder, Garam Masala');
 console.log('   🎯 Possible servings (based on current inventory):');
@@ -180,7 +181,9 @@ console.log('     ➡️ MINIMUM: 13 servings (limited by Chicken)');
 
 console.log('\n🥗 VEGETABLE CURRY ANALYSIS:');
 console.log('   Available ingredients: 2/8'); 
+console.log('   ✅ Available: Onions, Salt');
 console.log('   ❌ Missing: Tomatoes, Potatoes + 4 spices');
+
 
 console.log('\n🍚 PLAIN RICE ANALYSIS:');
 console.log('   Available ingredients: 2/2');
@@ -212,14 +215,14 @@ if (confirm('✅ Test environment created! Would you like to verify the setup?')
   const savedInventory = JSON.parse(localStorage.getItem(getInventoryKey()) || '[]');
   const savedMenu = JSON.parse(localStorage.getItem(getMenuKey()) || '[]');
   
-  console.log(`📦 Inventory items: ${savedInventory.length} (expected: 5)`);
-  console.log(`🍽️ Menu dishes: ${savedMenu.length} (expected: 3)`);
-  console.log('📋 Available inventory:', savedInventory.map(i => i.name));
-  console.log('🍴 Available dishes:', savedMenu.map(d => d.name));
-  
-  if (savedInventory.length === 5 && savedMenu.length === 3) {
-    console.log('🎉 SETUP VERIFIED! You can now start testing.');
-  } else {
-    console.log('⚠️ Setup incomplete. Please check the data.');
-  }
+console.log(`📦 Inventory items: ${savedInventory.length}`);
+console.log(`🍽️ Menu dishes: ${savedMenu.length}`);
+console.log('📋 Available inventory:', savedInventory.map(i => i.name));
+console.log('🍴 Available dishes:', savedMenu.map(d => d.name));
+
+if (savedInventory.length === 5 && savedMenu.length === 3) {
+  console.log('🎉 SETUP VERIFIED! You can now start testing.');
+} else {
+  console.log('⚠️ Setup incomplete. Please check the data.');
+}
 }
