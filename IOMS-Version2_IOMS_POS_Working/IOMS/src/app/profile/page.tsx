@@ -1,23 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { QRCodeSVG } from "qrcode.react";
-
-// Mock user data (replace with real user context or API)
-const mockUser = {
-  id: "cust001",
-  email: "john.doe@example.com",
-  restaurantName: "John's Diner",
-  password: "********", // Not editable
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
-  const [email, setEmail] = useState(mockUser.email);
-  const [restaurantName, setRestaurantName] = useState(mockUser.restaurantName);
+  const { currentUser, isLoading, logout } = useAuth();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      setEmail(currentUser.email || "");
+      setRestaurantName(currentUser.restaurantName || "");
+    }
+  }, [currentUser]);
 
   const handleSave = () => {
     // Save logic here (API call or localStorage)
@@ -25,7 +29,26 @@ export default function ProfilePage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const qrUrl = typeof window !== 'undefined' ? `${window.location.origin}/scan/${mockUser.id}` : `/scan/${mockUser.id}`;
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-background">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-lg">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    router.push('/login');
+    return null;
+  }
+
+  const qrUrl = typeof window !== 'undefined' ? `${window.location.origin}/scan/${currentUser.id}` : `/scan/${currentUser.id}`;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -45,9 +68,12 @@ export default function ProfilePage() {
           </div>
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">Password</label>
-            <Input value={mockUser.password} disabled type="password" />
+            <Input value="********" disabled type="password" />
           </div>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <div className="flex gap-2">
+            <Button onClick={handleSave}>Save Changes</Button>
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          </div>
           {saved && <div className="text-green-600 text-sm">Profile updated!</div>}
           <div className="mt-8 flex flex-col items-center">
             <div className="font-semibold mb-2">Your Inventory QR Code</div>

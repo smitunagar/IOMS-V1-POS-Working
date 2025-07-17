@@ -240,7 +240,7 @@ export function AppLayout({
            <SidebarMenu>
              <SidebarMenuItem>
                 <SidebarMenuButton
-                    // onClick={() => setProfileOpen(true)} // Removed as per edit hint
+                    asChild
                     className={cn(
                         "justify-start w-full",
                         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -250,10 +250,11 @@ export function AppLayout({
                         className: "bg-background text-foreground border-border",
                     }}
                 >
-                    <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
-                    <span className="truncate">User Profile</span>
+                    <Link href="/profile">
+                        <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
+                        <span className="truncate">User Profile</span>
+                    </Link>
                 </SidebarMenuButton>
-                {/* <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} user={currentUser} onSave={handleSaveProfile} onLogout={logout} /> */}
              </SidebarMenuItem>
            </SidebarMenu>
         </SidebarHeader>
