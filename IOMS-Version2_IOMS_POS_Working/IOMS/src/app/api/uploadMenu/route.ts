@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
       escapeCsvField(item.ingredients.join(';'))
     ].join(','));
     const csvContent = [csvHeader, ...csvRows].join('\n');
-    // Always resolve from project root
-    const csvDir = path.resolve(process.cwd(), 'download', 'Copy');
+    // Always resolve to /tmp for Vercel compatibility
+    const csvDir = '/tmp';
     const csvPath = path.join(csvDir, 'menu.csv');
     if (!fs.existsSync(csvDir)) {
       fs.mkdirSync(csvDir, { recursive: true });
