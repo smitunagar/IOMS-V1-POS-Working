@@ -3,20 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(req: NextRequest) {
-  // Get user ID from query parameters
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('userId') || 'default';
-  
-  // Try user-specific menu first, then fallback to default
-  const csvDir = path.resolve(process.cwd(), 'download', 'Copy');
-  const userCsvPath = path.join(csvDir, `menu_${userId}.csv`);
-  const defaultCsvPath = path.join(csvDir, 'menu.csv');
-  
-  let csvPath = userCsvPath;
-  if (!fs.existsSync(csvPath)) {
-    csvPath = defaultCsvPath;
-  }
-  
+  const csvPath = '/tmp/menu.csv';
   if (!fs.existsSync(csvPath)) {
     return new Response(JSON.stringify({ error: 'Menu CSV not found' }), { status: 404 });
   }
@@ -52,8 +39,8 @@ export async function POST(req: NextRequest) {
     // Get user ID from request body or use default
     const userId = body.userId || 'default';
     
-    // Create user-specific CSV path
-    const csvDir = path.resolve(process.cwd(), 'download', 'Copy');
+    // Create user-specific CSV path in /tmp
+    const csvDir = '/tmp';
     const csvPath = path.join(csvDir, `menu_${userId}.csv`);
     
     if (!fs.existsSync(csvDir)) {
