@@ -165,6 +165,14 @@ export function findAvailableTables(partySize: number): Array<{id: string, name:
  */
 export function autoAssignTable(userId: string, reservationId: string, partySize: number): {success: boolean, table?: any, message: string} {
   try {
+    // Skip table assignment on server-side (webhook calls)
+    if (typeof window === 'undefined') {
+      return {
+        success: true,
+        message: 'Table assignment will be done on client-side'
+      };
+    }
+
     const availableTables = findAvailableTables(partySize);
     
     if (availableTables.length === 0) {
@@ -257,13 +265,18 @@ export async function processRetellCallData(userId: string, callData: RetellCall
       if (reservation) {
         result.reservation_id = reservation.id;
         
-        // Try to auto-assign table
-        const tableAssignment = autoAssignTable(userId, reservation.id, callData.party_size);
-        if (tableAssignment.success) {
-          result.message += `Reservation created and ${tableAssignment.message}. `;
+        // For webhook calls (server-side), just confirm reservation creation
+        if (typeof window === 'undefined') {
+          result.message += `Reservation created successfully for ${callData.party_size} guests. Table will be assigned when staff reviews. `;
         } else {
-          result.message += `Reservation created but ${tableAssignment.message}. `;
-          result.warnings?.push('Table assignment requires manual review');
+          // Try to auto-assign table (client-side only)
+          const tableAssignment = autoAssignTable(userId, reservation.id, callData.party_size);
+          if (tableAssignment.success) {
+            result.message += `Reservation created and ${tableAssignment.message}. `;
+          } else {
+            result.message += `Reservation created but ${tableAssignment.message}. `;
+            result.warnings?.push('Table assignment requires manual review');
+          }
         }
       } else {
         result.errors?.push('Failed to create reservation');

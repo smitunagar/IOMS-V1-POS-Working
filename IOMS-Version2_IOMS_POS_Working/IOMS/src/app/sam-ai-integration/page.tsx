@@ -177,6 +177,20 @@ export default function SamAiIntegration() {
     }
   };
 
+  const assignTableToReservation = async (reservationId: string, partySize: number) => {
+    if (!currentUser?.id) return;
+    
+    const { autoAssignTable } = await import('@/lib/retellAiIntegration');
+    const result = autoAssignTable(currentUser.id, reservationId, partySize);
+    
+    if (result.success) {
+      alert(`✅ ${result.message}`);
+      loadData(); // Refresh data
+    } else {
+      alert(`❌ Table assignment failed: ${result.message}`);
+    }
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -298,7 +312,19 @@ export default function SamAiIntegration() {
                         </div>
                         <div>
                           <span className="text-gray-500">Table:</span>
-                          <p>{reservation.table_name || 'Not assigned'}</p>
+                          <div className="flex items-center gap-2">
+                            <p>{reservation.table_name || 'Not assigned'}</p>
+                            {!reservation.table_name && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => assignTableToReservation(reservation.id, reservation.party_size)}
+                                className="text-xs"
+                              >
+                                Assign Table
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-500">Source:</span>
