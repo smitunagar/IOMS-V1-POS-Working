@@ -16,6 +16,7 @@ import {
   LogOut, 
   Loader2,
   MessageSquareQuote, // Added for AI Order Agent
+  Bot, // Added for SAM AI Integration
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { href: "/ingredient-tool", label: "AI Ingredient Tool", icon: Sparkles },
   { href: "/inventory", label: "Inventory", icon: Boxes },
   { href: "/ai-order-agent", label: "AI Order Agent", icon: MessageSquareQuote }, // New Item
+  { href: "/sam-ai-integration", label: "SAM AI Integration", icon: Bot }, // SAM AI Integration
   { href: "/barcode-scanner", label: "Barcode Scanner", icon: Barcode }, // New Item for Barcode Scanner
   { href: "/dashboard", label: "Analytics", icon: BarChartBig },
   { href: "/menu-upload", label: "Menu Upload", icon: Boxes }, // <-- Added Menu Upload here
