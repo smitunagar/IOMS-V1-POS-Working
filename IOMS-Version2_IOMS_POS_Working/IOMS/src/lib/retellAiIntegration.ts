@@ -76,6 +76,12 @@ export interface TableReservation {
 const RESERVATIONS_KEY = 'samAiReservations';
 const ORDERS_KEY = 'samAiOrders';
 
+// In-memory storage for server-side (temporary until database implementation)
+const serverStorage: Record<string, any> = {};
+
+// Export server storage for API access
+export { serverStorage };
+
 /**
  * Generate unique ID
  */
@@ -91,29 +97,67 @@ function getUserStorageKey(userId: string, type: string): string {
 }
 
 /**
- * Save data to localStorage
+ * Save data to storage (localStorage on client, memory on server)
  */
 function saveToStorage(userId: string, type: string, data: any[]): void {
-  if (typeof window === 'undefined') return;
+  const key = getUserStorageKey(userId, type);
+  
   try {
-    const key = getUserStorageKey(userId, type);
-    localStorage.setItem(key, JSON.stringify(data));
+    if (typeof window !== 'undefined') {
+      // Client-side: use localStorage
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log(`✅ Saved to localStorage: ${key}`, data.length, 'items');
+    } else {
+      // Server-side: use in-memory storage
+      serverStorage[key] = data;
+      console.log(`✅ Saved to server memory: ${key}`, data.length, 'items');
+    }
   } catch (error) {
-    console.error(`Error saving ${type} to localStorage:`, error);
+    console.error(`Error saving ${type} to storage:`, error);
   }
 }
 
 /**
- * Get data from localStorage
+ * Get data from storage (localStorage on client, memory on server)
  */
 function getFromStorage(userId: string, type: string): any[] {
-  if (typeof window === 'undefined') return [];
+  const key = getUserStorageKey(userId, type);
+  
   try {
-    const key = getUserStorageKey(userId, type);
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : [];
+    if (typeof window !== 'undefined') {
+      // Client-side: use localStorage
+      const stored = localStorage.getItem(key);
+      const data = stored ? JSON.parse(stored) : [];
+      
+      // Merge with server storage if available
+      const serverKey = key;
+      if (serverStorage[serverKey] && serverStorage[serverKey].length > 0) {
+        console.log(`🔄 Merging server data with client data for ${key}`);
+        const merged = [...data];
+        
+        // Add server items that don't exist in client storage
+        for (const serverItem of serverStorage[serverKey]) {
+          if (!merged.find(item => item.id === serverItem.id)) {
+            merged.push(serverItem);
+          }
+        }
+        
+        // Save merged data back to localStorage
+        if (merged.length > data.length) {
+          localStorage.setItem(key, JSON.stringify(merged));
+          console.log(`✅ Merged and saved ${merged.length} items to localStorage`);
+        }
+        
+        return merged;
+      }
+      
+      return data;
+    } else {
+      // Server-side: use in-memory storage
+      return serverStorage[key] || [];
+    }
   } catch (error) {
-    console.error(`Error getting ${type} from localStorage:`, error);
+    console.error(`Error getting ${type} from storage:`, error);
     return [];
   }
 }

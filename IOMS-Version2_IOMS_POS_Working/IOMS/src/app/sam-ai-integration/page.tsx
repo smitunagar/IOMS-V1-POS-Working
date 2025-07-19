@@ -60,11 +60,14 @@ export default function SamAiIntegration() {
     return () => clearInterval(interval);
   }, [currentUser?.id]);
 
-  const loadData = () => {
+  const loadData = async () => {
     if (!currentUser?.id) return;
 
     try {
-      // Load reservations
+      // First, sync with server-side data
+      await syncServerData();
+      
+      // Then load from localStorage (which now includes server data)
       const allReservations = getReservations(currentUser.id);
       const upcoming = getUpcomingReservations(currentUser.id);
       setReservations(allReservations);
@@ -100,6 +103,44 @@ export default function SamAiIntegration() {
 
     } catch (error) {
       console.error('Error loading SAM AI data:', error);
+    }
+  };
+
+  const syncServerData = async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      console.log('🔄 Syncing with server data...');
+      
+      // Fetch server-side reservations
+      const response = await fetch(`/api/sam-ai/sync?userId=${currentUser.id}&type=samAiReservations`);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data.length > 0) {
+          console.log('📥 Found server reservations:', result.data.length);
+          
+          // Get current client data
+          const currentClientData = JSON.parse(localStorage.getItem(`samAiReservations_${currentUser.id}`) || '[]');
+          
+          // Merge with server data
+          const merged = [...currentClientData];
+          let addedCount = 0;
+          
+          for (const serverItem of result.data) {
+            if (!merged.find(item => item.id === serverItem.id)) {
+              merged.push(serverItem);
+              addedCount++;
+            }
+          }
+          
+          if (addedCount > 0) {
+            localStorage.setItem(`samAiReservations_${currentUser.id}`, JSON.stringify(merged));
+            console.log(`✅ Synced ${addedCount} new reservations from server`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing server data:', error);
     }
   };
 
