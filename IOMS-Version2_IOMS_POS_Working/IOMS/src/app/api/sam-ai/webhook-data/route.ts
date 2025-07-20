@@ -4,26 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-
-// Simple in-memory storage for demonstration
-const recentReservations: Record<string, any[]> = {};
-
-/**
- * Store reservation from webhook
- */
-export function storeWebhookReservation(userId: string, reservation: any) {
-  if (!recentReservations[userId]) {
-    recentReservations[userId] = [];
-  }
-  recentReservations[userId].push(reservation);
-  
-  // Keep only last 10 reservations
-  if (recentReservations[userId].length > 10) {
-    recentReservations[userId] = recentReservations[userId].slice(-10);
-  }
-  
-  console.log(`📦 Stored webhook reservation for ${userId}:`, reservation.id);
-}
+import { getWebhookReservations } from '@/lib/webhookStorage';
 
 /**
  * GET: Fetch webhook reservations
@@ -33,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const userId = searchParams.get('userId') || 'user_1752538556589_u705p8e0q';
     
-    const reservations = recentReservations[userId] || [];
+    const reservations = getWebhookReservations(userId);
     
     console.log(`📤 Serving webhook reservations for ${userId}:`, reservations.length, 'items');
     

@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { processRetellCallData, type RetellCallData } from '@/lib/retellAiIntegration';
-import { storeWebhookReservation } from '@/app/api/sam-ai/webhook-data/route';
+import { storeWebhookReservation } from '@/lib/webhookStorage';
 
 // Retell AI webhook secret for verification (set in environment)
 const RETELL_WEBHOOK_SECRET = process.env.RETELL_WEBHOOK_SECRET || 'default-secret-dev';
