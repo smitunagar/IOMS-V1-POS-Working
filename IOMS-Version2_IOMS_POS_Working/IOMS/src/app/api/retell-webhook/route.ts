@@ -112,19 +112,49 @@ function verifyWebhookSignature(request: NextRequest, body: string): boolean {
 }
 
 /**
+ * Extract reservation info from transcript using simple pattern matching
+ */
+function extractReservationFromTranscript(transcript: string | any): any {
+  const text = typeof transcript === 'string' ? transcript : transcript?.text || '';
+  
+  // Simple patterns to extract common reservation info
+  const nameMatch = text.match(/(?:name is|my name is|I'm|this is)\s+([A-Za-z\s]+)/i);
+  const partySizeMatch = text.match(/(?:table for|party of|for)\s+(\d+)\s+(?:people|person|guests?)/i);
+  const timeMatch = text.match(/(\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/i);
+  const dateMatch = text.match(/(?:today|tomorrow|tonight|(?:this\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))/i);
+  
+  return {
+    customer_info: {
+      name: nameMatch ? nameMatch[1].trim() : 'Guest Customer',
+      phone: null,
+      email: null
+    },
+    reservation_info: {
+      party_size: partySizeMatch ? parseInt(partySizeMatch[1]) : 2,
+      date_time: dateMatch && timeMatch ? 
+        `${dateMatch[0]} ${timeMatch[0]}` : 
+        new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      special_requests: null,
+      occasion: null
+    },
+    confidence_score: 0.6 // Lower confidence for extracted data
+  };
+}
+
+/**
  * Convert Retell webhook payload to our RetellCallData format
  */
-function convertRetellPayload(payload: RetellWebhookPayload): RetellCallData {
-  const { call, event_type } = payload;
-  const analysis = call.analysis;
+function convertRetellPayload(payload: any, extractedInfo: any = null): RetellCallData {
+  const call = payload.call || payload;
+  const analysis = call.analysis || call.call_analysis || extractedInfo;
   
   return {
     call_id: call.call_id,
-    call_type: call.call_type,
+    call_type: call.call_type || 'inbound',
     agent_id: call.agent_id,
     call_status: call.call_status,
     call_duration: call.duration,
-    transcript: call.transcript?.text || '',
+    transcript: call.transcript?.text || call.transcript || '',
     
     // Customer information
     customer_name: analysis?.customer_info?.name,
@@ -132,7 +162,7 @@ function convertRetellPayload(payload: RetellWebhookPayload): RetellCallData {
     customer_email: analysis?.customer_info?.email,
     
     // Order information
-    order_items: analysis?.order_info?.items?.map(item => ({
+    order_items: analysis?.order_info?.items?.map((item: any) => ({
       item_name: item.item,
       quantity: item.quantity,
       special_instructions: item.special_requests
@@ -150,7 +180,7 @@ function convertRetellPayload(payload: RetellWebhookPayload): RetellCallData {
     preferred_delivery_time: analysis?.order_info?.preferred_time,
     
     // AI metadata
-    ai_confidence: analysis?.confidence_score || call.transcript?.confidence,
+    ai_confidence: analysis?.confidence_score || call.transcript?.confidence || 0.7,
     requires_manual_review: analysis?.requires_followup || false,
     extracted_data: analysis
   };
@@ -173,47 +203,63 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const payload: RetellWebhookPayload = JSON.parse(body);
+    const payload: any = JSON.parse(body);
+    
+    // Handle different Retell AI payload formats
+    const call = payload.call || payload;
+    const eventType = payload.event_type || (call.call_status === 'ended' ? 'call_ended' : 'unknown');
+    
     console.log('📞 Retell AI webhook received:', {
-      event_type: payload.event_type,
-      call_id: payload.call.call_id,
-      call_status: payload.call.call_status,
-      agent_id: payload.call.agent_id,
-      has_analysis: !!payload.call.analysis
+      event_type: eventType,
+      call_id: call.call_id,
+      call_status: call.call_status,
+      agent_id: call.agent_id,
+      has_analysis: !!(call.analysis || call.call_analysis),
+      has_transcript: !!(call.transcript),
+      payload_keys: Object.keys(payload)
     });
     
-    // Only process call_ended or call_analyzed events
-    if (payload.event_type !== 'call_ended' && payload.event_type !== 'call_analyzed') {
-      console.log('ℹ️ Ignoring webhook event:', payload.event_type);
+    // Process calls that have ended
+    if (call.call_status !== 'ended') {
+      console.log('ℹ️ Call not ended yet, ignoring:', call.call_status);
       return NextResponse.json({ 
-        message: 'Event acknowledged but not processed',
-        event_type: payload.event_type
+        message: 'Call not ended, waiting for completion',
+        call_status: call.call_status
       });
     }
     
-    // Skip if no analysis data
-    if (!payload.call.analysis) {
-      console.log('ℹ️ No analysis data in webhook, skipping processing');
-      return NextResponse.json({ 
-        message: 'No analysis data to process',
-        call_id: payload.call.call_id
-      });
+    // Try to extract reservation info from transcript if no analysis
+    let extractedInfo = null;
+    if (!call.analysis && !call.call_analysis && call.transcript) {
+      console.log('🔍 No analysis data, attempting to extract from transcript...');
+      extractedInfo = extractReservationFromTranscript(call.transcript);
+      console.log('📋 Extracted info:', extractedInfo);
     }
     
     // Get user ID from agent ID or use default
-    // In production, you'd map agent_id to actual user accounts
-    const userId = mapAgentToUser(payload.call.agent_id);
+    const userId = mapAgentToUser(call.agent_id);
     
     if (!userId) {
-      console.error('❌ Could not determine user ID for agent:', payload.call.agent_id);
+      console.error('❌ Could not determine user ID for agent:', call.agent_id);
       return NextResponse.json(
         { error: 'Could not determine user account' },
         { status: 400 }
       );
     }
     
-    // Convert payload to our format
-    const callData = convertRetellPayload(payload);
+    // Convert payload to our format (using extracted info if needed)
+    const callData = convertRetellPayload(payload, extractedInfo);
+    
+    // Check if we have enough info to create a reservation
+    if (!callData.customer_name || (!callData.party_size && !extractedInfo)) {
+      console.log('⚠️ Insufficient data for reservation, logging call only');
+      return NextResponse.json({
+        success: true,
+        message: 'Call logged but insufficient data for reservation',
+        call_id: callData.call_id,
+        suggestion: 'Consider enabling call analysis in Retell AI or ensure customers provide name and party size'
+      });
+    }
     
     // Process the call data
     console.log('🤖 Processing SAM AI call data...');
