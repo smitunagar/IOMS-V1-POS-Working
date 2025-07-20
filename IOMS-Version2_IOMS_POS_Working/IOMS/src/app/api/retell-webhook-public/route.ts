@@ -11,8 +11,23 @@ import { storeWebhookReservation } from '@/lib/webhookStorage';
  * Convert Retell AI webhook payload to our format
  */
 function convertRetellPayload(payload: any): RetellCallData {
-  const call = payload.call || {};
-  const analysis = call.call_analysis || {};
+  // Handle both wrapped and direct payload formats
+  const call = payload.call || payload;
+  const analysis = call.call_analysis || call.analysis || {};
+  
+  // Extract transcript from various possible formats
+  let transcriptText = '';
+  if (call.transcript) {
+    if (typeof call.transcript === 'string') {
+      transcriptText = call.transcript;
+    } else if (call.transcript.text) {
+      transcriptText = call.transcript.text;
+    } else if (Array.isArray(call.transcript)) {
+      transcriptText = call.transcript.map((t: any) => t.text || t.content || '').join(' ');
+    } else {
+      transcriptText = JSON.stringify(call.transcript);
+    }
+  }
   
   return {
     call_id: call.call_id || `call_${Date.now()}`,
@@ -20,10 +35,10 @@ function convertRetellPayload(payload: any): RetellCallData {
     agent_id: call.agent_id || 'sam_ai_agent',
     call_status: call.call_status || 'ended',
     call_duration: call.duration || 0,
-    transcript: call.transcript?.text || JSON.stringify(call.transcript) || 'No transcript available',
+    transcript: transcriptText || 'No transcript available',
     
     // Customer info extraction
-    customer_name: analysis.entities?.customer_name || 'Guest Customer',
+    customer_name: analysis.entities?.customer_name || 'Phone Customer',
     customer_phone: call.from_number || 'unknown',
     customer_email: analysis.entities?.email || undefined,
     
@@ -41,7 +56,7 @@ function convertRetellPayload(payload: any): RetellCallData {
     preferred_delivery_time: analysis.order_info?.preferred_time,
     
     // AI metadata
-    ai_confidence: analysis.confidence_score || call.transcript?.confidence || 0.8,
+    ai_confidence: analysis.confidence_score || call.transcript?.confidence || 0.5,
     requires_manual_review: analysis.requires_followup || false,
     extracted_data: analysis
   };
@@ -56,19 +71,32 @@ export async function POST(request: NextRequest) {
     console.log('🔓 PUBLIC webhook received. Body length:', body.length);
     
     const payload = JSON.parse(body);
+    
+    // Handle both wrapped and direct payload formats
+    const call = payload.call || payload;
+    
     console.log('📞 Public Retell AI webhook received:', {
       event_type: payload.event_type,
-      call_id: payload.call?.call_id,
-      call_status: payload.call?.call_status,
-      timestamp: payload.timestamp
+      call_id: call.call_id,
+      call_status: call.call_status,
+      agent_id: call.agent_id,
+      has_transcript: !!(call.transcript),
+      payload_size: body.length
     });
     
-    // Only process call_ended events
-    if (payload.event_type === 'call_ended' || payload.event_type === 'call_analyzed') {
-      console.log('🔄 Processing call data...');
+    // Process any ended call (ignore event_type requirement)
+    if (call.call_status === 'ended') {
+      console.log('🔄 Processing ended call...');
       
       // Convert payload to our format
       const callData = convertRetellPayload(payload);
+      
+      console.log('📋 Converted call data:', {
+        customer_name: callData.customer_name,
+        customer_phone: callData.customer_phone,
+        party_size: callData.party_size,
+        transcript_length: callData.transcript.length
+      });
       
       // Process the call data with default user ID
       const result = await processRetellCallData('webhook_user', callData);
@@ -81,12 +109,14 @@ export async function POST(request: NextRequest) {
           // Create a simple reservation object for storage
           const reservation = {
             id: result.reservation_id,
-            customer_name: callData.customer_name || 'Guest',
+            customer_name: callData.customer_name || 'Phone Customer',
+            customer_phone: callData.customer_phone,
             party_size: callData.party_size || 2,
             reservation_datetime: callData.reservation_datetime,
             status: 'confirmed',
             created_at: new Date().toISOString(),
-            retell_call_id: callData.call_id
+            retell_call_id: callData.call_id,
+            source: 'retell-ai-call'
           };
           storeWebhookReservation('webhook_user', reservation);
           console.log('💾 Reservation stored in webhook storage');
@@ -97,6 +127,9 @@ export async function POST(request: NextRequest) {
           message: result.message,
           reservation_id: result.reservation_id,
           order_id: result.order_id,
+          call_id: callData.call_id,
+          customer_name: callData.customer_name,
+          party_size: callData.party_size,
           timestamp: new Date().toISOString()
         });
       } else {
@@ -105,14 +138,16 @@ export async function POST(request: NextRequest) {
           success: false,
           error: result.message,
           errors: result.errors,
+          call_id: callData.call_id,
           timestamp: new Date().toISOString()
         }, { status: 400 });
       }
     } else {
-      console.log('ℹ️ Ignoring event type:', payload.event_type);
+      console.log('ℹ️ Ignoring non-ended call:', call.call_status);
       return NextResponse.json({
         success: true,
-        message: `Event ${payload.event_type} acknowledged but not processed`,
+        message: `Call status ${call.call_status} acknowledged but not processed`,
+        call_status: call.call_status,
         timestamp: new Date().toISOString()
       });
     }
