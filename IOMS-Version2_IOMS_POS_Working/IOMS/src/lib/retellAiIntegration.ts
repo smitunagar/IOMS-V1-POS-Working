@@ -4,6 +4,9 @@
  * For automatic order creation and table reservations from phone calls
  */
 
+import { promises as fs } from 'fs';
+import path from 'path';
+
 export interface RetellCallData {
   // Call information from Retell AI
   call_id: string;
@@ -83,6 +86,60 @@ const serverStorage: Record<string, any> = {};
 export { serverStorage };
 
 /**
+ * Get data directory path for persistent storage
+ */
+function getDataDir(): string {
+  return path.join(process.cwd(), 'data');
+}
+
+/**
+ * Get file path for user data
+ */
+function getDataFilePath(userId: string, type: string): string {
+  return path.join(getDataDir(), `${type}_${userId}.json`);
+}
+
+/**
+ * Ensure data directory exists
+ */
+async function ensureDataDir(): Promise<void> {
+  try {
+    const dataDir = getDataDir();
+    await fs.mkdir(dataDir, { recursive: true });
+  } catch (error) {
+    // Directory might already exist, ignore error
+  }
+}
+
+/**
+ * Load data from persistent storage
+ */
+export async function loadFromPersistentStorage(userId: string, type: string): Promise<any[]> {
+  try {
+    const filePath = getDataFilePath(userId, type);
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist or is invalid, return empty array
+    return [];
+  }
+}
+
+/**
+ * Save data to persistent storage
+ */
+export async function saveToPersistentStorage(userId: string, type: string, data: any[]): Promise<void> {
+  try {
+    await ensureDataDir();
+    const filePath = getDataFilePath(userId, type);
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    console.log(`✅ Saved to persistent storage: ${filePath}`, data.length, 'items');
+  } catch (error) {
+    console.error(`Error saving ${type} to persistent storage:`, error);
+  }
+}
+
+/**
  * Generate unique ID
  */
 function generateId(prefix: string = 'id'): string {
@@ -97,9 +154,9 @@ function getUserStorageKey(userId: string, type: string): string {
 }
 
 /**
- * Save data to storage (localStorage on client, memory on server)
+ * Save data to storage (localStorage on client, persistent file on server)
  */
-function saveToStorage(userId: string, type: string, data: any[]): void {
+async function saveToStorage(userId: string, type: string, data: any[]): Promise<void> {
   const key = getUserStorageKey(userId, type);
   
   try {
@@ -108,9 +165,10 @@ function saveToStorage(userId: string, type: string, data: any[]): void {
       localStorage.setItem(key, JSON.stringify(data));
       console.log(`✅ Saved to localStorage: ${key}`, data.length, 'items');
     } else {
-      // Server-side: use in-memory storage
+      // Server-side: use persistent file storage AND memory for immediate access
       serverStorage[key] = data;
-      console.log(`✅ Saved to server memory: ${key}`, data.length, 'items');
+      await saveToPersistentStorage(userId, type, data);
+      console.log(`✅ Saved to server storage: ${key}`, data.length, 'items');
     }
   } catch (error) {
     console.error(`Error saving ${type} to storage:`, error);
@@ -118,9 +176,9 @@ function saveToStorage(userId: string, type: string, data: any[]): void {
 }
 
 /**
- * Get data from storage (localStorage on client, memory on server)
+ * Get data from storage (localStorage on client, persistent file + memory on server)
  */
-function getFromStorage(userId: string, type: string): any[] {
+async function getFromStorage(userId: string, type: string): Promise<any[]> {
   const key = getUserStorageKey(userId, type);
   
   try {
@@ -129,31 +187,17 @@ function getFromStorage(userId: string, type: string): any[] {
       const stored = localStorage.getItem(key);
       const data = stored ? JSON.parse(stored) : [];
       
-      // Merge with server storage if available
-      const serverKey = key;
-      if (serverStorage[serverKey] && serverStorage[serverKey].length > 0) {
-        console.log(`🔄 Merging server data with client data for ${key}`);
-        const merged = [...data];
-        
-        // Add server items that don't exist in client storage
-        for (const serverItem of serverStorage[serverKey]) {
-          if (!merged.find(item => item.id === serverItem.id)) {
-            merged.push(serverItem);
-          }
-        }
-        
-        // Save merged data back to localStorage
-        if (merged.length > data.length) {
-          localStorage.setItem(key, JSON.stringify(merged));
-          console.log(`✅ Merged and saved ${merged.length} items to localStorage`);
-        }
-        
-        return merged;
-      }
-      
+      // For client-side, return localStorage data
       return data;
     } else {
-      // Server-side: use in-memory storage
+      // Server-side: check memory first, then persistent storage
+      if (!serverStorage[key]) {
+        // Load from persistent storage if not in memory
+        const persistentData = await loadFromPersistentStorage(userId, type);
+        serverStorage[key] = persistentData;
+        console.log(`📂 Loaded from persistent storage: ${key}`, persistentData.length, 'items');
+      }
+      
       return serverStorage[key] || [];
     }
   } catch (error) {
@@ -165,9 +209,9 @@ function getFromStorage(userId: string, type: string): any[] {
 /**
  * Add new reservation
  */
-export function addReservation(userId: string, reservationData: Omit<TableReservation, 'id' | 'created_at'>): TableReservation | null {
+export async function addReservation(userId: string, reservationData: Omit<TableReservation, 'id' | 'created_at'>): Promise<TableReservation | null> {
   try {
-    const reservations = getFromStorage(userId, RESERVATIONS_KEY);
+    const reservations = await getFromStorage(userId, RESERVATIONS_KEY);
     const newReservation: TableReservation = {
       id: generateId('res'),
       created_at: new Date().toISOString(),
@@ -175,7 +219,7 @@ export function addReservation(userId: string, reservationData: Omit<TableReserv
     };
     
     reservations.push(newReservation);
-    saveToStorage(userId, RESERVATIONS_KEY, reservations);
+    await saveToStorage(userId, RESERVATIONS_KEY, reservations);
     return newReservation;
   } catch (error) {
     console.error('Error adding reservation:', error);
@@ -186,8 +230,8 @@ export function addReservation(userId: string, reservationData: Omit<TableReserv
 /**
  * Get all reservations for user
  */
-export function getReservations(userId: string): TableReservation[] {
-  return getFromStorage(userId, RESERVATIONS_KEY);
+export async function getReservations(userId: string): Promise<TableReservation[]> {
+  return await getFromStorage(userId, RESERVATIONS_KEY);
 }
 
 /**
@@ -292,7 +336,7 @@ export async function processRetellCallData(userId: string, callData: RetellCall
     
     // Handle reservation if requested
     if (callData.reservation_datetime && callData.party_size) {
-      const reservation = addReservation(userId, {
+      const reservation = await addReservation(userId, {
         customer_name: customerName,
         customer_phone: customerPhone,
         customer_email: callData.customer_email,

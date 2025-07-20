@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { serverStorage } from '@/lib/retellAiIntegration';
+import { loadFromPersistentStorage, saveToPersistentStorage } from '@/lib/retellAiIntegration';
 
 /**
  * GET: Fetch server-side data for a user
@@ -22,22 +22,24 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const key = `${type}_${userId}`;
-    const data = serverStorage[key] || [];
+    console.log(`📥 Loading persistent data for ${type}_${userId}`);
     
-    console.log(`📤 Serving server data for ${key}:`, data.length, 'items');
+    // Load from persistent storage
+    const data = await loadFromPersistentStorage(userId, type);
+    
+    console.log(`📤 Serving persistent data for ${type}_${userId}:`, data.length, 'items');
     
     return NextResponse.json({
       success: true,
       data,
-      key,
+      key: `${type}_${userId}`,
       count: data.length
     });
     
   } catch (error) {
-    console.error('Error fetching server data:', error);
+    console.error('Error fetching persistent data:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch server data' },
+      { error: 'Failed to fetch persistent data' },
       { status: 500 }
     );
   }
@@ -57,8 +59,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const key = `${type}_${userId}`;
-    const serverData = serverStorage[key] || [];
+    // Load current server data
+    const serverData = await loadFromPersistentStorage(userId, type);
     
     // Merge client and server data
     const merged = [...(clientData || [])];
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    console.log(`🔄 Merged data for ${key}: ${addedCount} new items added`);
+    console.log(`🔄 Merged data for ${type}_${userId}: ${addedCount} new items added`);
     
     return NextResponse.json({
       success: true,
