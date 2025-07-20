@@ -207,7 +207,17 @@ export async function POST(request: NextRequest) {
     
     // Handle different Retell AI payload formats
     const call = payload.call || payload;
-    const eventType = payload.event_type || (call.call_status === 'ended' ? 'call_ended' : 'unknown');
+    const eventType = payload.event_type || (call?.call_status === 'ended' ? 'call_ended' : 'unknown');
+    
+    // Safety check
+    if (!call || !call.call_id) {
+      console.error('❌ Invalid payload structure:', Object.keys(payload));
+      return NextResponse.json({
+        error: 'Invalid payload structure',
+        received_keys: Object.keys(payload),
+        expected: 'call object with call_id'
+      }, { status: 400 });
+    }
     
     console.log('📞 Retell AI webhook received:', {
       event_type: eventType,
