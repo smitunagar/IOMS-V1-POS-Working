@@ -26,7 +26,7 @@ const testPayload = {
       },
       reservation_info: {
         date_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        party_size: 2,
+        party_size: 3,
         special_requests: 'Window table if possible'
       },
       confidence_score: 0.95,
