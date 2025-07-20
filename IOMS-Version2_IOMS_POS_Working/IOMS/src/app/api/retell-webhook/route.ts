@@ -148,17 +148,31 @@ function convertRetellPayload(payload: any, extractedInfo: any = null): RetellCa
   const call = payload.call || payload;
   const analysis = call.analysis || call.call_analysis || extractedInfo;
   
+  // Extract transcript text from various possible structures
+  let transcriptText = '';
+  if (call.transcript) {
+    if (typeof call.transcript === 'string') {
+      transcriptText = call.transcript;
+    } else if (call.transcript.text) {
+      transcriptText = call.transcript.text;
+    } else if (Array.isArray(call.transcript)) {
+      transcriptText = call.transcript.map((t: any) => t.text || t.content || '').join(' ');
+    } else {
+      transcriptText = JSON.stringify(call.transcript);
+    }
+  }
+  
   return {
     call_id: call.call_id,
     call_type: call.call_type || 'inbound',
     agent_id: call.agent_id,
     call_status: call.call_status,
     call_duration: call.duration,
-    transcript: call.transcript?.text || call.transcript || '',
+    transcript: transcriptText,
     
     // Customer information
-    customer_name: analysis?.customer_info?.name,
-    customer_phone: analysis?.customer_info?.phone || call.from_number,
+    customer_name: analysis?.customer_info?.name || 'Phone Customer',
+    customer_phone: analysis?.customer_info?.phone || call.from_number || 'Unknown',
     customer_email: analysis?.customer_info?.email,
     
     // Order information
@@ -170,8 +184,8 @@ function convertRetellPayload(payload: any, extractedInfo: any = null): RetellCa
     order_type: analysis?.order_info?.order_type,
     
     // Reservation information
-    reservation_datetime: analysis?.reservation_info?.date_time,
-    party_size: analysis?.reservation_info?.party_size,
+    reservation_datetime: analysis?.reservation_info?.date_time || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    party_size: analysis?.reservation_info?.party_size || 2,
     special_requests: analysis?.reservation_info?.special_requests,
     occasion: analysis?.reservation_info?.occasion,
     
@@ -180,8 +194,8 @@ function convertRetellPayload(payload: any, extractedInfo: any = null): RetellCa
     preferred_delivery_time: analysis?.order_info?.preferred_time,
     
     // AI metadata
-    ai_confidence: analysis?.confidence_score || call.transcript?.confidence || 0.7,
-    requires_manual_review: analysis?.requires_followup || false,
+    ai_confidence: analysis?.confidence_score || call.transcript?.confidence || 0.5,
+    requires_manual_review: analysis?.requires_followup || true, // Default to manual review for calls without analysis
     extracted_data: analysis
   };
 }
@@ -229,7 +243,7 @@ export async function POST(request: NextRequest) {
       payload_keys: Object.keys(payload)
     });
     
-    // Process calls that have ended
+    // Process calls that have ended (regardless of event_type)
     if (call.call_status !== 'ended') {
       console.log('ℹ️ Call not ended yet, ignoring:', call.call_status);
       return NextResponse.json({ 
@@ -238,12 +252,22 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    console.log('🔄 Processing ended call...');
+    
     // Try to extract reservation info from transcript if no analysis
     let extractedInfo = null;
     if (!call.analysis && !call.call_analysis && call.transcript) {
       console.log('🔍 No analysis data, attempting to extract from transcript...');
       extractedInfo = extractReservationFromTranscript(call.transcript);
       console.log('📋 Extracted info:', extractedInfo);
+    } else if (!call.analysis && !call.call_analysis) {
+      console.log('⚠️ No analysis data and no transcript available');
+      // Still process the call but with default values
+      extractedInfo = {
+        customer_info: { name: 'Phone Customer', phone: call.from_number },
+        reservation_info: { party_size: 2, date_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() },
+        confidence_score: 0.3
+      };
     }
     
     // Get user ID from agent ID or use default
@@ -260,18 +284,15 @@ export async function POST(request: NextRequest) {
     // Convert payload to our format (using extracted info if needed)
     const callData = convertRetellPayload(payload, extractedInfo);
     
-    // Check if we have enough info to create a reservation
-    if (!callData.customer_name || (!callData.party_size && !extractedInfo)) {
-      console.log('⚠️ Insufficient data for reservation, logging call only');
-      return NextResponse.json({
-        success: true,
-        message: 'Call logged but insufficient data for reservation',
-        call_id: callData.call_id,
-        suggestion: 'Consider enabling call analysis in Retell AI or ensure customers provide name and party size'
-      });
-    }
+    console.log('📋 Converted call data:', {
+      customer_name: callData.customer_name,
+      party_size: callData.party_size,
+      phone: callData.customer_phone,
+      has_datetime: !!callData.reservation_datetime
+    });
     
-    // Process the call data
+    // Always try to create a reservation for ended calls
+    // Even with minimal data, we want to capture the call
     console.log('🤖 Processing SAM AI call data...');
     const result = await processRetellCallData(userId, callData);
     
