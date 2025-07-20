@@ -165,6 +165,41 @@ export default function SamAiIntegration() {
     );
   };
 
+  const generateTestData = async () => {
+    if (!currentUser?.id) return;
+
+    try {
+      console.log('🧪 Generating test reservation data...');
+      
+      const response = await fetch('/api/sam-ai/generate-test-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          count: 5
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Test data generated:', result);
+        
+        // Refresh the dashboard to show new data
+        await loadData();
+        
+        alert(`✅ Successfully generated ${result.count} test reservations!`);
+      } else {
+        console.error('Failed to generate test data:', response.statusText);
+        alert('❌ Failed to generate test data');
+      }
+    } catch (error) {
+      console.error('Error generating test data:', error);
+      alert('❌ Error generating test data');
+    }
+  };
+
   const testWebhook = async () => {
     try {
       const testPayload = {
@@ -246,10 +281,16 @@ export default function SamAiIntegration() {
             Monitor and manage Retell AI integration with IOMS
           </p>
         </div>
-        <Button onClick={testWebhook} variant="outline">
-          <Webhook className="w-4 h-4 mr-2" />
-          Test Webhook
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={generateTestData} variant="secondary">
+            <Bot className="w-4 h-4 mr-2" />
+            Generate Test Data
+          </Button>
+          <Button onClick={testWebhook} variant="outline">
+            <Webhook className="w-4 h-4 mr-2" />
+            Test Webhook
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -329,6 +370,10 @@ export default function SamAiIntegration() {
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No upcoming reservations</p>
+                  <Button onClick={generateTestData} className="mt-4" variant="secondary">
+                    <Bot className="w-4 h-4 mr-2" />
+                    Generate Test Reservations
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -406,6 +451,10 @@ export default function SamAiIntegration() {
                 <div className="text-center py-8 text-gray-500">
                   <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No SAM AI reservations yet</p>
+                  <Button onClick={generateTestData} className="mt-4" variant="secondary">
+                    <Bot className="w-4 h-4 mr-2" />
+                    Generate Test Reservations
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -523,9 +572,15 @@ export default function SamAiIntegration() {
                 <div className="text-center py-8 text-gray-500">
                   <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No webhook activity yet</p>
-                  <Button onClick={testWebhook} className="mt-4" variant="outline">
-                    Test Webhook Integration
-                  </Button>
+                  <div className="flex gap-2 justify-center mt-4">
+                    <Button onClick={generateTestData} variant="secondary">
+                      <Bot className="w-4 h-4 mr-2" />
+                      Generate Test Data
+                    </Button>
+                    <Button onClick={testWebhook} variant="outline">
+                      Test Webhook Integration
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3">
