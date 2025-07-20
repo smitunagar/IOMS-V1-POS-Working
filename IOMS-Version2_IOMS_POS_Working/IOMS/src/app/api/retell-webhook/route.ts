@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { processRetellCallData, type RetellCallData } from '@/lib/retellAiIntegration';
+import { storeWebhookReservation } from '@/app/api/sam-ai/webhook-data/route';
 
 // Retell AI webhook secret for verification (set in environment)
 const RETELL_WEBHOOK_SECRET = process.env.RETELL_WEBHOOK_SECRET || 'default-secret-dev';
@@ -225,6 +226,27 @@ export async function POST(request: NextRequest) {
         reservation_id: result.reservation_id,
         message: result.message
       });
+      
+      // Store webhook data for client sync if reservation was created
+      if (result.reservation_id) {
+        try {
+          storeWebhookReservation(userId, {
+            id: result.reservation_id,
+            call_id: callData.call_id,
+            customer_name: callData.customer_name,
+            customer_phone: callData.customer_phone,
+            party_size: callData.party_size,
+            reservation_datetime: callData.reservation_datetime,
+            status: 'pending',
+            created_by: 'retell-ai',
+            created_at: new Date().toISOString(),
+            confidence_score: result.confidence_score
+          });
+          console.log('📦 Stored webhook reservation data for client sync');
+        } catch (error) {
+          console.error('Error storing webhook data:', error);
+        }
+      }
       
       // Log to audit trail
       await logWebhookActivity(userId, {

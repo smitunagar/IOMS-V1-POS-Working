@@ -110,37 +110,39 @@ export default function SamAiIntegration() {
     if (!currentUser?.id) return;
     
     try {
-      console.log('🔄 Syncing with server data...');
+      console.log('🔄 Syncing with webhook data...');
       
-      // Fetch server-side reservations
-      const response = await fetch(`/api/sam-ai/sync?userId=${currentUser.id}&type=samAiReservations`);
+      // Fetch webhook reservations
+      const response = await fetch(`/api/sam-ai/webhook-data?userId=${currentUser.id}`);
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data.length > 0) {
-          console.log('📥 Found server reservations:', result.data.length);
+          console.log('📥 Found webhook reservations:', result.data.length);
           
           // Get current client data
           const currentClientData = JSON.parse(localStorage.getItem(`samAiReservations_${currentUser.id}`) || '[]');
           
-          // Merge with server data
+          // Merge with webhook data
           const merged = [...currentClientData];
           let addedCount = 0;
           
-          for (const serverItem of result.data) {
-            if (!merged.find(item => item.id === serverItem.id)) {
-              merged.push(serverItem);
+          for (const webhookItem of result.data) {
+            if (!merged.find(item => item.id === webhookItem.id)) {
+              merged.push(webhookItem);
               addedCount++;
             }
           }
           
           if (addedCount > 0) {
             localStorage.setItem(`samAiReservations_${currentUser.id}`, JSON.stringify(merged));
-            console.log(`✅ Synced ${addedCount} new reservations from server`);
+            console.log(`✅ Synced ${addedCount} new reservations from webhook`);
           }
+        } else {
+          console.log('📭 No webhook reservations found');
         }
       }
     } catch (error) {
-      console.error('Error syncing server data:', error);
+      console.error('Error syncing webhook data:', error);
     }
   };
 
