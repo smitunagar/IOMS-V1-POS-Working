@@ -207,6 +207,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     console.log('📞 Webhook received. Body length:', body.length);
+    console.log('🚨 HOTFIX: Processing all webhook requests');
     
     // Verify webhook signature for security
     if (!verifyWebhookSignature(request, body)) {
