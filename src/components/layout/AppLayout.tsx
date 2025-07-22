@@ -45,7 +45,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: "/order-entry", label: "Order Entry", icon: ShoppingCart },
-  { href: "/tables", label: "Table Management", icon: Table },
+  { href: "/table-management", label: "Table Management", icon: Table },
   { href: "/payment", label: "Payment", icon: CreditCard },
   { href: "/order-history", label: "Order History", icon: History },
   { href: "/ingredient-tool", label: "AI Ingredient Tool", icon: Sparkles },

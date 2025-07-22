@@ -67,6 +67,12 @@ export default function IOMSApp() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-md mx-auto">
+          {/* Table Management Link */}
+          <div className="mb-6">
+            <Link href="/table-management" className="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold shadow hover:bg-blue-700 transition-colors">
+              Go to Table Management
+            </Link>
+          </div>
           {/* Auth Card */}
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="text-center mb-8">

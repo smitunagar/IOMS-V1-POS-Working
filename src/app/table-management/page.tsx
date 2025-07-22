@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Users, Clock, CheckCircle, XCircle, Plus, Edit, Trash2, Calendar, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,89 +36,28 @@ interface Reservation {
 }
 
 export default function TableManagement() {
-  const [tables, setTables] = useState<Table[]>([
-    {
-      id: '1',
-      number: '1',
-      capacity: 4,
-      status: 'occupied',
-      currentOrder: {
-        orderId: 'ORD-001',
-        items: 3,
-        total: 45.50,
-        startTime: '19:30'
-      }
-    },
-    {
-      id: '2',
-      number: '2',
-      capacity: 6,
-      status: 'reserved',
-      reservation: {
-        customerName: 'Maria Schmidt',
-        time: '20:00',
-        partySize: 5,
-        phone: '+49 123 456789'
-      }
-    },
-    {
-      id: '3',
-      number: '3',
-      capacity: 2,
-      status: 'available'
-    },
-    {
-      id: '4',
-      number: '4',
-      capacity: 8,
-      status: 'occupied',
-      currentOrder: {
-        orderId: 'ORD-002',
-        items: 6,
-        total: 78.90,
-        startTime: '18:45'
-      }
-    },
-    {
-      id: '5',
-      number: '5',
-      capacity: 4,
-      status: 'cleaning'
-    },
-    {
-      id: '6',
-      number: '6',
-      capacity: 6,
-      status: 'available'
-    }
-  ]);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [editTable, setEditTable] = useState<Table | null>(null);
+  const [editTableNumber, setEditTableNumber] = useState('');
+  const [editTableCapacity, setEditTableCapacity] = useState('');
+  const [deleteTableId, setDeleteTableId] = useState<string | null>(null);
 
-  const [reservations, setReservations] = useState<Reservation[]>([
-    {
-      id: '1',
-      tableNumber: '2',
-      customerName: 'Maria Schmidt',
-      date: '2024-01-15',
-      time: '20:00',
-      partySize: 5,
-      phone: '+49 123 456789',
-      status: 'confirmed',
-      specialRequests: 'Window seat preferred'
-    },
-    {
-      id: '2',
-      tableNumber: '3',
-      customerName: 'Hans Mueller',
-      date: '2024-01-15',
-      time: '19:30',
-      partySize: 2,
-      phone: '+49 987 654321',
-      status: 'pending'
+  // Fetch tables from API on mount
+  useEffect(() => {
+    async function fetchTables() {
+      const res = await fetch('/api/tables');
+      const data = await res.json();
+      setTables(data.tables);
     }
-  ]);
+    fetchTables();
+  }, []);
 
   const [activeTab, setActiveTab] = useState<'tables' | 'reservations'>('tables');
   const [showAddReservation, setShowAddReservation] = useState(false);
+  const [showAddTable, setShowAddTable] = useState(false);
+  const [newTableNumber, setNewTableNumber] = useState('');
+  const [newTableCapacity, setNewTableCapacity] = useState('');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -149,10 +88,66 @@ export default function TableManagement() {
     setShowAddReservation(false);
   };
 
-  const updateTableStatus = (tableId: string, status: Table['status']) => {
-    setTables(tables.map(table => 
-      table.id === tableId ? { ...table, status } : table
-    ));
+  // Update table status via API
+  const updateTableStatus = async (tableId: string, status: Table['status']) => {
+    await fetch('/api/tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: status === 'occupied' ? 'occupy' : 'free', tableId })
+    });
+    // Refresh tables
+    const res = await fetch('/api/tables');
+    const data = await res.json();
+    setTables(data.tables);
+  };
+
+  const handleAddTable = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTableNumber || !newTableCapacity) return;
+    await fetch('/api/tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', number: newTableNumber, capacity: newTableCapacity })
+    });
+    setNewTableNumber('');
+    setNewTableCapacity('');
+    setShowAddTable(false);
+    // Refresh tables
+    const res = await fetch('/api/tables');
+    const data = await res.json();
+    setTables(data.tables);
+  };
+
+  // Edit table handler
+  const handleEditTable = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTable) return;
+    await fetch('/api/tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'edit', tableId: editTable.id, number: editTableNumber, capacity: editTableCapacity })
+    });
+    setEditTable(null);
+    setEditTableNumber('');
+    setEditTableCapacity('');
+    // Refresh tables
+    const res = await fetch('/api/tables');
+    const data = await res.json();
+    setTables(data.tables);
+  };
+  // Delete table handler
+  const handleDeleteTable = async () => {
+    if (!deleteTableId) return;
+    await fetch('/api/tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', tableId: deleteTableId })
+    });
+    setDeleteTableId(null);
+    // Refresh tables
+    const res = await fetch('/api/tables');
+    const data = await res.json();
+    setTables(data.tables);
   };
 
   return (
@@ -274,6 +269,11 @@ export default function TableManagement() {
                       Cleaning
                     </button>
                   </div>
+                  {/* Edit/Delete buttons */}
+                  <div className="flex gap-2 mt-4">
+                    <button className="text-blue-600 hover:text-blue-900" onClick={() => { setEditTable(table); setEditTableNumber(table.number); setEditTableCapacity(String(table.capacity)); }}><Edit className="w-4 h-4" /> Edit</button>
+                    <button className="text-red-600 hover:text-red-900" onClick={() => setDeleteTableId(table.id)}><Trash2 className="w-4 h-4" /> Delete</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -336,6 +336,50 @@ export default function TableManagement() {
                 </div>
               </div>
             </div>
+
+            {/* Add Table Button and Modal */}
+            <div className="mb-4 flex justify-end">
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={() => setShowAddTable(true)}
+              >
+                <Plus className="inline-block mr-2 h-4 w-4" /> Add Table
+              </button>
+            </div>
+            {showAddTable && (
+              <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl border">
+                  <h2 className="text-lg font-bold mb-4 text-blue-700">Add New Table</h2>
+                  <form onSubmit={handleAddTable} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Table Number</label>
+                      <input
+                        type="text"
+                        className="w-full border rounded px-2 py-1"
+                        value={newTableNumber}
+                        onChange={e => setNewTableNumber(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Capacity (seats)</label>
+                      <input
+                        type="number"
+                        className="w-full border rounded px-2 py-1"
+                        value={newTableCapacity}
+                        onChange={e => setNewTableCapacity(e.target.value)}
+                        min={1}
+                        required
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button type="button" className="bg-gray-200 px-3 py-1 rounded" onClick={() => setShowAddTable(false)}>Cancel</button>
+                      <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Add Table</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -544,6 +588,54 @@ export default function TableManagement() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Table Modal */}
+      {editTable && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl border">
+            <h2 className="text-lg font-bold mb-4 text-blue-700">Edit Table</h2>
+            <form onSubmit={handleEditTable} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Table Number</label>
+                <input
+                  type="text"
+                  className="w-full border rounded px-2 py-1"
+                  value={editTableNumber}
+                  onChange={e => setEditTableNumber(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Capacity (seats)</label>
+                <input
+                  type="number"
+                  className="w-full border rounded px-2 py-1"
+                  value={editTableCapacity}
+                  onChange={e => setEditTableCapacity(e.target.value)}
+                  min={1}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button type="button" className="bg-gray-200 px-3 py-1 rounded" onClick={() => setEditTable(null)}>Cancel</button>
+                <button type="submit" className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Table Confirmation Modal */}
+      {deleteTableId && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl border">
+            <h2 className="text-lg font-bold mb-4 text-red-700">Delete Table</h2>
+            <p className="mb-4">Are you sure you want to delete this table?</p>
+            <div className="flex justify-end gap-2">
+              <button className="bg-gray-200 px-3 py-1 rounded" onClick={() => setDeleteTableId(null)}>Cancel</button>
+              <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700" onClick={handleDeleteTable}>Delete</button>
+            </div>
           </div>
         </div>
       )}

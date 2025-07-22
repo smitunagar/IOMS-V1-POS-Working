@@ -53,8 +53,8 @@ export default function QuickActions({ className = '' }: QuickActionsProps) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null)
 
   useEffect(() => {
-    setQuickActions(getUserQuickActions())
-  }, [])
+    setQuickActions(getUserQuickActions());
+  }, []);
 
   const handleRemoveAction = (actionId: string) => {
     removeQuickAction(actionId)

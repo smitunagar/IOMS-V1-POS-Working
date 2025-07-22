@@ -16,7 +16,7 @@ export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
     title: 'Start POS',
     description: 'Process transactions',
     icon: 'CreditCard',
-    href: '/pos-terminal',
+    href: '/order-entry',
     color: 'blue',
     isDefault: true,
     isEnabled: true,

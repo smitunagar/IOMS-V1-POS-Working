@@ -455,7 +455,7 @@ export default function OrderEntryPage() {
                         >
                           <option value="">Select table</option>
                           {availableTables.map((table: any) => (
-                            <option key={table.id} value={table.id} disabled={table.status !== 'available'}>
+                            <option key={table.id} value={table.id}>
                               Table {table.number} ({table.status.charAt(0).toUpperCase() + table.status.slice(1)})
                             </option>
                           ))}

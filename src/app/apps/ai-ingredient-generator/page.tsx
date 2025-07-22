@@ -505,7 +505,7 @@ export default function IOMSIndividualPage() {
                         <div className="text-right">
                           <div className="font-medium">{item.quantity} {item.unit}</div>
                           <div className="text-xs text-gray-500">
-                            Updated {item.lastUpdated.toLocaleDateString()}
+                            Updated {new Date(item.lastUpdated).toLocaleDateString()}
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
@@ -585,7 +585,7 @@ export default function IOMSIndividualPage() {
                             <div>
                               <p className="font-medium">{bill.items.length} items</p>
                               <p className="text-sm text-gray-500">
-                                {bill.date.toLocaleDateString()}
+                                {new Date(bill.date).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="text-right">
@@ -743,7 +743,7 @@ export default function IOMSIndividualPage() {
                         <div>
                           <h4 className="font-medium">Bill Scan #{scannedBills.length - index}</h4>
                           <p className="text-sm text-gray-500">
-                            {bill.date.toLocaleDateString()} at {bill.date.toLocaleTimeString()}
+                            {new Date(bill.date).toLocaleDateString()} at {new Date(bill.date).toLocaleTimeString()}
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
                             Added {bill.items.length} items to inventory

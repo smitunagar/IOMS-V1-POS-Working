@@ -1,17 +1,42 @@
 export const runtime = "nodejs";
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { extractMenuFromPdf } from '@/lib/aiMenuExtractor';
+import { PrismaClient } from '@prisma/client';
+import formidable, { File as FormidableFile, Fields, Files } from 'formidable';
 
-export async function POST(req: NextRequest) {
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+const prisma = new PrismaClient();
+
+async function parseForm(req: any): Promise<{ fields: Fields; files: Files }> {
+  return new Promise((resolve, reject) => {
+    const form = formidable({ multiples: false });
+    form.parse(req, (err: any, fields: Fields, files: Files) => {
+      if (err) reject(err);
+      else resolve({ fields, files });
+    });
+  });
+}
+
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { file } = body;
-    if (!file) return new Response(JSON.stringify({ message: 'Missing PDF file data' }), { status: 400 });
+    // Parse multipart/form-data
+    const { fields, files } = await parseForm(req);
+    const file = files.file as FormidableFile | FormidableFile[] | undefined;
+    if (!file || (Array.isArray(file) && !file[0])) {
+      return NextResponse.json({ message: 'No file uploaded' }, { status: 400 });
+    }
+    // Support both single and array file
+    const fileObj = Array.isArray(file) ? file[0] : file;
+    const pdfBuffer = fs.readFileSync(fileObj.filepath);
+    const pdfDataUri = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
 
-    const pdfDataUri = `data:application/pdf;base64,${file}`;
-    
     let menuResult: any;
     try {
       menuResult = await extractMenuFromPdf({ pdfDataUri });
@@ -53,6 +78,43 @@ export async function POST(req: NextRequest) {
       return acc;
     }, {} as Record<string, number>));
     
+    // --- DB INSERTION LOGIC ---
+    // Optionally clear old menu items (uncomment if needed)
+    // await prisma.menuItem.deleteMany();
+
+    for (const item of menuItems) {
+      // Upsert MenuItem
+      const menuItem = await prisma.menuItem.create({
+        data: {
+          name: item.name,
+          price: parseFloat(item.price) || 0,
+          category: item.category,
+          image: item.image && typeof item.image === 'object' ? item.image : (item.image ? { url: item.image } : {}),
+          aiHint: item.aiHint || '',
+        },
+      });
+      // Handle ingredients
+      if (Array.isArray(item.ingredients)) {
+        for (const ingName of item.ingredients) {
+          if (!ingName) continue;
+          // Find or create ingredient
+          let ingredient = await prisma.ingredient.findFirst({ where: { name: ingName } });
+          if (!ingredient) {
+            ingredient = await prisma.ingredient.create({ data: { name: ingName } });
+          }
+          // Create MenuItemIngredient link (quantity is optional, default 1)
+          await prisma.menuItemIngredient.create({
+            data: {
+              menuItemId: menuItem.id,
+              ingredientId: ingredient.id,
+              quantity: 1,
+            },
+          });
+        }
+      }
+    }
+    // --- END DB INSERTION LOGIC ---
+
     // Save to menu.csv with proper escaping - match the expected CSV structure
     const csvHeader = 'id,name,quantity,price,category,image,aiHint,ingredients';
     const csvRows = menuItems.map((item: any) => [
@@ -80,16 +142,9 @@ export async function POST(req: NextRequest) {
     
     // After writing menu.csv, trigger import to localStorage for the current user if userId is provided
     // (Assume userId is sent in the request body for automation)
-    if (body.userId) {
-      return new Response(JSON.stringify({ 
-        success: true, 
-        count: menuItems.length, 
-        shouldImport: true, 
-        partialOrRepaired, 
-        menu: menuItems 
-      }), { status: 200 });
-    }
-    
+    // If you need userId or other fields, extract from 'fields' object
+    // Example: const userId = fields.userId as string | undefined;
+
     return new Response(JSON.stringify({ 
       success: true, 
       count: menuItems.length, 
@@ -97,7 +152,7 @@ export async function POST(req: NextRequest) {
       menu: menuItems 
     }), { status: 200 });
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error parsing PDF:', error);
     return new Response(JSON.stringify({ 
       message: 'Internal Server Error',
