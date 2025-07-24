@@ -17,4 +17,4 @@ export async function getIngredientsForDish(dish: { name: string, aiHint?: strin
   if (Array.isArray(data)) return data;
   if (data.result && Array.isArray(data.result.ingredients)) return data.result.ingredients;
   return [];
-}
+} 
