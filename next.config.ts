@@ -25,14 +25,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: '/ioms/:path*',
-        destination: '/apps/ioms/:path*',
-      },
-    ]
-  },
 }
 
 export default nextConfig 

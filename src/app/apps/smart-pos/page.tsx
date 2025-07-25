@@ -56,9 +56,7 @@ export default function SmartPOSApp() {
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-500">Powered by IOMS</span>
               <a
-                href="/IOMS-Version2_IOMS_POS_Working/IOMS"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/apps/ioms"
                 className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 transition-colors"
               >
                 <span className="text-sm">Open Full App</span>
@@ -141,9 +139,7 @@ export default function SmartPOSApp() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <a
-                href="/IOMS-Version2_IOMS_POS_Working/IOMS/dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/ioms-dashboard"
                 className="flex items-center justify-center p-6 bg-blue-50 rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-colors group"
               >
                 <div className="text-center">
@@ -156,9 +152,7 @@ export default function SmartPOSApp() {
               </a>
 
               <a
-                href="/IOMS-Version2_IOMS_POS_Working/IOMS/inventory"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/inventory"
                 className="flex items-center justify-center p-6 bg-green-50 rounded-lg border-2 border-green-200 hover:border-green-300 transition-colors group"
               >
                 <div className="text-center">
@@ -171,9 +165,7 @@ export default function SmartPOSApp() {
               </a>
 
               <a
-                href="/IOMS-Version2_IOMS_POS_Working/IOMS/payment"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/payment"
                 className="flex items-center justify-center p-6 bg-purple-50 rounded-lg border-2 border-purple-200 hover:border-purple-300 transition-colors group"
               >
                 <div className="text-center">
