@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInventory, saveInventory, updateInventoryAlerts } from '@/lib/inventoryService';
+import { getInventory, updateInventoryAlerts } from '@/lib/inventoryService';
 import { getDishes } from '@/lib/menuService';
 
 // Sample orders data
@@ -140,6 +140,16 @@ function convertUnits(fromAmount: number, fromUnit: string, toUnit: string): num
   return fromAmount;
 }
 
+// Helper type guard for IngredientQuantity
+function isIngredientQuantity(obj: any): obj is { inventoryItemName: string; quantityPerDish: number; unit: string } {
+  return (
+    obj && typeof obj === 'object' &&
+    typeof obj.inventoryItemName === 'string' &&
+    typeof obj.quantityPerDish === 'number' &&
+    typeof obj.unit === 'string'
+  );
+}
+
 /**
  * Update inventory based on order items
  */
@@ -172,69 +182,74 @@ async function updateInventoryFromOrder(order: any, userId: string) {
         continue;
       }
       
-      console.log(`📋 Dish found: ${dish.name} with ${dish.ingredients.length} ingredients`);
+      const ingredientCount = Array.isArray(dish.ingredients) ? dish.ingredients.length : 0;
+      console.log(`📋 Dish found: ${dish.name} with ${ingredientCount} ingredients`);
       
       // Process each ingredient in the dish
-      for (const ingredient of dish.ingredients) {
-        const ingredientName = ingredient.inventoryItemName;
-        const quantityPerDish = ingredient.quantityPerDish;
-        const unit = ingredient.unit;
-        
-        // Calculate total quantity needed for this order
-        const totalQuantityNeeded = quantityPerDish * orderQuantity;
-        
-        console.log(`🥘 Ingredient: ${ingredientName} - ${quantityPerDish} ${unit} per dish × ${orderQuantity} dishes = ${totalQuantityNeeded} ${unit} total`);
-        
-        // Find inventory item
-        const inventoryItem = inventory.find(item => 
-          item.name.toLowerCase() === ingredientName.toLowerCase() ||
-          item.name.toLowerCase().includes(ingredientName.toLowerCase()) ||
-          ingredientName.toLowerCase().includes(item.name.toLowerCase())
-        );
-        
-        if (!inventoryItem) {
-          console.warn(`⚠️ Inventory item not found: ${ingredientName}`);
-          continue;
+      if (Array.isArray(dish.ingredients)) {
+        for (const ingredient of dish.ingredients) {
+          if (!isIngredientQuantity(ingredient)) {
+            console.warn(`⚠️ Ingredient is not a structured object:`, ingredient);
+            continue;
+          }
+          const ingredientName = ingredient.inventoryItemName;
+          const quantityPerDish = ingredient.quantityPerDish;
+          const unit = ingredient.unit;
+          
+          // Calculate total quantity needed for this order
+          const totalQuantityNeeded = quantityPerDish * orderQuantity;
+          
+          console.log(`🥘 Ingredient: ${ingredientName} - ${quantityPerDish} ${unit} per dish × ${orderQuantity} dishes = ${totalQuantityNeeded} ${unit} total`);
+          
+          // Find inventory item
+          const inventoryItem = inventory.find(item => 
+            item.name.toLowerCase() === ingredientName.toLowerCase() ||
+            item.name.toLowerCase().includes(ingredientName.toLowerCase()) ||
+            ingredientName.toLowerCase().includes(item.name.toLowerCase())
+          );
+          
+          if (!inventoryItem) {
+            console.warn(`⚠️ Inventory item not found: ${ingredientName}`);
+            continue;
+          }
+          
+          console.log(`📦 Inventory item found: ${inventoryItem.name} (current: ${inventoryItem.quantity} ${inventoryItem.unit})`);
+          
+          // Convert units if needed
+          let convertedQuantity = totalQuantityNeeded;
+          if (unit.toLowerCase() !== inventoryItem.unit.toLowerCase()) {
+            convertedQuantity = convertUnits(totalQuantityNeeded, unit, inventoryItem.unit);
+            console.log(`🔄 Unit conversion: ${totalQuantityNeeded} ${unit} = ${convertedQuantity} ${inventoryItem.unit}`);
+          }
+          
+          // Check if enough stock
+          if (inventoryItem.quantity < convertedQuantity) {
+            console.warn(`⚠️ Insufficient stock for ${ingredientName}: available ${inventoryItem.quantity} ${inventoryItem.unit}, needed ${convertedQuantity} ${inventoryItem.unit}`);
+            continue;
+          }
+          
+          // Update inventory
+          const oldQuantity = inventoryItem.quantity;
+          inventoryItem.quantity -= convertedQuantity;
+          inventoryItem.quantityUsed = (inventoryItem.quantityUsed || 0) + convertedQuantity;
+          inventoryItem.totalUsed = (inventoryItem.totalUsed || 0) + convertedQuantity;
+          
+          console.log(`✅ Updated ${ingredientName}: ${oldQuantity} → ${inventoryItem.quantity} ${inventoryItem.unit} (used: +${convertedQuantity})`);
+          
+          inventoryUpdates.push({
+            item: ingredientName,
+            oldQuantity,
+            newQuantity: inventoryItem.quantity,
+            used: convertedQuantity,
+            unit: inventoryItem.unit
+          });
         }
-        
-        console.log(`📦 Inventory item found: ${inventoryItem.name} (current: ${inventoryItem.quantity} ${inventoryItem.unit})`);
-        
-        // Convert units if needed
-        let convertedQuantity = totalQuantityNeeded;
-        if (unit.toLowerCase() !== inventoryItem.unit.toLowerCase()) {
-          convertedQuantity = convertUnits(totalQuantityNeeded, unit, inventoryItem.unit);
-          console.log(`🔄 Unit conversion: ${totalQuantityNeeded} ${unit} = ${convertedQuantity} ${inventoryItem.unit}`);
-        }
-        
-        // Check if enough stock
-        if (inventoryItem.quantity < convertedQuantity) {
-          console.warn(`⚠️ Insufficient stock for ${ingredientName}: available ${inventoryItem.quantity} ${inventoryItem.unit}, needed ${convertedQuantity} ${inventoryItem.unit}`);
-          continue;
-        }
-        
-        // Update inventory
-        const oldQuantity = inventoryItem.quantity;
-        inventoryItem.quantity -= convertedQuantity;
-        inventoryItem.quantityUsed += convertedQuantity;
-        inventoryItem.totalUsed += convertedQuantity;
-        
-        console.log(`✅ Updated ${ingredientName}: ${oldQuantity} → ${inventoryItem.quantity} ${inventoryItem.unit} (used: +${convertedQuantity})`);
-        
-        inventoryUpdates.push({
-          item: ingredientName,
-          oldQuantity,
-          newQuantity: inventoryItem.quantity,
-          used: convertedQuantity,
-          unit: inventoryItem.unit
-        });
       }
     }
     
-    // Save updated inventory
-    saveInventory(inventory, userId);
-    
     // Update inventory alerts
-    const newAlerts = updateInventoryAlerts(userId);
+    updateInventoryAlerts(userId);
+    const newAlerts: string[] = [];
     
     console.log(`✅ Inventory update completed: ${inventoryUpdates.length} items updated`);
     console.log(`🚨 New alerts generated: ${newAlerts.length}`);

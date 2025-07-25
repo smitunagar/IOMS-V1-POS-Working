@@ -11,7 +11,7 @@ import {
   getInventory, 
   addInventoryItem, 
   updateInventoryItem,
-  getInventoryAlerts,
+  getInventoryAlertsDetailed,
   updateInventoryAlerts,
   InventoryItem,
   InventoryAlert
@@ -52,7 +52,7 @@ export default function InventoryTestPage() {
 
   const loadAlerts = () => {
     if (!currentUser) return;
-    const currentAlerts = getInventoryAlerts(currentUser.id);
+    const currentAlerts = getInventoryAlertsDetailed(currentUser.id);
     setAlerts(currentAlerts);
   };
 
@@ -95,7 +95,12 @@ export default function InventoryTestPage() {
     ];
 
     sampleItems.forEach(item => {
-      addInventoryItem(currentUser.id, item);
+      addInventoryItem(currentUser.id, {
+        ...item,
+        id: Date.now().toString() + Math.random().toString(36).slice(2),
+        quantityUsed: 0,
+        totalUsed: 0,
+      });
     });
 
     loadInventory();
@@ -117,7 +122,16 @@ export default function InventoryTestPage() {
       { name: 'Tomatoes', quantity: 0.1, unit: 'kg' }
     ];
 
-    addDishToMenu(currentUser.id, 'Chicken Curry', sampleIngredients);
+    addDishToMenu(currentUser.id, {
+      id: Date.now().toString() + Math.random().toString(36).slice(2),
+      name: 'Chicken Curry',
+      price: 0,
+      ingredients: sampleIngredients.map(ing => ({
+        inventoryItemName: ing.name,
+        quantityPerDish: ing.quantity,
+        unit: ing.unit,
+      })),
+    });
     
     toast({
       title: "Sample Dish Added",
@@ -137,16 +151,16 @@ export default function InventoryTestPage() {
           return {
             ...item,
             quantity: Math.max(0, item.quantity - 0.5),
-            quantityUsed: item.quantityUsed + 0.5,
-            totalUsed: item.totalUsed + 0.5
+            quantityUsed: (item.quantityUsed || 0) + 0.5,
+            totalUsed: (item.totalUsed || 0) + 0.5
           };
         }
         if (item.name === 'Rice') {
           return {
             ...item,
             quantity: Math.max(0, item.quantity - 0.2),
-            quantityUsed: item.quantityUsed + 0.2,
-            totalUsed: item.totalUsed + 0.2
+            quantityUsed: (item.quantityUsed || 0) + 0.2,
+            totalUsed: (item.totalUsed || 0) + 0.2
           };
         }
         return item;
@@ -187,7 +201,7 @@ export default function InventoryTestPage() {
 
   const getStockStatus = (item: InventoryItem) => {
     if (item.quantity <= 0) return { status: 'Out of Stock', color: 'destructive' };
-    if (item.quantity <= item.lowStockThreshold) return { status: 'Low Stock', color: 'secondary' };
+    if (item.quantity <= (item.lowStockThreshold ?? 0)) return { status: 'Low Stock', color: 'secondary' };
     return { status: 'In Stock', color: 'default' };
   };
 
@@ -248,10 +262,10 @@ export default function InventoryTestPage() {
                         <TableCell>
                           <div className="flex flex-col">
                             <span className="text-sm">
-                              Used: {item.quantityUsed} {item.unit}
+                              Used: {(item.quantityUsed || 0)} {item.unit}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              Total: {item.totalUsed} {item.unit}
+                              Total: {(item.totalUsed || 0)} {item.unit}
                             </span>
                           </div>
                         </TableCell>
@@ -296,21 +310,15 @@ export default function InventoryTestPage() {
                 ) : (
                   alerts.map((alert) => (
                     <div
-                      key={alert.id}
-                      className={`p-3 rounded-md border ${
-                        alert.severity === 'critical'
-                          ? 'bg-destructive/10 border-destructive text-destructive'
-                          : 'bg-yellow-400/10 border-yellow-500 text-yellow-700 dark:text-yellow-400'
-                      }`}
+                      key={alert.itemId}
+                      className="p-3 rounded-md border bg-yellow-400/10 border-yellow-500 text-yellow-700 dark:text-yellow-400"
                     >
                       <div className="flex items-start gap-2">
-                        {getAlertIcon(alert.type)}
+                        {/* No type property in InventoryAlert, so just show a warning icon */}
+                        <AlertTriangle className="h-4 w-4" />
                         <div className="flex-1">
                           <p className="font-semibold text-sm">{alert.itemName}</p>
                           <p className="text-xs">{alert.message}</p>
-                          <p className="text-xs opacity-70 mt-1">
-                            {format(new Date(alert.timestamp), "MMM dd, HH:mm")}
-                          </p>
                         </div>
                       </div>
                     </div>

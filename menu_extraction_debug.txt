@@ -1,0 +1,3186 @@
+=== RAW AI OUTPUT ===
+```json
+[
+  {
+    "name": "Wasser still oder Sprudel",
+    "category": "Alkoholfreie Getränke",
+    "sizes": [
+      {
+        "size": "0,31",
+        "price": "2,50",
+        "currency": "€"
+      },
+      {
+        "size": "0,41",
+        "price": "3,00",
+        "currency": "€"
+      },
+      {
+        "size": "0,751",
+        "price": "5,80",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light",
+    "category": "Alkoholfreie Getränke",
+    "ingredients": "1,3",
+    "sizes": [
+      {
+        "size": "0,41",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "0,31",
+        "price": "3,40",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Bitter Lemon",
+    "category": "Alkoholfreie Getränke",
+    "ingredients": "3",
+    "sizes": [
+      {
+        "size": "0,21",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Eistee Pfirsich",
+    "category": "Alkoholfreie Getränke",
+    "price": "4,20",
+    "currency": "€"
+  },
+  {
+    "name": "Eistee Zitrone",
+    "category": "Alkoholfreie Getränke",
+    "price": "4,20",
+    "currency": "€"
+  },
+  {
+    "name": "Apfelsaft",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Orangensaft",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Johannisbeer-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Maracuja-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Apfelsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Orangensaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Johannisbeer-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Maracuja-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Lassi (Süß)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Masala-Lassi (würzig)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Kokosnuss-Lassi (Süß)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter 1521 Helles Vollbier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Radler, süß oder sauer",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Hefe trüb",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Cola-Weizen",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Pils",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Russ",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Kristallklar",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Pilsener alkoholfrei",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,331)",
+        "price": "3,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Hefe alkoholfrei",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Engele, helles Bier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,331)",
+        "price": "3,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Urweizen Dunkel",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indisches Premium Lagerbier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Glas Prosecco 15% vol",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Aperol Spritz 25% vol (Prosecco, Aperol, Soda)",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Hugo 15% vol (Prosecco mit Minze, Limette und Mineralwasser)",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Lillet Wild Berry 15% vol",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Pina Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Kokos, Sahne, Ananassaft",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Mangosaft, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Erdbeer Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Erdbeer-Sirup, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Tequila Sunrise",
+    "category": "Cocktails",
+    "description": "Tequila, Orangensaft, Grenadine",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mojito",
+    "category": "Cocktails",
+    "description": "Havana Club Rum, frische Limetten, Rohrzucker, frische Minze",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Caipirinha",
+    "category": "Cocktails",
+    "description": "Cachaca, Limetten, Rohrzucker",
+    "sizes": [
+      {
+        "size": "0,301",
+        "price": "7,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Caipiroschka",
+    "category": "Cocktails",
+    "description": "Vodka, Limetten, Rohrzucker",
+    "sizes": [
+      {
+        "size": "0,301",
+        "price": "7,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Sex On The Beach",
+    "category": "Cocktails",
+    "description": "Vodka, Peach Likör, Crannberry Saft, Orangensaft",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Swimming Pool",
+    "category": "Cocktails",
+    "description": "Vodka, weißer Rum, Blue Curacao, Kokossirup, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Long Island Ice Tea (liit)",
+    "category": "Cocktails",
+    "description": "Vodka, Havanna Club, Gin, Tequila, Zitronensaft, Triple Sec, Cola",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Moscow Mule",
+    "category": "Cocktails",
+    "description": "Vodka, Gurke, Limettensaft, Thomas Henry, Spicy Ginger",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zombie",
+    "category": "Cocktails",
+    "description": "Rum Braun, Rum Weiß, Old Pascas 73% Overproov Rum, Limette, Grenadine, Orange, Ananas",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Virgin Caipirinha",
+    "category": "Mocktails",
+    "description": "Limetten, Rohrzucker, Ginger Ale",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Watermelon Mojito",
+    "category": "Mocktails",
+    "description": "Wassermelonensirup, Limetten, frische Minze, Ginger Ale",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Coconut Kiss",
+    "category": "Mocktails",
+    "description": "Ananassaft, Kirschnektar, Sahne, Kokossirup",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Strawberry Kiss",
+    "category": "Mocktails",
+    "description": "Kokos, Sahne, Ananassaft, Erdbeerpüree",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mosquito",
+    "category": "Mocktails",
+    "description": "frische Limette, Rohrzucker, frische Minze, Soda",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Fruit Punch",
+    "category": "Mocktails",
+    "description": "Mango, Ananas, Maracuja, Orange, Grapefruit, Limette",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jamaica Kiss",
+    "category": "Mocktails",
+    "description": "Kokos, Himbeere, Sahne, Ananas, Maracuja, Grenadine",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Limonade",
+    "category": "Mocktails",
+    "description": "frische Limetten Stücke, Rohrzucker, Soda",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mangolikör",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Kokosnuss-Schnaps",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Rum",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Ramazotti 30% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(4 cl)",
+        "price": "4,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Williams Birne 40% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Grappa 40% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jägermeister 35% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Wodka Lemon",
+    "category": "Longdrinks",
+    "description": "40% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Gin Tonic",
+    "category": "Longdrinks",
+    "description": "37,5% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jackie Cola",
+    "category": "Longdrinks",
+    "description": "40% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Weißwein",
+    "category": "Indische Weine",
+    "description": "(Sula aus Nashik / trocken / krautig, mit einer Andeutung von grünem Pfeffer, frisch geschnittenem Gras und einer Note Gewürz)",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      },
+      {
+        "size": "(0,751)",
+        "price": "21,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Rotwein",
+    "category": "Indische Weine",
+    "description": "(Sula aus Nashik / trocken / ein geschmeidiger Rotwein mit mittlerem Körper, akzentuiert durch reife Kirschen und Pflaumen, mit Aromen schwarzen Pfeffers)",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      },
+      {
+        "size": "(0,751)",
+        "price": "21,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Grauburg",
+    "category": "Deutsche Weine",
+    "description": "(Weißwein / trocken / kräftig im Geschmack)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Stettener Heuchelberg Riesling",
+    "category": "Deutsche Weine",
+    "description": "(Weißwein / trocken / spritzig, feine Frucht, dezente, harmonische Note)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Spätburgunder",
+    "category": "Deutsche Weine",
+    "description": "(Rotwein / trocken / fruchtiges Aroma nach roten Beeren und Kirschen)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Haberschl D. Trollinger mit Lemberger",
+    "category": "Deutsche Weine",
+    "description": "(Rotwein / trocken / fruchtig, füllig, harmonisch)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Spätburgunder Weißherbst",
+    "category": "Deutsche Weine",
+    "description": "(Roséwein / trocken / blumiger Duft mit Fruchtaromen, fruchtiger Geschmack)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Munzinger Attilafelsen Spätburgunder",
+    "category": "Deutsche Weine",
+    "description": "Weißherbst (Roséwein / trocken / Fruchtig und süffig)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier C. Merlot Cabernet",
+    "category": "Französische Weine",
+    "description": "(Rotwein / trocken / feines Kirscharoma, fruchtig und fein im Abklang)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier C. Syrah Rose",
+    "category": "Französische Weine",
+    "description": "(Roséwein / trocken / intensiv, kräftig und vollmundig)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier Colombes Chard",
+    "category": "Französische Weine",
+    "description": "(Weißwein / trocken / harmonisch mit feiner Frucht)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Castelnuovo Pinot Grigio",
+    "category": "Italienische Weine",
+    "description": "(Weißwein / trocken / leicht und frisch, mit knackiger Säure)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zonin Merlot Le Anfore",
+    "category": "Italienische Weine",
+    "description": "(Rotwein / trocken / weinig, frisch und gewinnend, üppige Fruchtigkeit)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zonin Montepulc LeAnfore",
+    "category": "Italienische Weine",
+    "description": "(Rotwein / trocken / weiniger Geruch, schmackhaft)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Rotweinschorle / Weißweinschorle",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Alkoholfreier Wein",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Alkoholfreier Sekt",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Chicken Curry",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer milden Currysoße",
+    "ingredients": "1,9",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Korma",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch gekocht in einer Soße aus Mandeln, Sahne, Kokosnuss und feinen Gewürzen",
+    "ingredients": "1,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Palak",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch mit gerösteten Zwiebeln, Ingwer Knoblauch, Gewürzen und Spinat nach nordindischer Art.",
+    "ingredients": "1,9",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Mango",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer Mango-Currysoße",
+    "ingredients": "1,d,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Banana",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer Banane-Safran-Cashewnuss-Currysauce",
+    "ingredients": "1,d,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Vindaloo",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch mit Kartoffeln in einer sehr scharfen Currysoße",
+    "ingredients": "1,d.g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Lamm Curry",
+    "category": "Spezialitäten vom Lamm mit Reis",
+    "description": "Lamb in mild curry sauce",
+    "ingredients": "1,d,g",
+    "price": "11,00",
+    "currency": "€"
+  },
+  {
+    "name": "Lamm Korma",
+    "category": "Spezialitäten
+
+=== CLEAN JSON TO PARSE ===
+json
+[
+  {
+    "name": "Wasser still oder Sprudel",
+    "category": "Alkoholfreie Getränke",
+    "sizes": [
+      {
+        "size": "0,31",
+        "price": "2,50",
+        "currency": "€"
+      },
+      {
+        "size": "0,41",
+        "price": "3,00",
+        "currency": "€"
+      },
+      {
+        "size": "0,751",
+        "price": "5,80",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light",
+    "category": "Alkoholfreie Getränke",
+    "ingredients": "1,3",
+    "sizes": [
+      {
+        "size": "0,41",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "0,31",
+        "price": "3,40",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Bitter Lemon",
+    "category": "Alkoholfreie Getränke",
+    "ingredients": "3",
+    "sizes": [
+      {
+        "size": "0,21",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Eistee Pfirsich",
+    "category": "Alkoholfreie Getränke",
+    "price": "4,20",
+    "currency": "€"
+  },
+  {
+    "name": "Eistee Zitrone",
+    "category": "Alkoholfreie Getränke",
+    "price": "4,20",
+    "currency": "€"
+  },
+  {
+    "name": "Apfelsaft",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Orangensaft",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Johannisbeer-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Maracuja-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Fruchtsaftgetränk",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,80",
+        "currency": "€"
+      },
+      {
+        "size": "(0,41)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Apfelsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Orangensaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Johannisbeer-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Maracuja-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Fruchtsaftschorle",
+    "category": "Säfte und Schorlen",
+    "sizes": [
+      {
+        "size": "(0,41)",
+        "price": "3,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango-Lassi (Süß)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Masala-Lassi (würzig)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Kokosnuss-Lassi (Süß)",
+    "category": "Indische Lassis",
+    "ingredients": "g, 3",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter 1521 Helles Vollbier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Radler, süß oder sauer",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Hefe trüb",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Cola-Weizen",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter Pils",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Russ",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "3,50",
+        "currency": "€"
+      },
+      {
+        "size": "(0,51)",
+        "price": "4,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Kristallklar",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Pilsener alkoholfrei",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,331)",
+        "price": "3,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Hefe alkoholfrei",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Engele, helles Bier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,331)",
+        "price": "3,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zwiefalter-Urweizen Dunkel",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,51)",
+        "price": "4,20",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indisches Premium Lagerbier",
+    "category": "Biere",
+    "sizes": [
+      {
+        "size": "(0,31)",
+        "price": "4,60",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Glas Prosecco 15% vol",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Aperol Spritz 25% vol (Prosecco, Aperol, Soda)",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Hugo 15% vol (Prosecco mit Minze, Limette und Mineralwasser)",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Lillet Wild Berry 15% vol",
+    "category": "Aperitifs",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Pina Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Kokos, Sahne, Ananassaft",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mango Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Mangosaft, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Erdbeer Colada",
+    "category": "Cocktails",
+    "description": "Weißer Rum, Brauner Rum, Erdbeer-Sirup, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Tequila Sunrise",
+    "category": "Cocktails",
+    "description": "Tequila, Orangensaft, Grenadine",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mojito",
+    "category": "Cocktails",
+    "description": "Havana Club Rum, frische Limetten, Rohrzucker, frische Minze",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Caipirinha",
+    "category": "Cocktails",
+    "description": "Cachaca, Limetten, Rohrzucker",
+    "sizes": [
+      {
+        "size": "0,301",
+        "price": "7,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Caipiroschka",
+    "category": "Cocktails",
+    "description": "Vodka, Limetten, Rohrzucker",
+    "sizes": [
+      {
+        "size": "0,301",
+        "price": "7,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Sex On The Beach",
+    "category": "Cocktails",
+    "description": "Vodka, Peach Likör, Crannberry Saft, Orangensaft",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Swimming Pool",
+    "category": "Cocktails",
+    "description": "Vodka, weißer Rum, Blue Curacao, Kokossirup, Ananassaft, Sahne",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Long Island Ice Tea (liit)",
+    "category": "Cocktails",
+    "description": "Vodka, Havanna Club, Gin, Tequila, Zitronensaft, Triple Sec, Cola",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Moscow Mule",
+    "category": "Cocktails",
+    "description": "Vodka, Gurke, Limettensaft, Thomas Henry, Spicy Ginger",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zombie",
+    "category": "Cocktails",
+    "description": "Rum Braun, Rum Weiß, Old Pascas 73% Overproov Rum, Limette, Grenadine, Orange, Ananas",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "8,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Virgin Caipirinha",
+    "category": "Mocktails",
+    "description": "Limetten, Rohrzucker, Ginger Ale",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Watermelon Mojito",
+    "category": "Mocktails",
+    "description": "Wassermelonensirup, Limetten, frische Minze, Ginger Ale",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Coconut Kiss",
+    "category": "Mocktails",
+    "description": "Ananassaft, Kirschnektar, Sahne, Kokossirup",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Strawberry Kiss",
+    "category": "Mocktails",
+    "description": "Kokos, Sahne, Ananassaft, Erdbeerpüree",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mosquito",
+    "category": "Mocktails",
+    "description": "frische Limette, Rohrzucker, frische Minze, Soda",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Fruit Punch",
+    "category": "Mocktails",
+    "description": "Mango, Ananas, Maracuja, Orange, Grapefruit, Limette",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jamaica Kiss",
+    "category": "Mocktails",
+    "description": "Kokos, Himbeere, Sahne, Ananas, Maracuja, Grenadine",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Limonade",
+    "category": "Mocktails",
+    "description": "frische Limetten Stücke, Rohrzucker, Soda",
+    "sizes": [
+      {
+        "size": "0,401",
+        "price": "7,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Mangolikör",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Kokosnuss-Schnaps",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Rum",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "3,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Ramazotti 30% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(4 cl)",
+        "price": "4,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Williams Birne 40% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Grappa 40% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jägermeister 35% vol",
+    "category": "Spirituosen",
+    "sizes": [
+      {
+        "size": "(2 cl)",
+        "price": "2,50",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Wodka Lemon",
+    "category": "Longdrinks",
+    "description": "40% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Gin Tonic",
+    "category": "Longdrinks",
+    "description": "37,5% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jackie Cola",
+    "category": "Longdrinks",
+    "description": "40% vol",
+    "sizes": [
+      {
+        "size": "(5 cl)",
+        "price": "7,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Weißwein",
+    "category": "Indische Weine",
+    "description": "(Sula aus Nashik / trocken / krautig, mit einer Andeutung von grünem Pfeffer, frisch geschnittenem Gras und einer Note Gewürz)",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      },
+      {
+        "size": "(0,751)",
+        "price": "21,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Indischer Rotwein",
+    "category": "Indische Weine",
+    "description": "(Sula aus Nashik / trocken / ein geschmeidiger Rotwein mit mittlerem Körper, akzentuiert durch reife Kirschen und Pflaumen, mit Aromen schwarzen Pfeffers)",
+    "sizes": [
+      {
+        "size": "(0,21)",
+        "price": "6,90",
+        "currency": "€"
+      },
+      {
+        "size": "(0,751)",
+        "price": "21,00",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Grauburg",
+    "category": "Deutsche Weine",
+    "description": "(Weißwein / trocken / kräftig im Geschmack)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Stettener Heuchelberg Riesling",
+    "category": "Deutsche Weine",
+    "description": "(Weißwein / trocken / spritzig, feine Frucht, dezente, harmonische Note)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Spätburgunder",
+    "category": "Deutsche Weine",
+    "description": "(Rotwein / trocken / fruchtiges Aroma nach roten Beeren und Kirschen)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Haberschl D. Trollinger mit Lemberger",
+    "category": "Deutsche Weine",
+    "description": "(Rotwein / trocken / fruchtig, füllig, harmonisch)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Jechtinger Spätburgunder Weißherbst",
+    "category": "Deutsche Weine",
+    "description": "(Roséwein / trocken / blumiger Duft mit Fruchtaromen, fruchtiger Geschmack)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Munzinger Attilafelsen Spätburgunder",
+    "category": "Deutsche Weine",
+    "description": "Weißherbst (Roséwein / trocken / Fruchtig und süffig)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier C. Merlot Cabernet",
+    "category": "Französische Weine",
+    "description": "(Rotwein / trocken / feines Kirscharoma, fruchtig und fein im Abklang)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier C. Syrah Rose",
+    "category": "Französische Weine",
+    "description": "(Roséwein / trocken / intensiv, kräftig und vollmundig)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Cellier Colombes Chard",
+    "category": "Französische Weine",
+    "description": "(Weißwein / trocken / harmonisch mit feiner Frucht)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Castelnuovo Pinot Grigio",
+    "category": "Italienische Weine",
+    "description": "(Weißwein / trocken / leicht und frisch, mit knackiger Säure)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zonin Merlot Le Anfore",
+    "category": "Italienische Weine",
+    "description": "(Rotwein / trocken / weinig, frisch und gewinnend, üppige Fruchtigkeit)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Zonin Montepulc LeAnfore",
+    "category": "Italienische Weine",
+    "description": "(Rotwein / trocken / weiniger Geruch, schmackhaft)",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "5,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Rotweinschorle / Weißweinschorle",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Alkoholfreier Wein",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Alkoholfreier Sekt",
+    "category": "Weinschorle",
+    "sizes": [
+      {
+        "size": "(0,251)",
+        "price": "4,90",
+        "currency": "€"
+      }
+    ]
+  },
+  {
+    "name": "Chicken Curry",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer milden Currysoße",
+    "ingredients": "1,9",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Korma",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch gekocht in einer Soße aus Mandeln, Sahne, Kokosnuss und feinen Gewürzen",
+    "ingredients": "1,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Palak",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch mit gerösteten Zwiebeln, Ingwer Knoblauch, Gewürzen und Spinat nach nordindischer Art.",
+    "ingredients": "1,9",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Mango",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer Mango-Currysoße",
+    "ingredients": "1,d,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Banana",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch in einer Banane-Safran-Cashewnuss-Currysauce",
+    "ingredients": "1,d,g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Chicken Vindaloo",
+    "category": "Spezialitäten vom Huhn mit Reis",
+    "description": "Zartes Hähnchenfleisch mit Kartoffeln in einer sehr scharfen Currysoße",
+    "ingredients": "1,d.g",
+    "price": "10,00",
+    "currency": "€"
+  },
+  {
+    "name": "Lamm Curry",
+    "category": "Spezialitäten vom Lamm mit Reis",
+    "description": "Lamb in mild curry sauce",
+    "ingredients": "1,d,g",
+    "price": "11,00",
+    "currency": "€"
+  },
+  {
+    "name": "Lamm Korma",
+    "category": "Spezialitäten
+
+=== FINAL PARSED MENU ===
+[
+  "json",
+  [
+    {
+      "name": "Wasser still oder Sprudel",
+      "category": "Alkoholfreie Getränke",
+      "sizes": [
+        {
+          "size": "0,31",
+          "price": "2,50",
+          "currency": "€"
+        },
+        {
+          "size": "0,41",
+          "price": "3,00",
+          "currency": "€"
+        },
+        {
+          "size": "0,751",
+          "price": "5,80",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Coca-Cola, Fanta, Sprite, Spezi, Coca-Cola light",
+      "category": "Alkoholfreie Getränke",
+      "ingredients": "1,3",
+      "sizes": [
+        {
+          "size": "0,41",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "0,31",
+          "price": "3,40",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Bitter Lemon",
+      "category": "Alkoholfreie Getränke",
+      "ingredients": "3",
+      "sizes": [
+        {
+          "size": "0,21",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Eistee Pfirsich",
+      "category": "Alkoholfreie Getränke",
+      "price": "4,20",
+      "currency": "€"
+    },
+    {
+      "name": "Eistee Zitrone",
+      "category": "Alkoholfreie Getränke",
+      "price": "4,20",
+      "currency": "€"
+    },
+    {
+      "name": "Apfelsaft",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "(0,41)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Orangensaft",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "(0,41)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Johannisbeer-Fruchtsaftgetränk",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "(0,41)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Maracuja-Fruchtsaftgetränk",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "(0,41)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mango-Fruchtsaftgetränk",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,80",
+          "currency": "€"
+        },
+        {
+          "size": "(0,41)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Apfelsaftschorle",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,41)",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Orangensaftschorle",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,41)",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Johannisbeer-Fruchtsaftschorle",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,41)",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Maracuja-Fruchtsaftschorle",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,41)",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mango-Fruchtsaftschorle",
+      "category": "Säfte und Schorlen",
+      "sizes": [
+        {
+          "size": "(0,41)",
+          "price": "3,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mango-Lassi (Süß)",
+      "category": "Indische Lassis",
+      "ingredients": "g, 3",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Masala-Lassi (würzig)",
+      "category": "Indische Lassis",
+      "ingredients": "g, 3",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Kokosnuss-Lassi (Süß)",
+      "category": "Indische Lassis",
+      "ingredients": "g, 3",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter 1521 Helles Vollbier",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        },
+        {
+          "size": "(0,51)",
+          "price": "4,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter Radler, süß oder sauer",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        },
+        {
+          "size": "(0,51)",
+          "price": "4,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter Hefe trüb",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        },
+        {
+          "size": "(0,51)",
+          "price": "4,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter Cola-Weizen",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        },
+        {
+          "size": "(0,51)",
+          "price": "4,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter Pils",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Russ",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "3,50",
+          "currency": "€"
+        },
+        {
+          "size": "(0,51)",
+          "price": "4,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter-Kristallklar",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,51)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter-Pilsener alkoholfrei",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,331)",
+          "price": "3,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter-Hefe alkoholfrei",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,51)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter-Engele, helles Bier",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,331)",
+          "price": "3,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zwiefalter-Urweizen Dunkel",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,51)",
+          "price": "4,20",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Indisches Premium Lagerbier",
+      "category": "Biere",
+      "sizes": [
+        {
+          "size": "(0,31)",
+          "price": "4,60",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Glas Prosecco 15% vol",
+      "category": "Aperitifs",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Aperol Spritz 25% vol (Prosecco, Aperol, Soda)",
+      "category": "Aperitifs",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "6,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Hugo 15% vol (Prosecco mit Minze, Limette und Mineralwasser)",
+      "category": "Aperitifs",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "6,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Lillet Wild Berry 15% vol",
+      "category": "Aperitifs",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "6,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Pina Colada",
+      "category": "Cocktails",
+      "description": "Weißer Rum, Brauner Rum, Kokos, Sahne, Ananassaft",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mango Colada",
+      "category": "Cocktails",
+      "description": "Weißer Rum, Brauner Rum, Mangosaft, Ananassaft, Sahne",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Erdbeer Colada",
+      "category": "Cocktails",
+      "description": "Weißer Rum, Brauner Rum, Erdbeer-Sirup, Ananassaft, Sahne",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Tequila Sunrise",
+      "category": "Cocktails",
+      "description": "Tequila, Orangensaft, Grenadine",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mojito",
+      "category": "Cocktails",
+      "description": "Havana Club Rum, frische Limetten, Rohrzucker, frische Minze",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Caipirinha",
+      "category": "Cocktails",
+      "description": "Cachaca, Limetten, Rohrzucker",
+      "sizes": [
+        {
+          "size": "0,301",
+          "price": "7,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Caipiroschka",
+      "category": "Cocktails",
+      "description": "Vodka, Limetten, Rohrzucker",
+      "sizes": [
+        {
+          "size": "0,301",
+          "price": "7,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Sex On The Beach",
+      "category": "Cocktails",
+      "description": "Vodka, Peach Likör, Crannberry Saft, Orangensaft",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Swimming Pool",
+      "category": "Cocktails",
+      "description": "Vodka, weißer Rum, Blue Curacao, Kokossirup, Ananassaft, Sahne",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Long Island Ice Tea (liit)",
+      "category": "Cocktails",
+      "description": "Vodka, Havanna Club, Gin, Tequila, Zitronensaft, Triple Sec, Cola",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Moscow Mule",
+      "category": "Cocktails",
+      "description": "Vodka, Gurke, Limettensaft, Thomas Henry, Spicy Ginger",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zombie",
+      "category": "Cocktails",
+      "description": "Rum Braun, Rum Weiß, Old Pascas 73% Overproov Rum, Limette, Grenadine, Orange, Ananas",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "8,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Virgin Caipirinha",
+      "category": "Mocktails",
+      "description": "Limetten, Rohrzucker, Ginger Ale",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Watermelon Mojito",
+      "category": "Mocktails",
+      "description": "Wassermelonensirup, Limetten, frische Minze, Ginger Ale",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Coconut Kiss",
+      "category": "Mocktails",
+      "description": "Ananassaft, Kirschnektar, Sahne, Kokossirup",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Strawberry Kiss",
+      "category": "Mocktails",
+      "description": "Kokos, Sahne, Ananassaft, Erdbeerpüree",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mosquito",
+      "category": "Mocktails",
+      "description": "frische Limette, Rohrzucker, frische Minze, Soda",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Fruit Punch",
+      "category": "Mocktails",
+      "description": "Mango, Ananas, Maracuja, Orange, Grapefruit, Limette",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jamaica Kiss",
+      "category": "Mocktails",
+      "description": "Kokos, Himbeere, Sahne, Ananas, Maracuja, Grenadine",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Limonade",
+      "category": "Mocktails",
+      "description": "frische Limetten Stücke, Rohrzucker, Soda",
+      "sizes": [
+        {
+          "size": "0,401",
+          "price": "7,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Mangolikör",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "3,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Kokosnuss-Schnaps",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "3,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Indischer Rum",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "3,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Ramazotti 30% vol",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(4 cl)",
+          "price": "4,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Williams Birne 40% vol",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "2,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Grappa 40% vol",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "2,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jägermeister 35% vol",
+      "category": "Spirituosen",
+      "sizes": [
+        {
+          "size": "(2 cl)",
+          "price": "2,50",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Wodka Lemon",
+      "category": "Longdrinks",
+      "description": "40% vol",
+      "sizes": [
+        {
+          "size": "(5 cl)",
+          "price": "7,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Gin Tonic",
+      "category": "Longdrinks",
+      "description": "37,5% vol",
+      "sizes": [
+        {
+          "size": "(5 cl)",
+          "price": "7,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jackie Cola",
+      "category": "Longdrinks",
+      "description": "40% vol",
+      "sizes": [
+        {
+          "size": "(5 cl)",
+          "price": "7,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Indischer Weißwein",
+      "category": "Indische Weine",
+      "description": "(Sula aus Nashik / trocken / krautig, mit einer Andeutung von grünem Pfeffer, frisch geschnittenem Gras und einer Note Gewürz)",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "6,90",
+          "currency": "€"
+        },
+        {
+          "size": "(0,751)",
+          "price": "21,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Indischer Rotwein",
+      "category": "Indische Weine",
+      "description": "(Sula aus Nashik / trocken / ein geschmeidiger Rotwein mit mittlerem Körper, akzentuiert durch reife Kirschen und Pflaumen, mit Aromen schwarzen Pfeffers)",
+      "sizes": [
+        {
+          "size": "(0,21)",
+          "price": "6,90",
+          "currency": "€"
+        },
+        {
+          "size": "(0,751)",
+          "price": "21,00",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jechtinger Grauburg",
+      "category": "Deutsche Weine",
+      "description": "(Weißwein / trocken / kräftig im Geschmack)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Stettener Heuchelberg Riesling",
+      "category": "Deutsche Weine",
+      "description": "(Weißwein / trocken / spritzig, feine Frucht, dezente, harmonische Note)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jechtinger Spätburgunder",
+      "category": "Deutsche Weine",
+      "description": "(Rotwein / trocken / fruchtiges Aroma nach roten Beeren und Kirschen)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Haberschl D. Trollinger mit Lemberger",
+      "category": "Deutsche Weine",
+      "description": "(Rotwein / trocken / fruchtig, füllig, harmonisch)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Jechtinger Spätburgunder Weißherbst",
+      "category": "Deutsche Weine",
+      "description": "(Roséwein / trocken / blumiger Duft mit Fruchtaromen, fruchtiger Geschmack)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Munzinger Attilafelsen Spätburgunder",
+      "category": "Deutsche Weine",
+      "description": "Weißherbst (Roséwein / trocken / Fruchtig und süffig)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Cellier C. Merlot Cabernet",
+      "category": "Französische Weine",
+      "description": "(Rotwein / trocken / feines Kirscharoma, fruchtig und fein im Abklang)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Cellier C. Syrah Rose",
+      "category": "Französische Weine",
+      "description": "(Roséwein / trocken / intensiv, kräftig und vollmundig)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Cellier Colombes Chard",
+      "category": "Französische Weine",
+      "description": "(Weißwein / trocken / harmonisch mit feiner Frucht)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Castelnuovo Pinot Grigio",
+      "category": "Italienische Weine",
+      "description": "(Weißwein / trocken / leicht und frisch, mit knackiger Säure)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zonin Merlot Le Anfore",
+      "category": "Italienische Weine",
+      "description": "(Rotwein / trocken / weinig, frisch und gewinnend, üppige Fruchtigkeit)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Zonin Montepulc LeAnfore",
+      "category": "Italienische Weine",
+      "description": "(Rotwein / trocken / weiniger Geruch, schmackhaft)",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "5,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Rotweinschorle / Weißweinschorle",
+      "category": "Weinschorle",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "4,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Alkoholfreier Wein",
+      "category": "Weinschorle",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "4,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Alkoholfreier Sekt",
+      "category": "Weinschorle",
+      "sizes": [
+        {
+          "size": "(0,251)",
+          "price": "4,90",
+          "currency": "€"
+        }
+      ]
+    },
+    {
+      "name": "Chicken Curry",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch in einer milden Currysoße",
+      "ingredients": "1,9",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Chicken Korma",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch gekocht in einer Soße aus Mandeln, Sahne, Kokosnuss und feinen Gewürzen",
+      "ingredients": "1,g",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Chicken Palak",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch mit gerösteten Zwiebeln, Ingwer Knoblauch, Gewürzen und Spinat nach nordindischer Art.",
+      "ingredients": "1,9",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Chicken Mango",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch in einer Mango-Currysoße",
+      "ingredients": "1,d,g",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Chicken Banana",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch in einer Banane-Safran-Cashewnuss-Currysauce",
+      "ingredients": "1,d,g",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Chicken Vindaloo",
+      "category": "Spezialitäten vom Huhn mit Reis",
+      "description": "Zartes Hähnchenfleisch mit Kartoffeln in einer sehr scharfen Currysoße",
+      "ingredients": "1,d.g",
+      "price": "10,00",
+      "currency": "€"
+    },
+    {
+      "name": "Lamm Curry",
+      "category": "Spezialitäten vom Lamm mit Reis",
+      "description": "Lamb in mild curry sauce",
+      "ingredients": "1,d,g",
+      "price": "11,00",
+      "currency": "€"
+    },
+    {
+      "name": "Lamm Korma",
+      "category": "Spezialitäten"
+    }
+  ]
+]

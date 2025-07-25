@@ -14,7 +14,7 @@ import { Sparkles, Loader2, ChefHat, PackagePlus, ClipboardPlus, Edit3, Zap, Pla
 import { z } from 'genkit';
 import { generateIngredientsList } from '@/ai/flows/generate-ingredients-list';
 import { GenerateIngredientsListInput, GenerateIngredientsListOutput, IngredientSchema } from '@/ai/flows/ingredient-types';
-import { addIngredientToInventoryIfNotExists, RawIngredient } from '@/lib/inventoryService';
+import { addIngredientToInventoryIfNotExists, InventoryItem } from '@/lib/inventoryService';
 import { addDishToMenu, getDishes } from '@/lib/menuService';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -180,7 +180,16 @@ export default function IngredientToolPage() {
               unit: ing.unit,
             }));
 
-            await addDishToMenu(currentUser.id, dish.name, ingredientsForMenu);
+            await addDishToMenu(currentUser.id, {
+              name: dish.name,
+              price: 0,
+              ingredients: ingredientsForMenu.map(ing => ({
+                inventoryItemName: ing.name,
+                quantityPerDish: ing.quantity,
+                unit: ing.unit,
+              })),
+              id: Date.now().toString(),
+            });
             
             setBatchState(prev => ({
               ...prev,
@@ -317,7 +326,8 @@ export default function IngredientToolPage() {
       let existingItemsSkippedCount = 0;
 
       for (const ingredient of editableIngredients) {
-        const rawIngredient: RawIngredient = {
+        const rawIngredient: InventoryItem = {
+          id: Date.now().toString(),
           name: ingredient.name,
           quantity: ingredient.quantity, 
           unit: ingredient.unit,
@@ -361,13 +371,16 @@ export default function IngredientToolPage() {
     startAddingToMenuTransition(async () => {
       try {
         // Ensure editableIngredients conforms to the expected type for addDishToMenu
-        const ingredientsForMenu: AiIngredient[] = editableIngredients.map(ing => ({
-          name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-        }));
-
-        const newDish = await addDishToMenu(currentUser.id, dishName, ingredientsForMenu);
+        const newDish = await addDishToMenu(currentUser.id, {
+          name: dishName,
+          price: 0,
+          ingredients: editableIngredients.map(ing => ({
+            inventoryItemName: ing.name,
+            quantityPerDish: ing.quantity,
+            unit: ing.unit,
+          })),
+          id: Date.now().toString(),
+        });
         if (newDish) {
           toast({
             title: "Dish Added to Menu!",

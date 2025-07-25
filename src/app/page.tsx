@@ -73,8 +73,9 @@ export default function MarketplacePage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Login
+              {/* Login removed: authentication is now handled automatically. Replace with dashboard/profile if needed. */}
+              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Dashboard
               </Link>
               <Link href="/signup" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md hover:from-blue-700 hover:to-purple-700 transition-colors">
                 Get Started

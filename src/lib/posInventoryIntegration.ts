@@ -592,7 +592,7 @@ function deductFromInventoryWithSmartMatching(
   
   // Deduct from inventory
   try {
-    originalRecordUsage(userId, matchedItem.name, quantity, unit);
+    originalRecordUsage(userId, matchedItem.name, quantity);
     console.log(`✅ Successfully deducted ${quantity} ${unit} from "${matchedItem.name}"`);
     return { success: true, matchedItemName: matchedItem.name };
   } catch (error) {

@@ -19,9 +19,148 @@ import {
   MapPin,
   Search,
   Filter,
-  Receipt
+  Receipt,
+  Info
 } from 'lucide-react';
+import { getAllergensForDish } from '@/lib/ingredientToolService';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+// DishCard component with allergen functionality
+function DishCard({ item, orderItems, onAddToOrder, formatPrice }: { 
+  item: MenuItem; 
+  orderItems: OrderItem[];
+  onAddToOrder: (menuItem: MenuItem, selectedSize?: { size: string; price: string }) => void;
+  formatPrice: (price: string) => string; 
+}) {
+  const [allergens, setAllergens] = useState<Array<{icon: string, name: string}>>([]);
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : undefined);
+
+  useEffect(() => {
+    setLoading(true);
+    getAllergensForDish({ name: item.name })
+      .then(setAllergens)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [item.name]);
+
+  // Determine price to display
+  const displayPrice = selectedSize ? selectedSize.price : item.price;
+
+  // Only mark as added if product+size is in the order
+  const alreadyAdded = orderItems.some(oi => {
+    if (item.sizes && selectedSize) {
+      return oi.menuItem.id === item.id && oi.selectedSize?.size === selectedSize.size;
+    } else {
+      return oi.menuItem.id === item.id;
+    }
+  });
+
+  return (
+    <Card className="hover:shadow-md transition-shadow flex flex-col min-h-[180px]">
+      <CardContent className="p-4 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm mb-1" style={{lineHeight:1.4}}>{item.name}</h3>
+            <p className="text-xs text-muted-foreground mb-1">{item.category}</p>
+            {item.image && <img src={item.image} alt="thumb" className="w-12 h-12 object-cover rounded mb-1" />}
+          </div>
+          <Badge variant="outline" className="ml-2">
+            €{formatPrice(displayPrice)}
+          </Badge>
+        </div>
+        {item.sizes && item.sizes.length > 1 && (
+          <div className="mb-2">
+            <select
+              className="border rounded px-2 py-1 text-sm"
+              value={selectedSize?.size}
+              onChange={e => {
+                const sz = item.sizes?.find(s => s.size === e.target.value);
+                setSelectedSize(sz);
+              }}
+            >
+              {item.sizes.map(sz => (
+                <option key={sz.size} value={sz.size}>{sz.size} ({sz.price})</option>
+              ))}
+            </select>
+          </div>
+        )}
+        {(() => {
+          const cleanIngredients = item.ingredients
+            ? item.ingredients.map(ing => typeof ing === 'string' ? ing : ing.inventoryItemName).filter(Boolean)
+            : [];
+          if (cleanIngredients.length === 0) return null;
+          return (
+            <p className="text-xs text-muted-foreground mb-3 truncate" title={cleanIngredients.join(', ')}>
+              {cleanIngredients.slice(0, 3).join(', ')}
+              {cleanIngredients.length > 3 ? '...' : ''}
+            </p>
+          );
+        })()}
+        {/* Allergen badges */}
+        <div className="flex items-center gap-1 mt-1 mb-2">
+          <span className="text-xs text-muted-foreground">Allergens:</span>
+          {loading ? (
+            <span className="text-xs text-muted-foreground">Loading...</span>
+          ) : allergens.length === 0 ? (
+            <span className="text-xs text-muted-foreground">None</span>
+          ) : (
+            <TooltipProvider>
+              {allergens.slice(0, 5).map((a, i) => (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <span className="text-lg cursor-pointer">{a.icon}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>{a.name}</TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
+          )}
+          {/* Modal trigger for full list if more than 5 */}
+          {allergens.length > 5 && (
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+              <DialogTrigger asChild>
+                <button className="ml-1 text-muted-foreground hover:text-primary" aria-label="Show all allergens">
+                  <Info className="h-4 w-4" />
+                </button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Allergens for {item.name}</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {allergens.map((a, i) => (
+                    <span key={i} className="flex items-center gap-1 border rounded px-2 py-1 text-base">
+                      <span>{a.icon}</span>
+                      <span className="text-xs">{a.name}</span>
+                    </span>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+        <div className="flex-1" />
+        <Button
+          size="sm"
+          onClick={() => onAddToOrder(item, selectedSize)}
+          className={`w-full transition-all ${alreadyAdded ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
+          variant={alreadyAdded ? 'default' : 'outline'}
+          aria-label={alreadyAdded ? 'Added' : 'Add to Order'}
+        >
+          <span className="flex items-center justify-center">
+            <Plus className="h-4 w-4 mr-1" />
+            <span className="hidden md:inline">{alreadyAdded ? 'Added' : 'Add to Order'}</span>
+          </span>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+// MenuItem type
 interface MenuItem {
   id: string;
   name: string;
@@ -29,13 +168,16 @@ interface MenuItem {
   category: string;
   image?: string;
   aiHint?: string;
-  ingredients?: string[];
+  ingredients?: (string | { inventoryItemName: string })[];
+  sizes?: Array<{ size: string; price: string }>;
 }
 
+// OrderItem type
 interface OrderItem {
   menuItem: MenuItem;
   quantity: number;
   notes?: string;
+  selectedSize?: { size: string; price: string };
 }
 
 interface CustomerInfo {
@@ -65,8 +207,10 @@ export default function OrderEntryPage() {
   const drivers = ['John Doe', 'Jane Smith', 'Alex Rider', 'Priya Patel']; // Example drivers
   const [availableTables, setAvailableTables] = useState<any[]>([]); // Changed to any[] to store all tables
 
-  // Load menu data on component mount
+  // Load menu data on component mount (client-side only)
   useEffect(() => {
+    // Only load on client side, not during SSR
+    if (typeof window === 'undefined') return;
     loadMenuData();
   }, []);
 
@@ -88,8 +232,11 @@ export default function OrderEntryPage() {
     setFilteredItems(filtered);
   }, [menuItems, selectedCategory, searchTerm]);
 
-  // Fetch all tables on mount
+  // Fetch all tables on mount (client-side only)
   useEffect(() => {
+    // Only fetch on client side, not during SSR
+    if (typeof window === 'undefined') return;
+    
     async function fetchTables() {
       try {
         const res = await fetch('/api/tables');
@@ -125,18 +272,18 @@ export default function OrderEntryPage() {
     }
   };
 
-  const addToOrder = (menuItem: MenuItem) => {
+  const addToOrder = (menuItem: MenuItem, selectedSize?: { size: string; price: string }) => {
     setOrderItems(prev => {
-      const existingItem = prev.find(item => item.menuItem.id === menuItem.id);
+      const existingItem = prev.find(item => item.menuItem.id === menuItem.id && (!selectedSize || item.selectedSize?.size === selectedSize.size));
       
       if (existingItem) {
         return prev.map(item => 
-          item.menuItem.id === menuItem.id 
+          item.menuItem.id === menuItem.id && (!selectedSize || item.selectedSize?.size === selectedSize.size)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        return [...prev, { menuItem, quantity: 1 }];
+        return [...prev, { menuItem, quantity: 1, selectedSize }];
       }
     });
   };
@@ -162,7 +309,9 @@ export default function OrderEntryPage() {
 
   const calculateTotal = () => {
     return orderItems.reduce((total, item) => {
-      const price = parseFloat(item.menuItem.price.replace(/[^\d.,]/g, '').replace(',', '.'));
+      const priceStr = item.menuItem.price;
+      if (!priceStr || typeof priceStr !== 'string') return total;
+      const price = parseFloat(priceStr.replace(/[^\d.,]/g, '').replace(',', '.'));
       return total + (price * item.quantity);
     }, 0);
   };
@@ -203,11 +352,14 @@ export default function OrderEntryPage() {
         name: item.menuItem.name,
         quantity: item.quantity,
         unitPrice: parseFloat(item.menuItem.price.replace(/[^\d.,]/g, '').replace(',', '.')),
-        notes: item.notes
+        notes: item.notes,
+        selectedSize: item.selectedSize
       })),
       totalAmount: calculateTotal(),
       createdAt: new Date().toISOString(),
-      status: 'Pending'
+      status: 'Pending',
+      source: 'order-entry',
+      channel: 'On premise',
     };
     try {
       // Add order to active orders
@@ -232,6 +384,7 @@ export default function OrderEntryPage() {
   };
 
   const formatPrice = (price: string) => {
+    if (!price || typeof price !== 'string') return '0';
     return price.replace(/[^\d.,]/g, '').replace(',', '.');
   };
 
@@ -283,10 +436,11 @@ export default function OrderEntryPage() {
                   </div>
                   
                   {/* Category Filter */}
-                  <div className="flex flex-wrap gap-2">
+                  {/* 3. Category badges horizontally scrollable, highlight active */}
+                  <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 mb-2">
                     <Badge
                       variant={selectedCategory === 'all' ? 'default' : 'secondary'}
-                      className="cursor-pointer"
+                      className={`cursor-pointer whitespace-nowrap ${selectedCategory === 'all' ? 'border-blue-500 border-b-2' : ''}`}
                       onClick={() => setSelectedCategory('all')}
                     >
                       All Categories
@@ -295,7 +449,7 @@ export default function OrderEntryPage() {
                       <Badge
                         key={category}
                         variant={selectedCategory === category ? 'default' : 'secondary'}
-                        className="cursor-pointer"
+                        className={`cursor-pointer whitespace-nowrap ${selectedCategory === category ? 'border-blue-500 border-b-2' : ''}`}
                         onClick={() => setSelectedCategory(category)}
                       >
                         {category}
@@ -316,36 +470,20 @@ export default function OrderEntryPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {filteredItems.map((item) => (
-                      <Card key={item.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-sm">{item.name}</h3>
-                              <p className="text-xs text-muted-foreground">{item.category}</p>
-                            </div>
-                            <Badge variant="outline" className="ml-2">
-                              €{formatPrice(item.price)}
-                            </Badge>
-                          </div>
-                          {item.ingredients && item.ingredients.length > 0 && (
-                            <p className="text-xs text-muted-foreground mb-3">
-                              {item.ingredients.slice(0, 3).join(', ')}
-                              {item.ingredients.length > 3 && '...'}
-                            </p>
-                          )}
-                          <Button
-                            size="sm"
-                            onClick={() => addToOrder(item)}
-                            className="w-full"
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add to Order
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredItems.map((item, index) => {
+                      // Ensure unique key - use item.id if available and unique, otherwise generate one
+                      const uniqueKey = item.id && item.id.length > 0 ? item.id : `${item.name}__${item.category}__${item.price}__${index}`;
+                      return (
+                        <DishCard 
+                          key={uniqueKey} 
+                          item={item} 
+                          orderItems={orderItems} 
+                          onAddToOrder={addToOrder} 
+                          formatPrice={formatPrice} 
+                        />
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -361,7 +499,7 @@ export default function OrderEntryPage() {
                   Current Order
                 </CardTitle>
                 <CardDescription>
-                  {orderItems.length} item{orderItems.length !== 1 ? 's' : ''} in order
+                  {orderItems.length} item{orderItems.length !== 1 ? 's' : ''} in order | Total: <span className="font-bold">€{calculateTotal().toFixed(2)}</span>
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -446,6 +584,15 @@ export default function OrderEntryPage() {
                     <CardContent>
                       <div className="mb-4">
                         <Label htmlFor="tableNumber">Table Number *</Label>
+                        <Input
+                          id="tableNumberSearch"
+                          placeholder="Search table..."
+                          className="mb-2"
+                          onChange={e => {
+                            const val = e.target.value.toLowerCase();
+                            setAvailableTables(prev => prev.map(t => ({ ...t, _hidden: !(t.number && t.number.toString().toLowerCase().includes(val)) })));
+                          }}
+                        />
                         <select
                           id="tableNumber"
                           className="w-full border rounded px-2 py-2"
@@ -454,7 +601,7 @@ export default function OrderEntryPage() {
                           required
                         >
                           <option value="">Select table</option>
-                          {availableTables.map((table: any) => (
+                          {availableTables.filter(t => !t._hidden).map((table: any) => (
                             <option key={table.id} value={table.id}>
                               Table {table.number} ({table.status.charAt(0).toUpperCase() + table.status.slice(1)})
                             </option>
@@ -478,36 +625,16 @@ export default function OrderEntryPage() {
                   ) : (
                     <div className="space-y-2 max-h-64 overflow-y-auto">
                       {orderItems.map((item) => (
-                        <div key={item.menuItem.id} className="flex items-center justify-between p-2 border rounded">
+                        <div key={item.menuItem.id} className="flex items-center justify-between p-2 border rounded bg-white">
                           <div className="flex-1">
                             <p className="font-medium text-sm">{item.menuItem.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              €{formatPrice(item.menuItem.price)} × {item.quantity}
-                            </p>
+                            <p className="text-xs text-muted-foreground">€{formatPrice(item.menuItem.price)} × {item.quantity}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.menuItem.id, item.quantity - 1)}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => updateQuantity(item.menuItem.id, item.quantity - 1)}>-</Button>
                             <span className="w-8 text-center text-sm">{item.quantity}</span>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateQuantity(item.menuItem.id, item.quantity + 1)}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => removeFromOrder(item.menuItem.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => updateQuantity(item.menuItem.id, item.quantity + 1)}>+</Button>
+                            <Button size="sm" variant="destructive" onClick={() => removeFromOrder(item.menuItem.id)}>Remove</Button>
                           </div>
                         </div>
                       ))}
@@ -524,10 +651,12 @@ export default function OrderEntryPage() {
                     <span className="font-bold text-lg">€{calculateTotal().toFixed(2)}</span>
                   </div>
                   
+                  {/* 8. Place Order: tooltip/message when disabled, animate enablement */}
                   <Button 
                     onClick={handlePlaceOrder}
-                    disabled={orderItems.length === 0}
-                    className="w-full"
+                    disabled={orderItems.length === 0 || (orderType === 'dine-in' && !customerInfo.tableNumber)}
+                    className={`w-full transition-all ${orderItems.length === 0 || (orderType === 'dine-in' && !customerInfo.tableNumber) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                    title={orderItems.length === 0 ? 'Add items to order' : (orderType === 'dine-in' && !customerInfo.tableNumber ? 'Select a table' : 'Place Order')}
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
                     Place Order

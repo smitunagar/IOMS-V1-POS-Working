@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ReactNode, ChangeEvent } from 'react';
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,8 +17,10 @@ import {
 import { getDishes } from '@/lib/menuService';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
-export default function PaymentPage() {
+const PaymentPage: React.FC = () => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
   // Replace selectedTable and related logic with selectedOrderId
@@ -39,8 +41,8 @@ export default function PaymentPage() {
         setIsLoading(true);
         const res = await fetch('/api/orders');
         const data = await res.json();
-        // Show all non-completed orders (dine-in, take-away, delivery)
-        const pendingOrders = data.orders.filter((order: any) => order.status !== 'Completed');
+        // Show all non-completed orders (dine-in, take-away, delivery) created via Order Entry
+        const pendingOrders = data.orders.filter((order: any) => order.status !== 'Completed' && order.source === 'order-entry');
         setActiveOrders(pendingOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -59,33 +61,33 @@ export default function PaymentPage() {
   // Remove this conflicting useEffect that only shows dine-in orders
 
   // Compute selectedOrder based on selectedOrderId
-  const selectedOrder = activeOrders.find(order => order.id === selectedOrderId);
+  const selectedOrder = activeOrders.find((order: any) => order.id === selectedOrderId);
 
   const subtotal = selectedOrder?.subtotal || 0;
   const tax = selectedOrder?.taxAmount || 0;
   // Fallback helpers for order fields
-  const getOrderTotal = (order: any) => {
+  const getOrderTotal = (order: any): number => {
     if (!order) return 0;
     return order.totalAmount ?? order.total ?? 0;
   };
-  const getOrderCreatedAt = (order: any) => {
+  const getOrderCreatedAt = (order: any): string => {
     if (!order) return new Date().toISOString();
     return order.createdAt ?? order.timestamp ?? new Date().toISOString();
   };
-  const getOrderCustomerName = (order: any) => {
+  const getOrderCustomerName = (order: any): string => {
     if (!order) return '';
     return order.customerName ?? order.customerInfo?.name ?? '';
   };
-  const getOrderTable = (order: any) => {
+  const getOrderTable = (order: any): string => {
     if (!order) return '';
     return order.table ?? order.customerInfo?.tableNumber ?? '';
   };
   // For totalDue, use getOrderTotal(selectedOrder)
   const totalDue = getOrderTotal(selectedOrder);
 
-  const handleOrderSelection = (orderId: string) => {
+  const handleOrderSelection = (orderId: string): void => {
     setSelectedOrderId(orderId); // Set the selected table/order ID
-    const order = activeOrders.find(o => o.id === orderId);
+    const order = activeOrders.find((o: any) => o.id === orderId);
     if (order) {
       // Reset tipAmount when a new order is selected to avoid carrying over tips
       const newTipAmount = 0; 
@@ -104,7 +106,7 @@ export default function PaymentPage() {
   }, [tipAmount, selectedOrder]);
 
 
-  const handleProcessPayment = async () => {
+  const handleProcessPayment = async (): Promise<void> => {
     if (!currentUser) {
       toast({ title: "Error", description: "Please log in.", variant: "destructive" });
       return;
@@ -114,7 +116,13 @@ export default function PaymentPage() {
       return;
     }
     if (paymentMode === "cash" && amountPaid < totalDue) {
-      toast({ title: "Error", description: `Cash paid ($${String((typeof amountPaid === 'number' && !isNaN(amountPaid) ? amountPaid : parseFloat(amountPaid) || 0).toFixed(2))}) is less than total due ($${String((typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2))}).`, variant: "destructive" });
+      const paid = typeof amountPaid === 'number' && !isNaN(amountPaid)
+        ? amountPaid
+        : (typeof amountPaid === 'string' ? parseFloat(amountPaid) : 0);
+      const due = typeof totalDue === 'number' && !isNaN(totalDue)
+        ? totalDue
+        : (typeof totalDue === 'string' ? parseFloat(totalDue) : 0);
+      toast({ title: "Error", description: `Cash paid ($${paid.toFixed(2)}) is less than total due ($${due.toFixed(2)}).`, variant: "destructive" });
       return;
     }
 
@@ -140,7 +148,7 @@ export default function PaymentPage() {
         const { order: processedOrder } = await patchRes.json();
         
         // Remove the completed order from activeOrders
-        setActiveOrders(prev => prev.filter(o => o.id !== processedOrder.id));
+        setActiveOrders((prev: any[]) => prev.filter((o: any) => o.id !== processedOrder.id));
         // Optionally, refresh orders from API - show all non-completed orders
         const resOrders = await fetch('/api/orders');
         const dataOrders = await resOrders.json();
@@ -155,15 +163,22 @@ export default function PaymentPage() {
         }
         
         // Generate PDF bill in new tab
-        generatePDFBill(processedOrder);
+        await generatePDFBill(processedOrder);
         
         // Show success message
         let successMessageTableInfo = processedOrder.orderType === 'delivery' ? `Delivery for ${processedOrder.customerName}` : 
                                      processedOrder.orderType === 'take-away' ? `Take Away for ${processedOrder.customerInfo?.name || 'Customer'}` :
                                      `Table ${processedOrder.table} is now free`;
+        let due: number = 0;
+        if (typeof totalDue === 'number' && !isNaN(totalDue)) {
+          due = totalDue;
+        } else if (typeof totalDue === 'string') {
+          const parsed = parseFloat(totalDue);
+          due = isNaN(parsed) ? 0 : parsed;
+        }
         toast({ 
           title: "Payment Successful!", 
-          description: `Processed $${String((typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2))} for order ${orderIdShort}... via ${paymentMode}. ${successMessageTableInfo}. Bill generated in new tab.` 
+          description: `Processed $${due.toFixed(2)} for order ${orderIdShort}... via ${paymentMode}. ${successMessageTableInfo}. Bill generated in new tab.` 
         });
         // Refresh orders and tables
         async function refreshData() {
@@ -187,140 +202,67 @@ export default function PaymentPage() {
     }
   };
 
-  const generatePDFBill = (order: any) => {
-    // Create a new window/tab for the bill
-    const billWindow = window.open('', '_blank');
-    if (!billWindow) {
-      toast({ title: "Warning", description: "Please allow popups to generate the bill.", variant: "destructive" });
-      return;
-    }
-
-    // Generate the bill HTML content
-    const billHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Bill - Order ${order.id}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-          .restaurant-name { font-size: 24px; font-weight: bold; }
-          .order-info { margin-bottom: 20px; }
-          .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          .items-table th { background-color: #f2f2f2; }
-          .total-section { border-top: 2px solid #000; padding-top: 10px; }
-          .total-row { font-weight: bold; }
-          .footer { margin-top: 30px; text-align: center; font-size: 12px; }
-          @media print { body { margin: 0; } }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="restaurant-name">Restaurant Name</div>
-          <div>123 Main Street, City, State</div>
-          <div>Phone: (555) 123-4567</div>
-        </div>
-        
-        <div class="order-info">
-          <h3>Order Details</h3>
-          <p><strong>Order ID:</strong> ${order.id}</p>
-          <p><strong>Date:</strong> ${new Date(getOrderCreatedAt(order)).toLocaleString()}</p>
-          <p><strong>Order Type:</strong> ${order.orderType}</p>
-          ${order.orderType === 'dine-in' ? `<p><strong>Table:</strong> ${getOrderTable(order)}</p>` : ''}
-          ${order.orderType === 'take-away' || order.orderType === 'delivery' ? `<p><strong>Customer:</strong> ${getOrderCustomerName(order)}</p>` : ''}
-        </div>
-        
-        <table class="items-table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${order.items.map((item: any) => {
-              const name = item.menuItem?.name ?? item.name ?? '';
-              const quantity = item.quantity ?? 1;
-              let price = 0;
-              if (item.unitPrice) {
-                price = typeof item.unitPrice === 'string' ? parseFloat(item.unitPrice.replace(/[^\d.]/g, '')) : item.unitPrice;
-              } else if (item.price) {
-                price = typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price;
-              } else if (item.menuItem?.price) {
-                price = typeof item.menuItem.price === 'string' ? parseFloat(item.menuItem.price.replace(/[^\d.]/g, '')) : item.menuItem.price;
-              } else if (item.name) {
-                const priceMatch = item.name.match(/(\d+[.,]?\d*)\s*(EUR|€|\$)/i);
-                if (priceMatch) {
-                  price = parseFloat(priceMatch[1].replace(',', '.'));
-                }
-              }
-              const total = price * quantity;
-              return `
-                <tr>
-                  <td>${name}</td>
-                  <td>${quantity}</td>
-                  <td>$${String(price.toFixed(2))}</td>
-                  <td>$${String(total.toFixed(2))}</td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
-        
-        <div class="total-section">
-          <table style="width: 100%;">
-            <tr><td>Subtotal:</td><td style="text-align: right;">$${String((() => {
-              let subtotal = 0;
-              order.items.forEach((item: any) => {
-                const quantity = item.quantity ?? 1;
-                let price = 0;
-                if (item.unitPrice) {
-                  price = typeof item.unitPrice === 'string' ? parseFloat(item.unitPrice.replace(/[^\d.]/g, '')) : item.unitPrice;
-                } else if (item.price) {
-                  price = typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price;
-                } else if (item.menuItem?.price) {
-                  price = typeof item.menuItem.price === 'string' ? parseFloat(item.menuItem.price.replace(/[^\d.]/g, '')) : item.menuItem.price;
-                } else if (item.name) {
-                  const priceMatch = item.name.match(/(\d+[.,]?\d*)\s*(EUR|€|\$)/i);
-                  if (priceMatch) {
-                    price = parseFloat(priceMatch[1].replace(',', '.'));
-                  }
-                }
-                subtotal += price * quantity;
-              });
-              return subtotal.toFixed(2);
-            })())}</td></tr>
-            <tr><td>Tax:</td><td style="text-align: right;">$${String((order.taxAmount || 0).toFixed(2))}</td></tr>
-            ${tipAmount > 0 ? `<tr><td>Tip:</td><td style="text-align: right;">$${String(tipAmount.toFixed(2))}</td></tr>` : ''}
-            <tr class="total-row"><td><strong>Total:</strong></td><td style="text-align: right;"><strong>$${String(totalDue.toFixed(2))}</strong></td></tr>
-            <tr><td>Payment Method:</td><td style="text-align: right;">${paymentMode}</td></tr>
-            ${paymentMode === 'cash' ? `<tr><td>Amount Paid:</td><td style="text-align: right;">$${String(amountPaid.toFixed(2))}</td></tr>` : ''}
-            ${paymentMode === 'cash' && amountPaid > totalDue ? `<tr><td>Change:</td><td style="text-align: right;">$${String((amountPaid - totalDue).toFixed(2))}</td></tr>` : ''}
-          </table>
-        </div>
-        
-        <div class="footer">
-          <p>Thank you for your business!</p>
-          <p>Generated on ${new Date().toLocaleString()}</p>
-        </div>
-      </body>
-      </html>
-    `;
-
-    // Write the HTML to the new window
-    billWindow.document.write(billHTML);
-    billWindow.document.close();
-    
-    // Auto-print the bill
-    setTimeout(() => {
-      billWindow.print();
-    }, 500);
+  const generatePDFBill = async (order: any): Promise<void> => {
+    const doc = new jsPDF({ unit: 'mm', format: [80, 200] }); // Thermal receipt size
+    let y = 10;
+    doc.setFontSize(14);
+    doc.text('Restaurant Name', 40, y, { align: 'center' });
+    y += 6;
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date(getOrderCreatedAt(order)).toLocaleString()}`, 5, y);
+    y += 5;
+    doc.text(`Table: ${getOrderTable(order) || '-'}`, 5, y);
+    y += 5;
+    doc.text(`Order: ${order.id.slice(-6)}`, 5, y);
+    y += 5;
+    doc.text(`Server: ${order.userId || '-'}`, 5, y);
+    y += 8;
+    doc.setFontSize(12);
+    doc.text('Items', 5, y);
+    y += 5;
+    doc.setFontSize(10);
+    order.items.forEach((item: any) => {
+      doc.text(`${item.menuItem?.name || item.name} x${item.quantity}`, 5, y);
+      doc.text(`€${(item.unitPrice || item.price || 0).toFixed(2)}`, 60, y, { align: 'right' });
+      y += 5;
+    });
+    y += 2;
+    doc.setLineWidth(0.1);
+    doc.line(5, y, 75, y);
+    y += 3;
+    doc.text(`Subtotal:`, 5, y);
+    doc.text(`€${order.subtotal ? order.subtotal.toFixed(2) : getOrderTotal(order).toFixed(2)}`, 60, y, { align: 'right' });
+    y += 5;
+    doc.text(`Tax:`, 5, y);
+    doc.text(`€${order.taxAmount ? order.taxAmount.toFixed(2) : '0.00'}`, 60, y, { align: 'right' });
+    y += 5;
+    doc.text(`Discount:`, 5, y);
+    doc.text(`-€${order.discount ? order.discount.toFixed(2) : '0.00'}`, 60, y, { align: 'right' });
+    y += 5;
+    doc.setFontSize(12);
+    doc.text(`Total:`, 5, y);
+    doc.text(`€${getOrderTotal(order).toFixed(2)}`, 60, y, { align: 'right' });
+    y += 7;
+    doc.setFontSize(10);
+    doc.text(`Payment: ${order.paymentMode || 'N/A'}`, 5, y);
+    y += 7;
+    doc.setFontSize(11);
+    doc.text('Thank you for your business!', 40, y, { align: 'center' });
+    y += 8;
+    // Generate QR code for feedback
+    const feedbackUrl = 'https://your-feedback-url.com';
+    const qrDataUrl = await QRCode.toDataURL(feedbackUrl);
+    doc.addImage(qrDataUrl, 'PNG', 25, y, 30, 30);
+    y += 32;
+    doc.setFontSize(8);
+    doc.text('Scan QR for feedback', 40, y, { align: 'center' });
+    // Open PDF in new tab
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
   };
 
-  const getOrderDisplayName = (order: any) => {
+  const getOrderDisplayName = (order: any): string => {
     if (!order) return 'No order selected';
     
     if (order.orderType === 'take-away' || order.orderType === 'takeaway') {
@@ -337,7 +279,7 @@ export default function PaymentPage() {
     }
   };
 
-  const getOrderDetails = (order: any) => {
+  const getOrderDetails = (order: any): string => {
     const orderType = order.orderType || 'unknown';
     const customerName = order.customerInfo?.name || order.customerName || '';
     const tableNumber = order.customerInfo?.tableNumber || order.table || '';
@@ -356,322 +298,157 @@ export default function PaymentPage() {
 
   return (
     <AppLayout pageTitle="Payment Processing">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center"><ReceiptTextIcon className="mr-2 h-6 w-6" /> Process Payment</CardTitle>
-              <CardDescription>Select a pending order, choose payment method, and complete the transaction.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Select Order for Payment</CardTitle>
-                  {selectedOrder && (
-                    <CardDescription className="text-green-600 font-medium">
-                      ✓ Selected: {getOrderDisplayName(selectedOrder)} ({selectedOrder.orderType})
-                    </CardDescription>
+      <div className="ml-0 md:ml-64 transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Panel: Order Selection */}
+          <div>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Pending Orders</CardTitle>
+                <CardDescription>Search and select an order to process payment.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="Search by Table No, Order No, or Customer"
+                  className="mb-4"
+                  onChange={e => {
+                    const val = e.target.value.toLowerCase();
+                    setActiveOrders(prev => prev.map(o => ({ ...o, _hidden: !(
+                      (o.table && o.table.toString().toLowerCase().includes(val)) ||
+                      (o.id && o.id.toLowerCase().includes(val)) ||
+                      (o.customerInfo?.name && o.customerInfo.name.toLowerCase().includes(val))
+                    ) })));
+                  }}
+                />
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                  {activeOrders.length === 0 && (
+                    <div className="text-muted-foreground text-center py-8">No pending orders.</div>
                   )}
-                </CardHeader>
-                <CardContent>
-                  {/* Order select dropdown */}
-                  <select
-                    value={selectedOrderId ? String(selectedOrderId) : ''}
-                    onChange={e => {
-                      setSelectedOrderId(e.target.value || null);
-                      const order = activeOrders.find(o => o.id === e.target.value);
-                      if (order) {
-                        setTipAmount(0);
-                        setAmountPaid(Number(order.totalAmount) + 0);
-                      } else {
-                        setAmountPaid(0);
-                        setTipAmount(0);
-                      }
-                    }}
-                    className="w-full border rounded px-2 py-2"
-                  >
-                    <option value="">Select order</option>
-                    {activeOrders.filter(order => order.status !== 'Completed').map((order, idx) => (
-                      <option
-                        key={order.id || `order-idx-${idx}`}
-                        value={order.id ? String(order.id) : ''}
-                      >
-                        {getOrderDisplayName(order)} - €{String(getOrderTotal(order).toFixed(2))}
-                      </option>
-                    ))}
-                  </select>
-                  
-                </CardContent>
-              </Card>
-
-              <div>
-                <Label>Payment Mode</Label>
-                <div className="flex gap-4 pt-2">
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="paymentMode" value="card" checked={paymentMode === 'card'} onChange={() => setPaymentMode('card')} />
-                    Card
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="paymentMode" value="cash" checked={paymentMode === 'cash'} onChange={() => setPaymentMode('cash')} />
-                    Cash
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="radio" name="paymentMode" value="mobile" checked={paymentMode === 'mobile'} onChange={() => setPaymentMode('mobile')} />
-                    Mobile
-                  </label>
+                  {activeOrders.filter(o => !o._hidden).map((order: any) => (
+                    <Card key={order.id} className={`border-2 ${selectedOrderId === order.id ? 'border-blue-500 bg-blue-50' : 'border-transparent'} transition-all`}> 
+                      <CardContent className="p-3 flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-semibold text-base">Table {getOrderTable(order) || '-'}</div>
+                            <div className="text-xs text-muted-foreground">Order #{order.id.slice(-6)}</div>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="font-bold text-lg">€{getOrderTotal(order).toFixed(2)}</span>
+                            <span className="text-xs text-muted-foreground">{new Date(getOrderCreatedAt(order)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700">Pending</span>
+                          <Button size="sm" className="ml-auto" onClick={() => handleOrderSelection(order.id)}>
+                            Pay Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              </div>
-              
-              {selectedOrder && (
-                 <div>
-                    <Label htmlFor="tip-amount">Tip Amount</Label>
-                    <Input 
-                      id="tip-amount" 
-                      type="number" 
-                      value={String(tipAmount)} 
-                      onChange={(e) => {
-                        const value = parseFloat(e.target.value);
-                        setTipAmount(isNaN(value) ? 0 : Math.max(0, value));
-                      }} 
-                      placeholder="Enter tip amount (optional)" 
-                      min="0"
-                      step="0.01"
-                    />
-                  </div>
-              )}
-
-              {selectedOrder && paymentMode === "cash" && (
-                <div>
-                  <Label htmlFor="amount-paid">Amount Paid by Customer (Cash)</Label>
-                  <Input 
-                    id="amount-paid" 
-                    type="number" 
-                    value={String(amountPaid)} 
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value);
-                      setAmountPaid(isNaN(value) ? 0 : value);
-                    }} 
-                    placeholder="Enter amount paid" 
-                    min="0"
-                    step="0.01"
-                  />
-                  {/* Change due prompt */}
-                  {amountPaid > 0 && totalDue > 0 && (
-                    <div className={amountPaid >= totalDue ? "mt-2 p-2 rounded bg-green-100 text-green-800 font-semibold" : "mt-2 p-2 rounded bg-red-100 text-red-800 font-semibold"}>
-                      {amountPaid >= totalDue
-                        ? `Change to return: $${String((amountPaid - totalDue).toFixed(2))}`
-                        : `Amount paid is less than total due by $${String((totalDue - amountPaid).toFixed(2))}`}
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-2">
-              <Button
-                onClick={handleProcessPayment}
-                className="w-full"
-                size="lg"
-                disabled={!selectedOrder || isLoading || !currentUser}
-              >
-                {(() => {
-                  // Show euro if any item in order uses euro pricing
-                  if (selectedOrder) {
-                    let hasEuro = false;
-                    let euroTotal = 0;
-                    selectedOrder.items.forEach((item: any) => {
-                      let priceStr = item.unitPrice && item.unitPrice.toString().trim() ? item.unitPrice : item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i)?.[0];
-                      if (priceStr && /(EUR|€)/i.test(priceStr.toString())) {
-                        hasEuro = true;
-                        const match = priceStr.toString().match(/(\d+[.,]?\d*)/);
-                        if (match) euroTotal += parseFloat(match[1].replace(',', '.')) * item.quantity;
-                      }
-                    });
-                    if (hasEuro) {
-                      return `Process Payment (\u20AC${String(euroTotal.toFixed(2))})`;
-                    }
-                  }
-                  return `Process Payment ($${String((typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2))})`;
-                })()}
-              </Button>
-              
-            </CardFooter>
-          </Card>
-        </div>
-
-        <div className="md:col-span-1">
-          {selectedOrder ? (
+              </CardContent>
+            </Card>
+          </div>
+          {/* Right Panel: Payment Panel */}
+          <div>
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
-                <CardDescription>
-                  {selectedOrder?.id ? `ID: ${selectedOrder.id.substring(0,12)}...` : 'No order selected'}
-                </CardDescription>
+                <CardTitle>Order Payment</CardTitle>
+                <CardDescription>Review order and process payment.</CardDescription>
               </CardHeader>
-              <CardContent ref={billDetailsRef} className="space-y-3">
-                <div className="bill-header-placeholder hidden print:block bill-header"></div>
-                {selectedOrder.orderType === 'delivery' && (
-                  <div className="bill-section delivery-info">
-                    <h2 className="font-semibold print:text-lg">Delivery Details</h2>
-                    <p><strong>Customer:</strong> {getOrderCustomerName(selectedOrder)}</p>
-                    <p className="flex items-center"><Phone className="mr-2 h-4 w-4 text-muted-foreground"/> {selectedOrder.customerPhone}</p>
-                    <p className="flex items-start"><Home className="mr-2 mt-1 h-4 w-4 text-muted-foreground"/> {selectedOrder.customerAddress}</p>
-                    <p><strong>Driver:</strong> {selectedOrder.driverName}</p>
-                  </div>
-                )}
-                 {selectedOrder.orderType === 'dine-in' && (
-                  <p className="text-sm text-muted-foreground print:hidden">Table: {getOrderTable(selectedOrder)}</p>
-                )}
-                <Separator className={selectedOrder.orderType === 'delivery' ? 'my-3' : 'hidden'}/>
-                <div className="bill-section">
-                  <h2 className="font-semibold print:text-lg">Items</h2>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr>
-                        <th className="text-left font-normal">Item</th>
-                        <th className="text-center font-normal">Qty</th>
-                        <th className="text-right font-normal">Price</th>
-                        <th className="text-right font-normal">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedOrder.items.map((item: any, index: any) => {
-                        // Get item details with better price extraction
-                        const name = item.menuItem?.name ?? item.name ?? '';
-                        const quantity = item.quantity ?? 1;
-                        
-                        // Try multiple price sources
-                        let price = 0;
-                        if (item.unitPrice) {
-                          price = typeof item.unitPrice === 'string' ? parseFloat(item.unitPrice.replace(/[^\d.]/g, '')) : item.unitPrice;
-                        } else if (item.price) {
-                          price = typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price;
-                        } else if (item.menuItem?.price) {
-                          price = typeof item.menuItem.price === 'string' ? parseFloat(item.menuItem.price.replace(/[^\d.]/g, '')) : item.menuItem.price;
-                        } else if (name) {
-                          // Extract price from name if it contains price info
-                          const priceMatch = name.match(/(\d+[.,]?\d*)\s*(EUR|€|\$)/i);
-                          if (priceMatch) {
-                            price = parseFloat(priceMatch[1].replace(',', '.'));
-                          }
-                        }
-                        
-                        const total = (price * quantity) || 0;
-                        
-                        return (
-                          <tr key={String(index)}>
-                            <td>{name}</td>
-                            <td className="text-center">{String(quantity)}</td>
-                            <td className="text-right">${String(price.toFixed(2))}</td>
-                            <td className="text-right">${String(total.toFixed(2))}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <Separator/>
-                <div className="bill-section">
-                  <h2 className="font-semibold print:text-lg">Summary</h2>
-                  <table className="w-full text-sm totals-table">
-                      <tbody>
-                        <tr><td>Subtotal:</td><td className="text-right strong">{(() => {
-                          let subtotal = 0;
-                          selectedOrder.items.forEach((item: any) => {
-                            const quantity = item.quantity ?? 1;
-                            
-                            // Use the same price extraction logic as above
-                            let price = 0;
-                            if (item.unitPrice) {
-                              price = typeof item.unitPrice === 'string' ? parseFloat(item.unitPrice.replace(/[^\d.]/g, '')) : item.unitPrice;
-                            } else if (item.price) {
-                              price = typeof item.price === 'string' ? parseFloat(item.price.replace(/[^\d.]/g, '')) : item.price;
-                            } else if (item.menuItem?.price) {
-                              price = typeof item.menuItem.price === 'string' ? parseFloat(item.menuItem.price.replace(/[^\d.]/g, '')) : item.menuItem.price;
-                            } else if (item.name) {
-                              const priceMatch = item.name.match(/(\d+[.,]?\d*)\s*(EUR|€|\$)/i);
-                              if (priceMatch) {
-                                price = parseFloat(priceMatch[1].replace(',', '.'));
-                              }
-                            }
-                            
-                            subtotal += price * quantity;
-                          });
-                          
-                          return `$${String(subtotal.toFixed(2))}`;
-                        })()}</td></tr>
-                        <tr><td>Tax ({(() => {
-                          let hasEuro = false;
-                          selectedOrder.items.forEach((item: any) => {
-                            let priceStr = item.unitPrice && item.unitPrice.toString().trim() ? item.unitPrice : item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i)?.[0];
-                            if (priceStr && /(EUR|€)/i.test(priceStr.toString())) {
-                              hasEuro = true;
-                            }
-                          });
-                          return hasEuro ? '€' : '$';
-                        })()}{String((typeof selectedOrder.taxRate === 'number' && !isNaN(selectedOrder.taxRate) ? selectedOrder.taxRate * 100 : 0).toFixed(0))}%):</td><td className="text-right strong">{(() => {
-                          let tax = 0;
-                          let hasEuro = false;
-                          selectedOrder.items.forEach((item: any) => {
-                            let priceStr = item.unitPrice && item.unitPrice.toString().trim() ? item.unitPrice : item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i)?.[0];
-                            if (priceStr && /(EUR|€)/i.test(priceStr.toString())) {
-                              hasEuro = true;
-                              const match = priceStr.toString().match(/(\d+[.,]?\d*)/);
-                              if (match) tax += parseFloat(match[1].replace(',', '.')) * item.quantity * (selectedOrder.taxRate || 0);
-                            }
-                          });
-                          if (hasEuro) {
-                            return `€${String(tax.toFixed(2))}`;
-                          } else {
-                            return `$${String((typeof tax === 'number' && !isNaN(tax) ? tax : parseFloat(tax) || 0).toFixed(2))}`;
-                          }
-                        })()}</td></tr>
-                        {tipAmount > 0 && <tr><td>Tip:</td><td className="text-right strong">{(() => {
-                          let hasEuro = false;
-                          selectedOrder.items.forEach((item: any) => {
-                            let priceStr = item.unitPrice && item.unitPrice.toString().trim() ? item.unitPrice : item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i)?.[0];
-                            if (priceStr && /(EUR|€)/i.test(priceStr.toString())) {
-                              hasEuro = true;
-                            }
-                          });
-                          return hasEuro ? `€${String((typeof tipAmount === 'number' && !isNaN(tipAmount) ? tipAmount : parseFloat(tipAmount) || 0).toFixed(2))}` : `$${String((typeof tipAmount === 'number' && !isNaN(tipAmount) ? tipAmount : parseFloat(tipAmount) || 0).toFixed(2))}`;
-                        })()}</td></tr>}
-                        <tr className="text-lg border-t mt-1 pt-1"><td className="font-bold">Total Due:</td><td className="text-right font-bold strong">{(() => {
-                          let total = 0;
-                          let hasEuro = false;
-                          selectedOrder.items.forEach((item: any) => {
-                            let priceStr = item.unitPrice && item.unitPrice.toString().trim() ? item.unitPrice : item.name && item.name.match(/(\d+[.,]?\d*)\s*(EUR|€)/i)?.[0];
-                            if (priceStr && /(EUR|€)/i.test(priceStr.toString())) {
-                              hasEuro = true;
-                              const match = priceStr.toString().match(/(\d+[.,]?\d*)/);
-                              if (match) total += parseFloat(match[1].replace(',', '.')) * item.quantity;
-                            }
-                          });
-                          let tax = (selectedOrder.taxRate || 0) * total;
-                          total += tax;
-                          if (tipAmount > 0) total += tipAmount;
-                          if (hasEuro) {
-                            return `€${String(total.toFixed(2))}`;
-                          } else {
-                            return `$${String((typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2))}`;
-                          }
-                        })()}</td></tr>
-                      </tbody>
-                  </table>
-                </div>
-                 <p className="text-xs text-muted-foreground print:hidden">Order Type: <span className="capitalize">{selectedOrder.orderType}</span></p>
-                 <p className="text-xs text-muted-foreground print:hidden">Created: {new Date(getOrderCreatedAt(selectedOrder)).toLocaleString()}</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="flex items-center justify-center h-full">
               <CardContent>
-                <p className="text-muted-foreground">No order selected.</p>
+                {!selectedOrder ? (
+                  <div className="text-muted-foreground text-center py-12">Select an order from the left panel.</div>
+                ) : (
+                  <>
+                    {/* Order Summary */}
+                    <div className="mb-4">
+                      <h3 className="font-semibold mb-2">Order Summary</h3>
+                      <div className="space-y-1 text-sm">
+                        <div><span className="font-medium">Order:</span> {getOrderDisplayName(selectedOrder)}</div>
+                        <div><span className="font-medium">Details:</span> {getOrderDetails(selectedOrder)}</div>
+                        <div><span className="font-medium">Date:</span> {getOrderCreatedAt(selectedOrder)}</div>
+                        <div><span className="font-medium">Status:</span> <span className={`px-2 py-1 rounded text-xs font-semibold ${selectedOrder.status === 'Completed' ? 'bg-green-100 text-green-700' : selectedOrder.status === 'Partially Paid' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>{selectedOrder.status}</span></div>
+                      </div>
+                      <Separator className="my-3" />
+                      <div className="text-sm max-h-32 overflow-y-auto border rounded p-2 bg-gray-50">
+                        <div className="mb-2 font-medium">Items:</div>
+                        <ul className="list-disc ml-5">
+                          {selectedOrder.items.map((item: any, idx: number) => (
+                            <li key={idx}>{item.menuItem?.name || item.name} × {item.quantity} <span className="text-muted-foreground">@ €{(item.unitPrice || item.price || 0).toFixed(2)}</span></li>
+                          ))}
+                        </ul>
+                      </div>
+                      <Separator className="my-3" />
+                      <div className="flex justify-between font-semibold">
+                        <span>Subtotal</span>
+                        <span>€{selectedOrder.subtotal ? selectedOrder.subtotal.toFixed(2) : getOrderTotal(selectedOrder).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tax</span>
+                        <span>€{selectedOrder.taxAmount ? selectedOrder.taxAmount.toFixed(2) : '0.00'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Discount</span>
+                        <span>-€{selectedOrder.discount ? selectedOrder.discount.toFixed(2) : '0.00'}</span>
+                      </div>
+                      <div className="flex justify-between text-lg font-bold mt-2">
+                        <span>Total</span>
+                        <span>€{getOrderTotal(selectedOrder).toFixed(2)}</span>
+                      </div>
+                    </div>
+                    {/* Payment Method */}
+                    <div className="mb-4">
+                      <h3 className="font-semibold mb-2">Payment Method</h3>
+                      <div className="flex gap-3 mb-2 flex-wrap">
+                        <Button variant={paymentMode === 'card' ? 'default' : 'outline'} onClick={() => setPaymentMode('card')}><CreditCardIcon className="mr-2 h-4 w-4" />Card</Button>
+                        <Button variant={paymentMode === 'cash' ? 'default' : 'outline'} onClick={() => setPaymentMode('cash')}><DollarSign className="mr-2 h-4 w-4" />Cash</Button>
+                        <Button variant={paymentMode === 'qr' ? 'default' : 'outline'} onClick={() => setPaymentMode('qr')}><SmartphoneNfcIcon className="mr-2 h-4 w-4" />QR</Button>
+                        <Button variant={paymentMode === 'gift' ? 'default' : 'outline'} onClick={() => setPaymentMode('gift')}><ReceiptTextIcon className="mr-2 h-4 w-4" />Gift Card</Button>
+                        <Button variant={paymentMode === 'split' ? 'default' : 'outline'} onClick={() => setPaymentMode('split')} disabled><ReceiptTextIcon className="mr-2 h-4 w-4" />Split Payment</Button>
+                      </div>
+                    </div>
+                    {/* Amount Received (for cash) */}
+                    {paymentMode === 'cash' && (
+                      <div className="mb-4">
+                        <Label htmlFor="amountPaid">Amount Received</Label>
+                        <Input
+                          id="amountPaid"
+                          type="number"
+                          value={amountPaid}
+                          onChange={e => setAmountPaid(Number(e.target.value))}
+                          min={getOrderTotal(selectedOrder)}
+                          className="mt-1"
+                        />
+                      </div>
+                    )}
+                    {/* Tip Input */}
+                    <div className="mb-4">
+                      <Label htmlFor="tipAmount">Tip (optional)</Label>
+                      <Input
+                        id="tipAmount"
+                        type="number"
+                        value={tipAmount}
+                        onChange={e => setTipAmount(Number(e.target.value))}
+                        min={0}
+                        className="mt-1"
+                      />
+                    </div>
+                    {/* Process Payment Button */}
+                    <Button className="w-full mt-4" onClick={async () => { await handleProcessPayment(); toast({ title: 'Payment Success', description: '✅ Payment processed successfully.' }); if (selectedOrder) await generatePDFBill(selectedOrder); }} disabled={isLoading}>
+                      {isLoading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
+                      Process Payment
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
-          )}
+          </div>
         </div>
       </div>
     </AppLayout>
   );
 }
+
+export default PaymentPage;

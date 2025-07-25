@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 220 33% 86%; /* Light gray-blue #D0D8E6 */
+    --background: 232 48% 92%; /* Soft violet-grey #e4e7f5 for app background */
     --foreground: 231 25% 20%; /* Dark blue-gray for contrast */
     --card: 220 33% 92%; /* Slightly lighter than background */
     --card-foreground: 231 25% 20%;
@@ -35,7 +35,7 @@ body {
     --radius: 0.5rem;
 
     /* Sidebar specific theme */
-    --sidebar-background: 231 48% 38%; /* Darker shade of primary */
+    --sidebar-background: 232 48% 92%; /* Soft violet-grey #e4e7f5 for sidebar */
     --sidebar-foreground: 220 40% 95%; /* Light text */
     --sidebar-primary: 230 45% 77%; /* Accent color for selected/active items */
     --sidebar-primary-foreground: 231 48% 20%; /* Dark text on accent */

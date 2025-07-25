@@ -49,9 +49,9 @@ export default function CustomerAnalyticsPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Label htmlFor="period">Time Period</Label>
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <Select value={selectedPeriod} onChange={e => setSelectedPeriod(e.target.value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select period" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="7d">Last 7 days</SelectItem>
@@ -63,9 +63,9 @@ export default function CustomerAnalyticsPage() {
             </div>
             <div className="flex-1">
               <Label htmlFor="segment">Customer Segment</Label>
-              <Select value={selectedSegment} onValueChange={setSelectedSegment}>
+              <Select value={selectedSegment} onChange={e => setSelectedSegment(e.target.value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select segment" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Customers</SelectItem>

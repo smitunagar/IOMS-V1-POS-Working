@@ -18,4 +18,10 @@ import { suggestDiscountedDishes, SuggestDiscountedDishesInput, SuggestDiscounte
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays, parseISO, isValid } from 'date-fns';
 
-// ... rest of the file ... 
+export function NotificationBell() {
+  return (
+    <Button variant="ghost" size="icon" aria-label="Notifications">
+      <Bell className="h-5 w-5" />
+    </Button>
+  );
+} 

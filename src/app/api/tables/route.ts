@@ -17,14 +17,16 @@ function writeTables(tables: any[]) {
   fs.writeFileSync(TABLES_FILE, JSON.stringify(tables, null, 2), 'utf-8');
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  console.log('[API] /api/tables GET called at', new Date().toISOString(), '\nStack:', new Error().stack);
   const tables = readTables();
   return NextResponse.json({ tables });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  console.log('[API] /api/tables POST called at', new Date().toISOString(), '\nStack:', new Error().stack);
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { action, tableId, number, capacity } = body;
     const tables = readTables();
 
@@ -36,7 +38,9 @@ export async function POST(request: NextRequest) {
         id: Date.now().toString(),
         number: String(number),
         capacity: Number(capacity),
-        status: 'available'
+        status: 'available',
+        waiter: null,
+        occupiedSince: null
       };
       tables.push(newTable);
       writeTables(tables);
@@ -52,8 +56,12 @@ export async function POST(request: NextRequest) {
     }
     if (action === 'occupy') {
       table.status = 'occupied';
+      table.occupiedSince = new Date().toISOString();
+      if (body.waiter) table.waiter = body.waiter;
     } else if (action === 'free') {
       table.status = 'available';
+      table.occupiedSince = null;
+      table.waiter = null;
     }
     if (action === 'edit') {
       if (!number || !capacity) {
@@ -61,6 +69,8 @@ export async function POST(request: NextRequest) {
       }
       table.number = String(number);
       table.capacity = Number(capacity);
+      if ('waiter' in body) table.waiter = body.waiter;
+      if ('occupiedSince' in body) table.occupiedSince = body.occupiedSince;
       writeTables(tables);
       return NextResponse.json({ tables });
     }

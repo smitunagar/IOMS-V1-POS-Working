@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.log('🔄 Processing menu with improved AI extraction...');
 
     // Extract menu items using AI
-    const extractedItems = await extractor.extractMenuItemsFromText(text);
+    const extractedItems = await ImprovedDataExtractor.extractMenuItemsFromText(text);
 
     console.log(`📊 AI extracted ${extractedItems.length} menu items`);
 
@@ -69,8 +69,9 @@ export async function POST(request: NextRequest) {
     const categoryBreakdown: { [key: string]: number } = {};
     
     categories.forEach((cat: any) => {
-      const count = db.prepare('SELECT COUNT(*) as count FROM menu_items WHERE category_id = ?').get(cat.id);
-      categoryBreakdown[cat.name] = count.count;
+      const result = db.prepare('SELECT COUNT(*) as count FROM menu_items WHERE category_id = ?').get(cat.id) as { count: number };
+      const count = typeof result.count === 'number' ? result.count : 0;
+      categoryBreakdown[cat.name] = count;
     });
 
     console.log(`✅ Menu upload completed: ${successCount} successful, ${errorCount} errors`);
@@ -106,8 +107,9 @@ export async function GET() {
     // Get category breakdown
     const categoryBreakdown: { [key: string]: number } = {};
     categories.forEach((cat: any) => {
-      const count = db.prepare('SELECT COUNT(*) as count FROM menu_items WHERE category_id = ?').get(cat.id);
-      categoryBreakdown[cat.name] = count.count;
+      const result = db.prepare('SELECT COUNT(*) as count FROM menu_items WHERE category_id = ?').get(cat.id) as { count: number };
+      const count = typeof result.count === 'number' ? result.count : 0;
+      categoryBreakdown[cat.name] = count;
     });
 
     return NextResponse.json({

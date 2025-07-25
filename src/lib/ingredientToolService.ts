@@ -17,4 +17,19 @@ export async function getIngredientsForDish(dish: { name: string, aiHint?: strin
   if (Array.isArray(data)) return data;
   if (data.result && Array.isArray(data.result.ingredients)) return data.result.ingredients;
   return [];
+}
+
+// AI Allergen Tool Service
+// This service communicates with the AI Allergen Tool API to fetch allergens for a given dish
+export async function getAllergensForDish(dish: { name: string, aiHint?: string }): Promise<Array<{icon: string, name: string}>> {
+  const response = await fetch('/api/ai-allergen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: dish.name, aiHint: dish.aiHint }),
+  });
+  const data = await response.json();
+  if (Array.isArray(data.allergens)) return data.allergens;
+  if (Array.isArray(data)) return data;
+  if (data.result && Array.isArray(data.result.allergens)) return data.result.allergens;
+  return [];
 } 
