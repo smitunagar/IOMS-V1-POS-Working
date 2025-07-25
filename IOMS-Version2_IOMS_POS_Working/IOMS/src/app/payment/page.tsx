@@ -25,15 +25,33 @@ export default function PaymentPage() {
 
   const billDetailsRef = useRef<HTMLDivElement>(null);
 
-  const loadPendingOrders = () => {
+  const loadPendingOrders = async () => {
     if (!currentUser) {
       setIsLoading(false);
       setPendingOrders([]);
       return;
     }
     setIsLoading(true);
-    const orders = getPendingOrders(currentUser.id);
-    setPendingOrders(orders);
+    
+    try {
+      // Use the new API that combines both storage systems
+      const response = await fetch(`/api/payment-orders?userId=${currentUser.id}&type=pending`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setPendingOrders(data.orders);
+        console.log('[Payment UI] Loaded orders:', data.orders.length, 'from sources:', data.sources);
+      } else {
+        console.error('[Payment UI] Failed to load orders:', data.error);
+        setPendingOrders([]);
+      }
+    } catch (error) {
+      console.error('[Payment UI] Error loading orders:', error);
+      // Fallback to client-side orders
+      const orders = getPendingOrders(currentUser.id);
+      setPendingOrders(orders);
+    }
+    
     setIsLoading(false);
   };
 
@@ -115,7 +133,7 @@ export default function PaymentPage() {
   };
 
 
-  const handleProcessPayment = () => {
+  const handleProcessPayment = async () => {
     if (!currentUser) {
        toast({ title: "Error", description: "Please log in.", variant: "destructive" });
        return;
@@ -129,20 +147,58 @@ export default function PaymentPage() {
        return;
     }
 
-    const processedOrder = updateOrderStatus(currentUser.id, selectedOrder.id, 'Completed');
-    if (processedOrder) {
-      if (processedOrder.orderType === 'dine-in' && processedOrder.tableId) {
-        clearOccupiedTable(currentUser.id, processedOrder.tableId);
+    try {
+      // Use the new API that works with both storage systems
+      const response = await fetch('/api/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          orderId: selectedOrder.id,
+          status: 'Completed'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const processedOrder = data.order;
+        let successMessageTableInfo = processedOrder.orderType === 'delivery' 
+          ? `Delivery for ${processedOrder.customerName}` 
+          : `Table ${processedOrder.table} is now free`;
+        
+        toast({ 
+          title: "Payment Successful!", 
+          description: `Processed $${(typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2)} for order ${selectedOrder.id.substring(0,12)}... via ${paymentMethod}. ${successMessageTableInfo}.` 
+        });
+        
+        loadPendingOrders(); 
+        setSelectedOrderId("");
+        setPaymentMethod("card");
+        setAmountPaid(0);
+        setTipAmount(0);
+      } else {
+        console.error('[Payment UI] Payment failed:', data.error);
+        // Fallback to client-side method
+        const processedOrder = updateOrderStatus(currentUser.id, selectedOrder.id, 'Completed');
+        if (processedOrder) {
+          if (processedOrder.orderType === 'dine-in' && processedOrder.tableId) {
+            clearOccupiedTable(currentUser.id, processedOrder.tableId);
+          }
+          let successMessageTableInfo = processedOrder.orderType === 'delivery' ? `Delivery for ${processedOrder.customerName}` : `Table ${processedOrder.table} is now free`;
+          toast({ title: "Payment Successful!", description: `Processed $${(typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2)} for order ${selectedOrder.id.substring(0,12)}... via ${paymentMethod}. ${successMessageTableInfo}.` });
+          loadPendingOrders(); 
+          setSelectedOrderId("");
+          setPaymentMethod("card");
+          setAmountPaid(0);
+          setTipAmount(0);
+        } else {
+          toast({ title: "Error", description: "Failed to update order status.", variant: "destructive" });
+        }
       }
-      let successMessageTableInfo = processedOrder.orderType === 'delivery' ? `Delivery for ${processedOrder.customerName}` : `Table ${processedOrder.table} is now free`;
-      toast({ title: "Payment Successful!", description: `Processed $${(typeof totalDue === 'number' && !isNaN(totalDue) ? totalDue : parseFloat(totalDue) || 0).toFixed(2)} for order ${selectedOrder.id.substring(0,12)}... via ${paymentMethod}. ${successMessageTableInfo}.` });
-      loadPendingOrders(); 
-      setSelectedOrderId("");
-      setPaymentMethod("card");
-      setAmountPaid(0);
-      setTipAmount(0);
-    } else {
-      toast({ title: "Error", description: "Failed to update order status.", variant: "destructive" });
+    } catch (error) {
+      console.error('[Payment UI] Error processing payment:', error);
+      toast({ title: "Error", description: "Failed to process payment.", variant: "destructive" });
     }
   };
 

@@ -1,0 +1,700 @@
+{
+  "smit.kunagar@gmail.com": [
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753214601633_sgxj1fk",
+      "createdAt": "2025-07-22T20:03:21.633Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753215048122_ack2nps",
+      "createdAt": "2025-07-22T20:10:48.123Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753215586605_rmp3xa2",
+      "createdAt": "2025-07-22T20:19:46.605Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753215892282_aihro40",
+      "createdAt": "2025-07-22T20:24:52.282Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 38.7,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753275632361_ywqdsjt",
+      "createdAt": "2025-07-23T13:00:32.361Z",
+      "status": "Pending Payment",
+      "taxAmount": 3.8700000000000006,
+      "totalAmount": 42.57
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753284611583_x1u1ut8",
+      "createdAt": "2025-07-23T15:30:11.583Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753285003524_8hjmp2t",
+      "createdAt": "2025-07-23T15:36:43.524Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753285536028_qkjs364",
+      "createdAt": "2025-07-23T15:45:36.028Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753285893760_t2dufzk",
+      "createdAt": "2025-07-23T15:51:33.760Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 64.5,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753285907884_rerxsf4",
+      "createdAt": "2025-07-23T15:51:47.884Z",
+      "status": "Pending Payment",
+      "taxAmount": 6.45,
+      "totalAmount": 70.95
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 38.7,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753286166933_91dmynp",
+      "createdAt": "2025-07-23T15:56:06.933Z",
+      "status": "Pending Payment",
+      "taxAmount": 3.8700000000000006,
+      "totalAmount": 42.57
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 51.6,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753286176002_evxbet4",
+      "createdAt": "2025-07-23T15:56:16.002Z",
+      "status": "Pending Payment",
+      "taxAmount": 5.16,
+      "totalAmount": 56.760000000000005
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        },
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 51.6,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753286186844_7h807uk",
+      "createdAt": "2025-07-23T15:56:26.844Z",
+      "status": "Pending Payment",
+      "taxAmount": 5.16,
+      "totalAmount": 56.760000000000005
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 12.9,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753286330144_flinnwj",
+      "createdAt": "2025-07-23T15:58:50.144Z",
+      "status": "Pending Payment",
+      "taxAmount": 1.29,
+      "totalAmount": 14.190000000000001
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 12.9,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753297645648_dy2pmc6",
+      "createdAt": "2025-07-23T19:07:25.648Z",
+      "status": "Pending Payment",
+      "taxAmount": 1.29,
+      "totalAmount": 14.190000000000001
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 12.9,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753297673846_gww962c",
+      "createdAt": "2025-07-23T19:07:53.846Z",
+      "status": "Pending Payment",
+      "taxAmount": 1.29,
+      "totalAmount": 14.190000000000001
+    },
+    {
+      "orderType": "dine-in",
+      "items": [
+        {
+          "dishId": "1",
+          "name": "Chicken Biryani - 12.90 EUR",
+          "quantity": 1,
+          "unitPrice": 12.9,
+          "totalPrice": 12.9
+        }
+      ],
+      "subtotal": 12.9,
+      "taxRate": 0.1,
+      "table": "Table t1",
+      "tableId": "t1",
+      "customerName": "Voice Customer",
+      "id": "order_1753374673676_pnn2qfs",
+      "createdAt": "2025-07-24T16:31:13.676Z",
+      "status": "Pending Payment",
+      "taxAmount": 1.29,
+      "totalAmount": 14.190000000000001
+    }
+  ]
+}

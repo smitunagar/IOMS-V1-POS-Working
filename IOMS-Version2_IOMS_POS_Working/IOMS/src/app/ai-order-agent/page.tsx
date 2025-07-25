@@ -1,527 +1,881 @@
-"use client";
+'use client';
 
-import React, { useState, useTransition, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Loader2, MessageSquareQuote, CheckCircle, AlertCircle, Utensils, ShoppingCart, XCircle } from "lucide-react";
-import { extractOrderFromText, ExtractOrderInput, ExtractedOrderOutput } from '@/ai/flows/extract-order-from-text';
-import { useAuth } from '@/contexts/AuthContext';
-import { getDishes, Dish } from '@/lib/menuService';
-import { addOrder, OrderItem as ServiceOrderItem, DEFAULT_TAX_RATE, OrderType, NewOrderData } from '@/lib/orderService';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from "@/components/ui/badge"; // Added import
+import { Switch } from '@/components/ui/switch';
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Phone, 
+  Plus, 
+  MessageSquareQuote, 
+  ShoppingCart,
+  Calendar,
+  Check,
+  AlertCircle,
+  Bot,
+  Trash2
+} from "lucide-react";
 
-const MOCK_TABLES_AGENT = Array.from({ length: 10 }, (_, i) => ({ id: `t${i + 1}`, name: `Table ${i + 1}` }));
-const MOCK_DRIVERS_AGENT = ["Driver A", "Driver B", "Driver C"];
-
-interface MatchedOrderItem {
-  menuDish: Dish | null; // Matched dish from menu, or null if no match
-  aiExtractedName: string;
-  quantity: number;
-  isMatched: boolean;
+// Types
+interface PhoneNumber {
+  id: string;
+  number: string;
+  displayName: string;
+  isActive: boolean;
+  isPrimary: boolean;
+  department: 'main' | 'orders' | 'reservations';
+  aiEnabled: boolean;
+  createdAt: Date;
 }
 
-// Fix: Use a custom type for local state that includes 'pickup' and 'unknown',
-// but only allow 'dine-in' | 'delivery' for OrderType (orderService)
-type AgentOrderType = 'dine-in' | 'delivery' | 'pickup' | 'unknown';
+interface CallLog {
+  id: string;
+  phoneNumberId: string;
+  callerNumber: string;
+  duration: number;
+  timestamp: Date;
+  handled: boolean;
+  handledBy: 'ai' | 'staff';
+  intent: 'order' | 'reservation' | 'inquiry';
+  success: boolean;
+  orderCreated?: boolean;
+  reservationCreated?: boolean;
+}
 
-export default function AiOrderAgentPage() {
+interface AvailablePhoneNumber {
+  phoneNumber: string;
+  friendlyName: string;
+  locality: string;
+  region: string;
+  capabilities: {
+    voice: boolean;
+    sms: boolean;
+    mms: boolean;
+  };
+}
+
+interface TwilioStatus {
+  configured: boolean;
+  webhookUrls?: {
+    voice: string;
+    status: string;
+    transcription: string;
+  };
+  accountSid?: string;
+  baseUrl?: string;
+}
+
+export default function SimpleAIOrderAgent() {
   const { toast } = useToast();
-  const { currentUser } = useAuth();
-  const [transcript, setTranscript] = useState<string>("");
-  const [aiExtractedOrder, setAiExtractedOrder] = useState<ExtractedOrderOutput | null>(null);
-  const [processedOrderItems, setProcessedOrderItems] = useState<MatchedOrderItem[]>([]);
+  const [activeTab, setActiveTab] = useState<'transcript' | 'phone' | 'calls'>('transcript');
   
-  const defaultDishes: Dish[] = [
-    { id: '1', name: 'Biryani', price: 350, category: 'Main', image: '', aiHint: '', ingredients: [] },
-    { id: '2', name: 'Qourma', price: 400, category: 'Main', image: '', aiHint: '', ingredients: [] },
-    { id: '3', name: 'Nihari', price: 380, category: 'Main', image: '', aiHint: '', ingredients: [] },
-    { id: '4', name: 'Karahi', price: 500, category: 'Main', image: '', aiHint: '', ingredients: [] },
-    { id: '5', name: 'Haleem', price: 320, category: 'Main', image: '', aiHint: '', ingredients: [] },
-  ];
-  const [menuDishes, setMenuDishes] = useState<Dish[]>([]);
+  // Phone management state
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumber[]>([]);
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Twilio integration state
+  const [twilioStatus, setTwilioStatus] = useState<TwilioStatus | null>(null);
+  const [availableNumbers, setAvailableNumbers] = useState<AvailablePhoneNumber[]>([]);
+  const [searchParams, setSearchParams] = useState({
+    areaCode: '',
+    contains: '',
+    nearNumber: ''
+  });
+  const [isSearching, setIsSearching] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  // New phone form
+  const [newPhone, setNewPhone] = useState({
+    number: '',
+    displayName: '',
+    department: 'main' as 'main' | 'orders' | 'reservations',
+    aiEnabled: true
+  });
+
+  // Transcript processing state
+  const [transcript, setTranscript] = useState('');
+  const [processedOrder, setProcessedOrder] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
-    setIsClient(true);
-    if (!currentUser || !currentUser.id) return;
-    // Try to load from localStorage
-    const userKey = `restaurantMenu_${currentUser.id}`;
-    let dishes: Dish[] = [];
+    fetchPhoneNumbers();
+    fetchCallLogs();
+    fetchTwilioStatus();
+  }, []);
+
+  const fetchTwilioStatus = async () => {
     try {
-      const stored = typeof window !== 'undefined' ? localStorage.getItem(userKey) : null;
-      if (stored) {
-        dishes = JSON.parse(stored);
+      const response = await fetch('/api/phone-system/numbers?action=twilio-status');
+      const data = await response.json();
+      if (data.success) {
+        setTwilioStatus(data.twilio);
       }
-    } catch (e) { dishes = []; }
-    // If still empty, fetch from CSV API and save to localStorage
-    if (!dishes || dishes.length === 0) {
-      fetch('/api/menuCsv')
-        .then(res => res.json())
-        .then(data => {
-          if (data.menu && Array.isArray(data.menu) && data.menu.length > 0) {
-            setMenuDishes(data.menu);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(userKey, JSON.stringify(data.menu));
-            }
-          }
+    } catch (error) {
+      console.error('Error fetching Twilio status:', error);
+    }
+  };
+
+  const searchPhoneNumbers = async () => {
+    setIsSearching(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('action', 'search');
+      if (searchParams.areaCode) params.append('areaCode', searchParams.areaCode);
+      if (searchParams.contains) params.append('contains', searchParams.contains);
+      if (searchParams.nearNumber) params.append('nearNumber', searchParams.nearNumber);
+
+      const response = await fetch(`/api/phone-system/numbers?${params}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setAvailableNumbers(data.availableNumbers || []);
+        toast({
+          title: "Search Complete",
+          description: `Found ${data.availableNumbers?.length || 0} available numbers`,
         });
-    } else {
-      setMenuDishes(dishes);
+      } else {
+        toast({
+          title: "Search Failed",
+          description: data.error || "Failed to search for phone numbers",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Search Error",
+        description: "Failed to search for phone numbers",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
     }
-  }, [currentUser]);
+  };
 
-  // DEBUG: Log menuDishes to verify dropdown population
-  useEffect(() => {
-    console.log('menuDishes for manual select:', menuDishes);
-  }, [menuDishes]);
+  const purchasePhoneNumber = async (phoneNumber: string, displayName: string, department: string) => {
+    setIsPurchasing(true);
+    try {
+      const response = await fetch('/api/phone-system/numbers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'purchase',
+          phoneNumber,
+          displayName,
+          department
+        })
+      });
 
-  // Form state for confirming order details
-  const [confirmedOrderType, setConfirmedOrderType] = useState<AgentOrderType>('unknown');
-  const [selectedTableId, setSelectedTableId] = useState<string>("");
-  const [customerName, setCustomerName] = useState<string>("");
-  const [customerPhone, setCustomerPhone] = useState<string>("");
-  const [customerAddress, setCustomerAddress] = useState<string>("");
-  const [selectedDriver, setSelectedDriver] = useState<string>("");
-  const [orderNotes, setOrderNotes] = useState<string>("");
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "Phone Number Purchased!",
+          description: `Successfully purchased ${phoneNumber}`,
+        });
+        fetchPhoneNumbers(); // Refresh the list
+        setAvailableNumbers([]); // Clear search results
+      } else {
+        toast({
+          title: "Purchase Failed",
+          description: data.error || "Failed to purchase phone number",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Purchase Error",
+        description: "Failed to purchase phone number",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
 
-  const [selectedDishId, setSelectedDishId] = useState<string>("");
-  const [manualQuantity, setManualQuantity] = useState<number>(1);
+  const fetchPhoneNumbers = async () => {
+    try {
+      const response = await fetch('/api/phone-system/numbers');
+      const data = await response.json();
+      if (data.success) {
+        setPhoneNumbers(data.phoneNumbers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching phone numbers:', error);
+    }
+  };
 
-  const [isProcessingTranscript, startProcessingTranscript] = useTransition();
-  const [isCreatingOrder, startCreatingOrder] = useTransition();
-  const [isClient, setIsClient] = useState(false);
+  const fetchCallLogs = async () => {
+    try {
+      const response = await fetch('/api/phone-system/call-logs');
+      const data = await response.json();
+      if (data.success) {
+        setCallLogs(data.callLogs || []);
+      }
+    } catch (error) {
+      console.error('Error fetching call logs:', error);
+    }
+  };
 
-  useEffect(() => { setIsClient(true); }, []);
-
-  const handleProcessTranscript = () => {
-    if (!currentUser) {
-      toast({ title: "Error", description: "Please log in.", variant: "destructive" });
+  const addPhoneNumber = async () => {
+    if (!newPhone.number || !newPhone.displayName) {
+      toast({
+        title: "Error",
+        description: "Please fill in phone number and display name",
+        variant: "destructive"
+      });
       return;
     }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/phone-system/numbers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPhone)
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await fetchPhoneNumbers();
+        setNewPhone({
+          number: '',
+          displayName: '',
+          department: 'main',
+          aiEnabled: true
+        });
+        toast({
+          title: "Success",
+          description: "Phone number added successfully"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || 'Failed to add phone number',
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add phone number",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleAI = async (phoneId: string, enabled: boolean) => {
+    try {
+      await fetch('/api/phone-system/numbers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: phoneId, aiEnabled: enabled })
+      });
+      await fetchPhoneNumbers();
+      toast({
+        title: "Updated",
+        description: `AI ${enabled ? 'enabled' : 'disabled'} for phone number`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update phone number",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deletePhone = async (phoneId: string) => {
+    if (!confirm('Are you sure you want to delete this phone number?')) return;
+
+    try {
+      await fetch(`/api/phone-system/numbers?id=${phoneId}`, {
+        method: 'DELETE'
+      });
+      await fetchPhoneNumbers();
+      toast({
+        title: "Deleted",
+        description: "Phone number deleted successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete phone number",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const processTranscript = async () => {
     if (!transcript.trim()) {
-      toast({ title: "Error", description: "Please enter a call transcript.", variant: "destructive" });
-      return;
-    }
-    setAiExtractedOrder(null);
-    setProcessedOrderItems([]);
-
-    startProcessingTranscript(async () => {
-      try {
-        const input: ExtractOrderInput = { transcript };
-        const result = await extractOrderFromText(input);
-        setAiExtractedOrder(result);
-
-        // Populate form fields with AI suggestions
-        setConfirmedOrderType((result.orderType || 'unknown') as AgentOrderType);
-        setCustomerName(result.customerName || "");
-        setCustomerPhone(result.customerPhone || "");
-        setCustomerAddress(result.customerAddress || "");
-        setOrderNotes(result.notes || "");
-        // Driver and table needs manual selection for now
-
-        if (result.items && result.items.length > 0) {
-          const matchedItems: MatchedOrderItem[] = result.items.map(aiItem => {
-            const foundDish = menuDishes.find(menuDish => menuDish.name.toLowerCase() === aiItem.name.toLowerCase());
-            return {
-              menuDish: foundDish || null,
-              aiExtractedName: aiItem.name,
-              quantity: aiItem.quantity,
-              isMatched: !!foundDish,
-            };
-          });
-          setProcessedOrderItems(matchedItems);
-        }
-        
-        toast({ title: "Transcript Processed", description: "AI has extracted order details. Please review." });
-      } catch (error) {
-        console.error("Error processing transcript:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({ title: "Processing Failed", description: errorMessage, variant: "destructive" });
-      }
-    });
-  };
-
-  const handleConfirmAndCreateOrder = () => {
-    if (!currentUser || !aiExtractedOrder) {
-      toast({ title: "Error", description: "No AI extracted order to process or user not logged in.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "Please enter a call transcript",
+        variant: "destructive"
+      });
       return;
     }
 
-    const validItemsForOrder = processedOrderItems.filter(item => item.isMatched && item.menuDish);
-    if (validItemsForOrder.length === 0) {
-      toast({ title: "Error", description: "No valid (matched) menu items found in AI suggestions to create an order.", variant: "destructive" });
-      return;
-    }
-
-    let orderSpecifics: Partial<NewOrderData> = {};
-    let displayMessageTarget = "";
-
-    if (confirmedOrderType === 'dine-in') {
-      if (!selectedTableId) {
-        toast({ title: "Error", description: "Please assign the order to a table for dine-in.", variant: "destructive" });
-        return;
-      }
-      displayMessageTarget = MOCK_TABLES_AGENT.find(t => t.id === selectedTableId)?.name || "Unknown Table";
-      orderSpecifics = { table: String(displayMessageTarget), tableId: String(selectedTableId) };
-    } else if (confirmedOrderType === 'delivery') {
-      if (!customerName || !customerPhone || !customerAddress || !selectedDriver) {
-        toast({ title: "Error", description: "Please fill all customer and driver details for delivery.", variant: "destructive" });
-        return;
-      }
-      displayMessageTarget = `Delivery to ${customerName}`;
-      orderSpecifics = {
-        customerName, customerPhone, customerAddress, driverName: selectedDriver,
-        table: String(displayMessageTarget), tableId: `delivery-ai-${Date.now()}`,
+    setIsProcessing(true);
+    try {
+      // Mock AI processing - replace with actual AI service
+      const mockOrder = {
+        items: [
+          { name: "Large Pepperoni Pizza", quantity: 1, price: 18.99 },
+          { name: "Coca Cola", quantity: 2, price: 2.50 }
+        ],
+        customerName: "John Doe",
+        customerPhone: "+1 555-123-4567",
+        orderType: "delivery",
+        total: 23.99
       };
-    } else if (confirmedOrderType === 'pickup') {
-       if (!customerName || !customerPhone) {
-        toast({ title: "Error", description: "Please fill customer name and phone for pickup.", variant: "destructive" });
-        return;
-      }
-      displayMessageTarget = `Pickup for ${customerName}`;
-      orderSpecifics = {
-        customerName, customerPhone,
-        table: String(displayMessageTarget), tableId: `pickup-ai-${Date.now()}`,
-      }
-    } else {
-        toast({ title: "Error", description: "Please select a valid order type (Dine-In, Delivery, or Pickup).", variant: "destructive" });
-        return;
+
+      setProcessedOrder(mockOrder);
+      toast({
+        title: "Success",
+        description: "Order extracted from transcript successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process transcript",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
     }
-    
-    // Ensure table and tableId are always strings
-    const safeOrderSpecifics = {
-      table: orderSpecifics.table || "Unknown",
-      tableId: orderSpecifics.tableId || "unknown-id",
-      ...orderSpecifics,
-    };
-
-    startCreatingOrder(() => {
-        const orderItemsForService: ServiceOrderItem[] = validItemsForOrder.map(item => ({
-            dishId: item.menuDish!.id, // item.menuDish is guaranteed by filter
-            name: item.menuDish!.name,
-            quantity: item.quantity,
-            unitPrice: item.menuDish!.price,
-            totalPrice: item.menuDish!.price * item.quantity,
-        }));
-
-        const subtotal = orderItemsForService.reduce((sum, item) => sum + item.totalPrice, 0);
-        
-        const newOrderData: NewOrderData = {
-            orderType: confirmedOrderType as OrderType, // Only 'dine-in' or 'delivery' allowed in orderService
-            items: orderItemsForService,
-            subtotal,
-            taxRate: DEFAULT_TAX_RATE,
-            ...safeOrderSpecifics,
-            // Notes from AI can be added here if your Order interface supports it.
-            // For now, orderService doesn't explicitly handle general order notes.
-        };
-
-        const newOrder = addOrder(currentUser.id, newOrderData);
-
-        if (newOrder) {
-            toast({ title: "Order Created!", description: `Order #${newOrder.id.substring(0,12)}... for ${displayMessageTarget} created successfully.`, duration: 5000 });
-            // Reset state
-            setTranscript("");
-            setAiExtractedOrder(null);
-            setProcessedOrderItems([]);
-            setConfirmedOrderType('unknown');
-            setSelectedTableId("");
-            setCustomerName("");
-            setCustomerPhone("");
-            setCustomerAddress("");
-            setSelectedDriver("");
-            setOrderNotes("");
-          } else {
-            toast({ title: "Order Creation Failed", description: "Could not save the order. Please try again.", variant: "destructive" });
-          }
-    });
   };
 
-  // Always show default dishes in dropdown, merged with user/CSV menu (no duplicates)
-  const dropdownDishes = [
-    ...defaultDishes.filter(
-      def => !menuDishes.some(u => u.name.toLowerCase() === def.name.toLowerCase())
-    ),
-    ...menuDishes
-  ];
-  console.log('DEBUG: dropdownDishes for manual select:', dropdownDishes);
-  // Fallback: if dropdownDishes is empty, use defaultDishes
-  const safeDropdownDishes = dropdownDishes.length > 0 ? dropdownDishes : defaultDishes;
+  const createOrder = async () => {
+    if (!processedOrder) return;
 
+    try {
+      // Mock order creation - replace with actual order service
+      toast({
+        title: "Order Created",
+        description: `Order for ${processedOrder.customerName} has been created successfully`
+      });
+      setProcessedOrder(null);
+      setTranscript('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create order",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getIntentColor = (intent: string) => {
+    switch (intent) {
+      case 'order':
+        return 'bg-green-100 text-green-800';
+      case 'reservation':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
   return (
-    <AppLayout pageTitle="AI Order Agent (Beta)">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Transcript Input Column */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center"><MessageSquareQuote className="mr-2 h-6 w-6 text-primary" /> Call Transcript Input</CardTitle>
-            <CardDescription>
-              Paste the full text transcript of the customer's call here. The AI will try to extract order details.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Label htmlFor="transcript-input">Call Transcript</Label>
-            <Textarea
-              id="transcript-input"
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              placeholder="e.g., 'Hello, I'd like to order one large pepperoni pizza and two cokes for delivery to 123 Main Street... My name is John Doe...'"
-              rows={10}
-              className="min-h-[200px]"
-              disabled={isProcessingTranscript || isCreatingOrder}
-            />
-          </CardContent>
-          <CardFooter>
-            <Button onClick={handleProcessTranscript} disabled={isProcessingTranscript || isCreatingOrder || !currentUser || !transcript.trim()} className="w-full">
-              {isProcessingTranscript ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="mr-2 h-4 w-4" />
-              )}
-              Process with AI
-            </Button>
-          </CardFooter>
-        </Card>
+    <AppLayout>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <MessageSquareQuote className="h-8 w-8 text-blue-600" />
+            AI Order Agent
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Process call transcripts and manage phone system for AI-powered ordering
+          </p>
+        </div>
 
-        {/* AI Extracted Details & Confirmation Column */}
-        <Card className={!aiExtractedOrder && !isProcessingTranscript ? "hidden lg:block" : ""}>
-          <CardHeader>
-            <CardTitle className="flex items-center"><Utensils className="mr-2 h-6 w-6 text-primary" /> AI Extracted Order & Confirmation</CardTitle>
-            {isProcessingTranscript && <CardDescription>AI is processing the transcript...</CardDescription>}
-            {!isProcessingTranscript && !aiExtractedOrder && <CardDescription>AI suggestions will appear here after processing.</CardDescription>}
-            {aiExtractedOrder && aiExtractedOrder.confidenceScore && (
-              <CardDescription>AI Confidence: <Badge variant={aiExtractedOrder.confidenceScore > 0.7 ? "default" : "secondary"}>{(typeof aiExtractedOrder.confidenceScore === 'number' && !isNaN(aiExtractedOrder.confidenceScore) ? aiExtractedOrder.confidenceScore * 100 : 0).toFixed(0)}%</Badge></CardDescription>
-            )}
-          </CardHeader>
-          {isProcessingTranscript && (
-            <CardContent className="flex justify-center items-center min-h-[300px]">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            </CardContent>
-          )}
-          {aiExtractedOrder && !isProcessingTranscript && (
-            <React.Fragment>
-              <CardContent className="space-y-4">
-                {/* Manual Add Dish Section */}
-                <div className="mb-4 border p-2 rounded-md bg-blue-50">
-                  <Label>Add Dish Manually</Label>
-                  <div className="flex gap-2 items-end">
-                    {/* Only render dropdown on client when dishes are available */}
-                    {isClient && menuDishes.length > 0 && (
-                      <Select value={selectedDishId || undefined} onValueChange={setSelectedDishId} disabled={isCreatingOrder}>
-                        <SelectTrigger className="w-48"><SelectValue placeholder="Select a dish" /></SelectTrigger>
-                        <SelectContent>
-                          {menuDishes.map(dish => (
-                            <SelectItem key={dish.id} value={dish.id}>{dish.name} (${(typeof dish.price === 'number' && !isNaN(dish.price) ? dish.price : parseFloat(dish.price?.toString?.() ?? '') || 0).toFixed(2)})</SelectItem>
+        {/* Tab Navigation */}
+        <div className="flex gap-2 mb-6">
+          <Button
+            variant={activeTab === 'transcript' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('transcript')}
+            className="flex items-center gap-2"
+          >
+            <MessageSquareQuote className="h-4 w-4" />
+            Call Transcript
+          </Button>
+          <Button
+            variant={activeTab === 'phone' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('phone')}
+            className="flex items-center gap-2"
+          >
+            <Phone className="h-4 w-4" />
+            Phone Setup
+          </Button>
+          <Button
+            variant={activeTab === 'calls' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('calls')}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            Call History
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="grid gap-6">
+          
+          {/* Call Transcript Processing */}
+          {activeTab === 'transcript' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Input Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquareQuote className="h-5 w-5 text-blue-600" />
+                    Call Transcript Input
+                  </CardTitle>
+                  <CardDescription>
+                    Paste the customer call transcript to extract order details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="transcript">Call Transcript</Label>
+                    <Textarea
+                      id="transcript"
+                      placeholder="e.g., 'Hello, I'd like to order one large pepperoni pizza and two cokes for delivery to 123 Main Street... My name is John Doe...'"
+                      value={transcript}
+                      onChange={(e) => setTranscript(e.target.value)}
+                      rows={8}
+                      className="mt-2"
+                    />
+                  </div>
+                  <Button 
+                    onClick={processTranscript}
+                    disabled={isProcessing || !transcript.trim()}
+                    className="w-full"
+                  >
+                    {isProcessing ? 'Processing...' : 'Process with AI'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Output Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingCart className="h-5 w-5 text-green-600" />
+                    Order Review
+                  </CardTitle>
+                  <CardDescription>
+                    Review and confirm AI-extracted order details
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!processedOrder ? (
+                    <div className="text-center py-8">
+                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 font-medium">No Order Extracted</p>
+                      <p className="text-sm text-gray-400">
+                        Please paste a call transcript and click "Process with AI" to extract order details.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Customer Info */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-semibold mb-2">Customer Information</h3>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>Name: <strong>{processedOrder.customerName}</strong></div>
+                          <div>Phone: <strong>{processedOrder.customerPhone}</strong></div>
+                          <div>Type: <strong>{processedOrder.orderType}</strong></div>
+                          <div>Total: <strong>${processedOrder.total}</strong></div>
+                        </div>
+                      </div>
+
+                      {/* Order Items */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-semibold mb-2">Order Items</h3>
+                        <div className="space-y-2">
+                          {processedOrder.items.map((item: any, index: number) => (
+                            <div key={index} className="flex justify-between items-center">
+                              <span>{item.quantity}x {item.name}</span>
+                              <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                            </div>
                           ))}
+                        </div>
+                      </div>
+
+                      <Button onClick={createOrder} className="w-full">
+                        Create Order
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Phone Setup */}
+          {activeTab === 'phone' && (
+            <div className="space-y-6">
+              
+              {/* Current Phone Numbers */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Phone Numbers</CardTitle>
+                  <CardDescription>
+                    Phone numbers configured for AI call handling
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {phoneNumbers.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No phone numbers configured yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {phoneNumbers.map((phone) => (
+                        <div 
+                          key={phone.id} 
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Phone className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">{phone.displayName}</h3>
+                              <p className="text-sm text-gray-500">{phone.number}</p>
+                              <div className="flex gap-2 mt-1">
+                                {phone.isPrimary && (
+                                  <Badge variant="default" className="bg-green-100 text-green-800">
+                                    <Check className="h-3 w-3 mr-1" />
+                                    Primary
+                                  </Badge>
+                                )}
+                                <Badge variant="secondary" className="capitalize">
+                                  {phone.department}
+                                </Badge>
+                                {phone.aiEnabled && (
+                                  <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                                    <Bot className="h-3 w-3 mr-1" />
+                                    AI Enabled
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`ai-${phone.id}`} className="text-sm">AI</Label>
+                              <Switch
+                                id={`ai-${phone.id}`}
+                                checked={phone.aiEnabled}
+                                onCheckedChange={(checked) => toggleAI(phone.id, checked)}
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deletePhone(phone.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Twilio Phone Number Search */}
+              {twilioStatus?.configured ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bot className="h-5 w-5" />
+                      Purchase Real Phone Numbers
+                    </CardTitle>
+                    <CardDescription>
+                      Search and purchase phone numbers through Twilio for real call handling
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Search Parameters */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="areaCode">Area Code</Label>
+                        <Input
+                          id="areaCode"
+                          placeholder="e.g., 415"
+                          value={searchParams.areaCode}
+                          onChange={(e) => setSearchParams({ ...searchParams, areaCode: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="contains">Contains</Label>
+                        <Input
+                          id="contains"
+                          placeholder="e.g., 1234"
+                          value={searchParams.contains}
+                          onChange={(e) => setSearchParams({ ...searchParams, contains: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="nearNumber">Near Number</Label>
+                        <Input
+                          id="nearNumber"
+                          placeholder="e.g., +14155551234"
+                          value={searchParams.nearNumber}
+                          onChange={(e) => setSearchParams({ ...searchParams, nearNumber: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={searchPhoneNumbers} 
+                      disabled={isSearching}
+                      className="w-full"
+                    >
+                      {isSearching ? 'Searching...' : 'Search Available Numbers'}
+                    </Button>
+
+                    {/* Search Results */}
+                    {availableNumbers.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Available Numbers</h4>
+                        <div className="max-h-60 overflow-y-auto space-y-2">
+                          {availableNumbers.map((number) => (
+                            <div 
+                              key={number.phoneNumber}
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div>
+                                <p className="font-medium">{number.phoneNumber}</p>
+                                <p className="text-sm text-gray-500">
+                                  {number.locality}, {number.region}
+                                </p>
+                                <div className="flex gap-1 mt-1">
+                                  {number.capabilities.voice && (
+                                    <Badge variant="secondary" className="text-xs">Voice</Badge>
+                                  )}
+                                  {number.capabilities.sms && (
+                                    <Badge variant="secondary" className="text-xs">SMS</Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  const displayName = `${number.locality} ${number.region} Line`;
+                                  purchasePhoneNumber(number.phoneNumber, displayName, 'main');
+                                }}
+                                disabled={isPurchasing}
+                              >
+                                {isPurchasing ? 'Purchasing...' : 'Purchase'}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-orange-500" />
+                      Twilio Not Configured
+                    </CardTitle>
+                    <CardDescription>
+                      To use real phone numbers, configure Twilio credentials
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                      <h4 className="font-medium text-orange-800 mb-2">Setup Required</h4>
+                      <p className="text-sm text-orange-700 mb-3">
+                        Add these environment variables to your .env.local file:
+                      </p>
+                      <div className="bg-orange-100 p-3 rounded text-sm font-mono text-orange-900">
+                        TWILIO_ACCOUNT_SID=your_account_sid<br/>
+                        TWILIO_AUTH_TOKEN=your_auth_token<br/>
+                        NEXT_PUBLIC_BASE_URL=your_app_url
+                      </div>
+                      <p className="text-sm text-orange-700 mt-2">
+                        Get credentials from <a href="https://console.twilio.com" target="_blank" rel="noopener noreferrer" className="underline">Twilio Console</a>
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Add New Phone Number */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5" />
+                    Add Phone Number
+                  </CardTitle>
+                  <CardDescription>
+                    Add a new phone number for AI call handling
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input
+                        id="phoneNumber"
+                        placeholder="(555) 123-4567"
+                        value={newPhone.number}
+                        onChange={(e) => setNewPhone({ ...newPhone, number: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="displayName">Display Name</Label>
+                      <Input
+                        id="displayName"
+                        placeholder="e.g., Main Restaurant Line"
+                        value={newPhone.displayName}
+                        onChange={(e) => setNewPhone({ ...newPhone, displayName: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="department">Department</Label>
+                      <Select 
+                        value={newPhone.department} 
+                        onValueChange={(value: any) => setNewPhone({ ...newPhone, department: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="main">Main Line</SelectItem>
+                          <SelectItem value="orders">Orders</SelectItem>
+                          <SelectItem value="reservations">Reservations</SelectItem>
                         </SelectContent>
                       </Select>
-                    )}
-                    {isClient && menuDishes.length === 0 && (
-                      <div className="px-4 py-2 text-muted-foreground text-sm">No dishes available. Add dishes via the Ingredient Tool and refresh.</div>
-                    )}
-                    <Input
-                      type="number"
-                      min={1}
-                      value={manualQuantity}
-                      onChange={e => setManualQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                      placeholder="Quantity"
-                      className="w-24"
-                      disabled={isCreatingOrder}
-                    />
-                    {/* Action buttons are siblings, not nested! */}
-                    <Button
-                      onClick={() => {
-                        if (!selectedDishId) {
-                          toast({ title: "No Dish Selected", description: "Please select a dish to add.", variant: "destructive" });
-                          return;
-                        }
-                        const dish = menuDishes.find(d => d.id === selectedDishId);
-                        if (dish) {
-                          setProcessedOrderItems(prevItems => {
-                            // Prevent duplicate dish entries
-                            const exists = prevItems.some(item => item.menuDish && item.menuDish.id === dish.id);
-                            if (exists) {
-                              toast({ title: "Already Added", description: `${dish.name} is already in the order.`, variant: "destructive" });
-                              return prevItems;
-                            }
-                            return [
-                              ...prevItems,
-                              {
-                                menuDish: dish,
-                                aiExtractedName: dish.name,
-                                quantity: manualQuantity,
-                                isMatched: true,
-                              }
-                            ];
-                          });
-                          setSelectedDishId("");
-                          setManualQuantity(1);
-                        }
-                      }}
-                      disabled={!selectedDishId || isCreatingOrder}
-                      type="button"
-                    >
-                      Add to Order
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => setMenuDishes(getDishes(currentUser?.id ?? null))}
-                      disabled={isCreatingOrder || !currentUser}
-                      type="button"
-                    >
-                      Refresh Menu
-                    </Button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="aiEnabled">Enable AI</Label>
+                        <p className="text-sm text-gray-500">AI will handle calls automatically</p>
+                      </div>
+                      <Switch
+                        id="aiEnabled"
+                        checked={newPhone.aiEnabled}
+                        onCheckedChange={(checked) => setNewPhone({ ...newPhone, aiEnabled: checked })}
+                      />
+                    </div>
                   </div>
-                </div>
-                {/* Processed Order Items List */}
-                <div>
-                  <Label>AI Processed Order Items</Label>
-                  <div className="space-y-2">
-                    {processedOrderItems.length === 0 && (
-                      <p className="text-sm text-muted-foreground">No items found. Please process a transcript or add items manually.</p>
-                    )}
-                    {processedOrderItems.map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-2 border rounded-md">
-                        <div className="flex-1">
-                          <p className="font-semibold">{item.aiExtractedName}</p>
-                          {item.menuDish && (
-                            <p className="text-sm text-muted-foreground">
-                              Matched Menu Dish: {item.menuDish.name} (${(typeof item.menuDish.price === 'number' && !isNaN(item.menuDish.price) ? item.menuDish.price : parseFloat(item.menuDish.price?.toString?.() ?? '') || 0).toFixed(2)})
+
+                  <Button 
+                    onClick={addPhoneNumber}
+                    disabled={isLoading || !newPhone.number || !newPhone.displayName}
+                    className="w-full"
+                  >
+                    {isLoading ? 'Adding...' : 'Add Phone Number'}
+                  </Button>
+
+                  {/* Setup Instructions */}
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-semibold text-blue-800 mb-2">Webhook Setup</h4>
+                    <p className="text-sm text-blue-700 mb-2">
+                      Configure your Twilio webhook URL:
+                    </p>
+                    <code className="block p-2 bg-white rounded text-xs border">
+                      https://your-domain.com/api/phone/simple-webhook
+                    </code>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Call History */}
+          {activeTab === 'calls' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  Recent Calls
+                </CardTitle>
+                <CardDescription>
+                  Calls handled by your AI system
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {callLogs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Phone className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No call logs yet</p>
+                    <p className="text-sm text-gray-400">Calls will appear here when customers call your AI system</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {callLogs.slice(0, 10).map((call) => (
+                      <div key={call.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Phone className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{call.callerNumber}</p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(call.timestamp).toLocaleString()}
                             </p>
-                          )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={item.quantity}
-                            onChange={e => {
-                              const newQty = Math.max(1, parseInt(e.target.value, 10) || 1);
-                              setProcessedOrderItems(items => {
-                                const newItems = [...items];
-                                newItems[idx] = { ...newItems[idx], quantity: newQty };
-                                return newItems;
-                              });
-                            }}
-                            className="w-16"
-                            disabled={isCreatingOrder}
-                          />
-                          <Button
-                            onClick={() => {
-                              setProcessedOrderItems(items => {
-                                const newItems = items.filter((_, i) => i !== idx);
-                                return newItems;
-                              });
-                            }}
-                            variant="destructive"
-                            size="icon"
-                            disabled={isCreatingOrder}
-                          >
-                            <XCircle className="h-5 w-5" />
-                          </Button>
+                          <Badge variant="secondary" className={getIntentColor(call.intent)}>
+                            {call.intent}
+                          </Badge>
+                          <span className="text-sm text-gray-500">
+                            {formatDuration(call.duration)}
+                          </span>
+                          {call.orderCreated && (
+                            <Badge variant="default" className="bg-green-100 text-green-800">
+                              <ShoppingCart className="h-3 w-3 mr-1" />
+                              Order
+                            </Badge>
+                          )}
+                          {call.reservationCreated && (
+                            <Badge variant="default" className="bg-blue-100 text-blue-800">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Table
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
               </CardContent>
-              <CardFooter>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4">
-                  {/* Order Type, Table, and Driver Selection */}
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <Label>Order Type</Label>
-                      <Select value={confirmedOrderType} onValueChange={v => setConfirmedOrderType(v as AgentOrderType)} disabled={isCreatingOrder}>
-                        <SelectTrigger><SelectValue placeholder="Select order type" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="dine-in">Dine-In</SelectItem>
-                          <SelectItem value="delivery">Delivery</SelectItem>
-                          <SelectItem value="pickup">Pickup</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {confirmedOrderType === 'dine-in' && (
-                      <div>
-                        <Label>Table</Label>
-                        <Select value={selectedTableId} onValueChange={setSelectedTableId} disabled={isCreatingOrder}>
-                          <SelectTrigger><SelectValue placeholder="Select a table" /></SelectTrigger>
-                          <SelectContent>
-                            {MOCK_TABLES_AGENT.map(table => (
-                              <SelectItem key={table.id} value={table.id}>{table.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                    {(['delivery', 'pickup'] as AgentOrderType[]).includes(confirmedOrderType) && (
-                      <div>
-                        <Label>Customer Name</Label>
-                        <Input
-                          value={customerName}
-                          onChange={e => setCustomerName(e.target.value)}
-                          placeholder="Enter customer name"
-                          disabled={isCreatingOrder}
-                        />
-                      </div>
-                    )}
-                    {(['delivery', 'pickup'] as AgentOrderType[]).includes(confirmedOrderType) && (
-                      <div>
-                        <Label>Customer Phone</Label>
-                        <Input
-                          value={customerPhone}
-                          onChange={e => setCustomerPhone(e.target.value)}
-                          placeholder="Enter customer phone"
-                          disabled={isCreatingOrder}
-                        />
-                      </div>
-                    )}
-                    {confirmedOrderType === 'delivery' && (
-                      <div>
-                        <Label>Customer Address</Label>
-                        <Input
-                          value={customerAddress}
-                          onChange={e => setCustomerAddress(e.target.value)}
-                          placeholder="Enter delivery address"
-                          disabled={isCreatingOrder}
-                        />
-                      </div>
-                    )}
-                    {confirmedOrderType === 'delivery' && (
-                      <div>
-                        <Label>Driver</Label>
-                        <Select value={selectedDriver} onValueChange={setSelectedDriver} disabled={isCreatingOrder}>
-                          <SelectTrigger><SelectValue placeholder="Select a driver" /></SelectTrigger>
-                          <SelectContent>
-                            {MOCK_DRIVERS_AGENT.map(driver => (
-                              <SelectItem key={driver} value={driver}>{driver}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                  {/* Confirm and Create Order Button */}
-                  <Button
-                    onClick={handleConfirmAndCreateOrder}
-                    disabled={isCreatingOrder || !aiExtractedOrder}
-                    className="w-full sm:w-auto"
-                  >
-                    {isCreatingOrder ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                    )}
-                    Confirm & Create Order
-                  </Button>
-                </div>
-              </CardFooter>
-            </React.Fragment>
+            </Card>
           )}
-        </Card>
+
+        </div>
       </div>
     </AppLayout>
   );

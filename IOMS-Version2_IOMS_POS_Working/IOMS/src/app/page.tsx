@@ -67,9 +67,18 @@ export default function OrderEntryPage() {
   useEffect(() => {
     if (currentUser) {
       setIsLoadingMenu(true);
-      // Always try to fetch from /api/menuCsv first
+      // Try to fetch from backend API first, then fallback to existing methods
       (async () => {
         try {
+          // First try the new backend API
+          const dishesFromBackend = await getDishes(currentUser.id);
+          if (dishesFromBackend && dishesFromBackend.length > 0) {
+            setMenuDishes(dishesFromBackend);
+            setIsLoadingMenu(false);
+            return;
+          }
+
+          // Fallback: Try to fetch from /api/menuCsv 
           const res = await fetch('/api/menuCsv');
           if (res.ok) {
             const data = await res.json();
@@ -80,21 +89,23 @@ export default function OrderEntryPage() {
             }
           }
         } catch (e) {
-          // Ignore and fallback
+          console.warn('Failed to fetch from backend API and menuCsv, falling back to localStorage:', e);
         }
-        // Fallback: Try to load from localStorage if API fails or menu is empty
-        let dishesFromService = getDishes(currentUser.id);
-        if ((!dishesFromService || dishesFromService.length === 0) && typeof window !== 'undefined') {
+        
+        // Final fallback: localStorage
+        if (typeof window !== 'undefined') {
           const localMenu = localStorage.getItem(`restaurantMenu_${currentUser.id}`);
           if (localMenu) {
             try {
-              dishesFromService = JSON.parse(localMenu);
+              const dishesFromStorage = JSON.parse(localMenu);
+              setMenuDishes(dishesFromStorage);
             } catch (e) {
-              dishesFromService = [];
+              setMenuDishes([]);
             }
+          } else {
+            setMenuDishes([]);
           }
         }
-        setMenuDishes(dishesFromService);
         setIsLoadingMenu(false);
       })();
     } else {
@@ -106,18 +117,25 @@ export default function OrderEntryPage() {
   useEffect(() => {
     function handleMenuImported() {
       if (currentUser) {
-        let dishesFromService = getDishes(currentUser.id);
-        if ((!dishesFromService || dishesFromService.length === 0) && typeof window !== 'undefined') {
-          const localMenu = localStorage.getItem(`restaurantMenu_${currentUser.id}`);
-          if (localMenu) {
-            try {
-              dishesFromService = JSON.parse(localMenu);
-            } catch (e) {
-              dishesFromService = [];
+        // Use async function to get dishes from backend
+        (async () => {
+          try {
+            let dishesFromService = await getDishes(currentUser.id);
+            if ((!dishesFromService || dishesFromService.length === 0) && typeof window !== 'undefined') {
+              const localMenu = localStorage.getItem(`restaurantMenu_${currentUser.id}`);
+              if (localMenu) {
+                try {
+                  dishesFromService = JSON.parse(localMenu);
+                } catch (e) {
+                  dishesFromService = [];
+                }
+              }
             }
+            setMenuDishes(dishesFromService);
+          } catch (error) {
+            console.error('Error refreshing menu after import:', error);
           }
-        }
-        setMenuDishes(dishesFromService);
+        })();
       }
     }
     window.addEventListener('menu-imported', handleMenuImported);

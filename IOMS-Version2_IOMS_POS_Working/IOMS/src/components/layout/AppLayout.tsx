@@ -10,13 +10,13 @@ import {
   Sparkles,
   Boxes,
   BarChartBig,
-  UtensilsCrossed,
+  Utensils,
   History,
-  Barcode, // Import BarcodeIcon
+  Barcode,
   LogOut, 
   Loader2,
-  MessageSquareQuote, // Added for AI Order Agent
-  Bot, // Added for SAM AI Integration
+  Mic, // For Receptionist
+  Package, // For SupplySync Agent
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -48,13 +48,13 @@ const navItems: NavItem[] = [
   { href: "/tables", label: "Table Management", icon: Table },
   { href: "/payment", label: "Payment", icon: CreditCard },
   { href: "/order-history", label: "Order History", icon: History },
+  { href: "/voice-agent", label: "Receptionist", icon: Mic },
   { href: "/ingredient-tool", label: "AI Ingredient Tool", icon: Sparkles },
   { href: "/inventory", label: "Inventory", icon: Boxes },
-  { href: "/ai-order-agent", label: "AI Order Agent", icon: MessageSquareQuote }, // New Item
-  { href: "/sam-ai-integration", label: "SAM AI Integration", icon: Bot }, // SAM AI Integration
-  { href: "/barcode-scanner", label: "Barcode Scanner", icon: Barcode }, // New Item for Barcode Scanner
+  { href: "/supply-sync", label: "SupplySync Agent", icon: Package },
+  { href: "/barcode-scanner", label: "Barcode Scanner", icon: Barcode },
   { href: "/dashboard", label: "Analytics", icon: BarChartBig },
-  { href: "/menu-upload", label: "Menu Upload", icon: Boxes }, // <-- Added Menu Upload here
+  { href: "/menu-upload", label: "Menu Upload", icon: Boxes },
 ];
 
 function SiteHeader({ pageTitle }: { pageTitle?: string }) {
@@ -77,8 +77,8 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
                 href="/"
                 className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
               >
-                <UtensilsCrossed className="h-5 w-5 transition-all group-hover:scale-110" />
-                <span className="sr-only">Webmeister360AI</span>
+                <Utensils className="h-5 w-5 transition-all group-hover:scale-110" />
+                <span className="sr-only">IOMS</span>
               </Link>
               {navItems.map((item) => (
                 <Link
@@ -161,9 +161,9 @@ export function AppLayout({
       <Sidebar>
         <SidebarHeader className="p-4">
           <Link href="/" className="flex items-center gap-2">
-            <UtensilsCrossed className="h-8 w-8 text-sidebar-primary" />
+            <Utensils className="h-8 w-8 text-sidebar-primary" />
             <h1 className="text-2xl font-semibold text-sidebar-foreground font-headline">
-              Webmeister360AI
+              IOMS
             </h1>
           </Link>
         </SidebarHeader>
