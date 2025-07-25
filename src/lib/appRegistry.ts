@@ -45,6 +45,36 @@ export const APP_REGISTRY: AppMetadata[] = [
     route: '/apps/ai-ingredient-generator',
     requiresAuth: false,
     permissions: ['ai:read', 'inventory:write']
+  },
+  {
+    id: 'smart-chef-bot',
+    name: 'SmartChefBot',
+    description: 'AI-powered culinary assistant that suggests recipes, manages ingredients, and optimizes kitchen operations',
+    icon: '👨‍🍳',
+    category: 'productivity',
+    status: 'active',
+    version: '1.5.0',
+    author: 'Culinary AI Labs',
+    features: ['Recipe Generation', 'Ingredient Substitution', 'Nutritional Analysis', 'Meal Planning', 'Kitchen Inventory Sync', 'Dietary Preferences'],
+    pricing: 'freemium',
+    route: '/apps/smart-chef-bot',
+    requiresAuth: true,
+    permissions: ['ai:read', 'inventory:read', 'menu:write']
+  },
+  {
+    id: 'waste-watchdog',
+    name: 'WasteWatchDog',
+    description: 'Intelligent food waste tracking and reduction system with predictive analytics and sustainability reporting',
+    icon: '♻️',
+    category: 'analytics',
+    status: 'beta',
+    version: '1.2.0',
+    author: 'GreenTech Solutions',
+    features: ['Waste Tracking', 'Predictive Analytics', 'Sustainability Reports', 'Cost Analysis', 'Automated Alerts', 'Compliance Monitoring'],
+    pricing: 'paid',
+    route: '/apps/waste-watchdog',
+    requiresAuth: true,
+    permissions: ['analytics:read', 'inventory:read', 'reports:write']
   }
 ];
 

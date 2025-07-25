@@ -12,7 +12,7 @@ export interface App {
   features: string[]
   rating: number
   downloads: number
-  price: 'free' | 'premium' | 'enterprise'
+  price: 'free' | 'premium' | 'enterprise' | 'freemium'
   tags: string[]
   route: string
   isInstalled: boolean
@@ -117,6 +117,36 @@ const defaultApps: App[] = [
     price: 'enterprise',
     tags: ['hr', 'employees', 'payroll'],
     route: '/apps/hr-management',
+    isInstalled: false
+  },
+  {
+    id: 'smart-chef-bot',
+    name: 'SmartChefBot',
+    description: 'AI-powered culinary assistant that suggests recipes, manages ingredients, and optimizes kitchen operations.',
+    category: 'Productivity',
+    icon: '👨‍🍳',
+    status: 'available',
+    features: ['Recipe Generation', 'Ingredient Substitution', 'Nutritional Analysis', 'Meal Planning', 'Kitchen Inventory Sync', 'Dietary Preferences'],
+    rating: 4.8,
+    downloads: 5670,
+    price: 'freemium',
+    tags: ['ai', 'recipes', 'cooking', 'nutrition', 'kitchen'],
+    route: '/apps/smart-chef-bot',
+    isInstalled: false
+  },
+  {
+    id: 'waste-watchdog',
+    name: 'WasteWatchDog',
+    description: 'Intelligent food waste tracking and reduction system with predictive analytics and sustainability reporting.',
+    category: 'Analytics',
+    icon: '♻️',
+    status: 'beta',
+    features: ['Waste Tracking', 'Predictive Analytics', 'Sustainability Reports', 'Cost Analysis', 'Automated Alerts', 'Compliance Monitoring'],
+    rating: 4.4,
+    downloads: 1890,
+    price: 'premium',
+    tags: ['waste', 'sustainability', 'analytics', 'compliance', 'cost-savings'],
+    route: '/apps/waste-watchdog',
     isInstalled: false
   }
 ]
