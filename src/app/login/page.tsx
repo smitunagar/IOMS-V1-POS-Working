@@ -26,7 +26,7 @@ export default function LoginPage() {
     const success = await login(email, password);
     setIsLoggingIn(false);
     if (success) {
-      router.push('/'); // Redirect to dashboard or home page
+      router.push('/dashboard'); // Redirect to IOMS dashboard instead of marketplace
     } else {
       setError('Invalid email or password. Please try again.');
     }

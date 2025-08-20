@@ -9,7 +9,6 @@ import {
   CreditCard,
   Sparkles,
   Boxes,
-  BarChartBig,
   UtensilsCrossed,
   History,
   Barcode, // Import BarcodeIcon
@@ -19,7 +18,6 @@ import {
   BarChart3,
   Calendar,
   User, // Added for Receptionist
-  RefreshCw, // Added for Supply Sync Agent
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -37,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWasteWatchDog } from "@/contexts/WasteWatchDogContext";
 import React, { useEffect, useState } from "react";
 import { NotificationBell } from "./NotificationBell";
 
@@ -49,7 +48,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: "/menu-upload", label: "Menu Upload", icon: Boxes },
   { href: "/receptionist", label: "Receptionist", icon: User },
-  { href: "/supply-sync-agent", label: "Supply Sync Agent", icon: RefreshCw },
 ];
 
 function SiteHeader({ pageTitle }: { pageTitle?: string }) {
@@ -133,6 +131,7 @@ export function AppLayout({
 }) {
   const pathname = usePathname();
   const { currentUser, isLoading, logout } = useAuth();
+  const { isActive: isWasteWatchDogActive } = useWasteWatchDog();
   const router = useRouter();
   const [setupOpen, setSetupOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -169,6 +168,13 @@ export function AppLayout({
     }
     return false;
   });
+  const [wasteWatchDogOpen, setWasteWatchDogOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('sidebarWasteWatchDogOpen');
+      return stored === 'true';
+    }
+    return false;
+  });
 
   useEffect(() => {
     sessionStorage.setItem('sidebarSetupOpen', setupOpen ? 'true' : 'false');
@@ -185,6 +191,9 @@ export function AppLayout({
   useEffect(() => {
     sessionStorage.setItem('sidebarInventoryOpen', inventoryOpen ? 'true' : 'false');
   }, [inventoryOpen]);
+  useEffect(() => {
+    sessionStorage.setItem('sidebarWasteWatchDogOpen', wasteWatchDogOpen ? 'true' : 'false');
+  }, [wasteWatchDogOpen]);
 
   useEffect(() => {
     if (!isLoading && !currentUser) {
@@ -214,7 +223,7 @@ export function AppLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.filter(item => !['POS', 'Order History', 'Order Analytics', 'Menu Upload', 'Reservation History', 'Reservation Analytics', 'Table Management', 'Receptionist', 'Supply Sync Agent'].includes(item.label)).map((item) => (
+            {navItems.filter(item => !['POS', 'Order History', 'Order Analytics', 'Menu Upload', 'Reservation History', 'Reservation Analytics', 'Table Management', 'Receptionist'].includes(item.label)).map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
@@ -248,24 +257,6 @@ export function AppLayout({
                 <Link href="/receptionist" className="flex items-center gap-3">
                   <User className="mr-2 h-5 w-5 shrink-0" />
                   <span className="truncate">Receptionist</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {/* Supply Sync Agent link */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/supply-sync-agent'}
-                className={cn(
-                  "justify-start transition-all",
-                  pathname === '/supply-sync-agent'
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                )}
-              >
-                <Link href="/supply-sync-agent" className="flex items-center gap-3">
-                  <RefreshCw className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="truncate">Supply Sync Agent</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -513,24 +504,6 @@ export function AppLayout({
                 </ul>
               )}
             </SidebarMenuItem>
-            {/* 5. Supply Sync Agent */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/supply-sync-agent'}
-                className={cn(
-                  "justify-start transition-all",
-                  pathname === '/supply-sync-agent'
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                )}
-              >
-                <Link href="/supply-sync-agent" className="flex items-center gap-3">
-                  <RefreshCw className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="truncate">Supply Sync Agent</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             {/* Setup Section */}
             <SidebarMenuItem>
               <button
@@ -585,24 +558,63 @@ export function AppLayout({
                 </ul>
               )}
             </SidebarMenuItem>
-            {/* Analytics link */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/dashboard'}
-                className={cn(
-                  "justify-start transition-all",
-                  pathname === '/dashboard'
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+
+            
+            {/* WasteWatchDog Section - Only visible when activated */}
+            {isWasteWatchDogActive && (
+              <SidebarMenuItem>
+                <button
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
+                    wasteWatchDogOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  )}
+                  onClick={() => setWasteWatchDogOpen((open) => !open)}
+                  aria-expanded={wasteWatchDogOpen}
+                >
+                  <span className="mr-2">♻️</span>
+                  WasteWatchDog
+                  <span className="ml-auto">{wasteWatchDogOpen ? '▲' : '▼'}</span>
+                </button>
+                {wasteWatchDogOpen && (
+                  <ul className="ml-6 mt-1 flex flex-col gap-1">
+                    <li>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === '/waste-watchdog/dashboard'}
+                        className={cn(
+                          "justify-start transition-all",
+                          pathname === '/waste-watchdog/dashboard'
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                        )}
+                      >
+                        <Link href="/waste-watchdog/dashboard" className="flex items-center gap-3">
+                          <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">WasteWatch Dashboard</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </li>
+                    <li>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === '/waste-watchdog/module'}
+                        className={cn(
+                          "justify-start transition-all",
+                          pathname === '/waste-watchdog/module'
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                        )}
+                      >
+                        <Link href="/waste-watchdog/module" className="flex items-center gap-3">
+                          <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">WasteWatch Module</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </li>
+                  </ul>
                 )}
-              >
-                <Link href="/dashboard" className="flex items-center gap-3">
-                  <BarChartBig className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="truncate">Analytics</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarContent>
         <SidebarHeader className="border-t border-sidebar-border mt-auto">

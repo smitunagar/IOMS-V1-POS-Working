@@ -3,12 +3,14 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { APP_REGISTRY, AppMetadata } from '@/lib/appRegistry';
-import { Search, Filter, Star, Users, ShoppingCart, TrendingUp } from 'lucide-react';
+import { Search, Filter, Star, Users, ShoppingCart, TrendingUp, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedPricing, setSelectedPricing] = useState<string>('all');
+  const { currentUser, logout } = useAuth();
 
   const categories = ['all', 'business', 'productivity', 'analytics', 'communication', 'finance'];
   const pricingOptions = ['all', 'free', 'freemium', 'paid', 'enterprise'];
@@ -73,13 +75,29 @@ export default function MarketplacePage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              {/* Login removed: authentication is now handled automatically. Replace with dashboard/profile if needed. */}
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Dashboard
-              </Link>
-              <Link href="/signup" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md hover:from-blue-700 hover:to-purple-700 transition-colors">
-                Get Started
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    IOMS Dashboard
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Login
+                  </Link>
+                  <Link href="/signup" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md hover:from-blue-700 hover:to-purple-700 transition-colors">
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -257,23 +275,47 @@ export default function MarketplacePage() {
         {/* CTA Section */}
         <div className="text-center mt-16">
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-white">
-            <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {currentUser ? 'Ready to Continue?' : 'Ready to Get Started?'}
+            </h2>
             <p className="text-xl mb-8 opacity-90">
-              Join thousands of businesses already using our smart solutions
+              {currentUser 
+                ? 'Access your IOMS dashboard or explore more applications'
+                : 'Join thousands of businesses already using our smart solutions'
+              }
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/signup"
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-              <Link
-                href="/apps/ioms"
-                className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors"
-              >
-                Explore IOMS
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Go to IOMS Dashboard
+                  </Link>
+                  <Link
+                    href="/apps/ioms"
+                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Explore IOMS Apps
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Start Free Trial
+                  </Link>
+                  <Link
+                    href="/apps/ioms"
+                    className="border-2 border-white text-white px-8 py-3 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors"
+                  >
+                    Explore IOMS
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -49,7 +49,7 @@ export default function SignupPage() {
   };
 
   const handleComplete = () => {
-    router.push('/');
+    router.push('/login'); // Redirect to login instead of marketplace
   };
   
   if (authIsLoading) {

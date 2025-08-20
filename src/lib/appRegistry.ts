@@ -61,20 +61,21 @@ export const APP_REGISTRY: AppMetadata[] = [
     requiresAuth: true,
     permissions: ['ai:read', 'inventory:read', 'menu:write']
   },
+
   {
     id: 'waste-watchdog',
     name: 'WasteWatchDog',
-    description: 'Intelligent food waste tracking and reduction system with predictive analytics and sustainability reporting',
+    description: 'AI-powered waste tracking system that scans waste via camera to identify food waste, calculate ingredient waste, and measure carbon footprint impact',
     icon: '♻️',
     category: 'analytics',
     status: 'beta',
-    version: '1.2.0',
+    version: '2.0.0',
     author: 'GreenTech Solutions',
-    features: ['Waste Tracking', 'Predictive Analytics', 'Sustainability Reports', 'Cost Analysis', 'Automated Alerts', 'Compliance Monitoring'],
-    pricing: 'paid',
+    features: ['Camera Waste Scanning', 'AI Waste Recognition', 'Ingredient Waste Analysis', 'Carbon Footprint Calculation', 'Waste Dashboard', 'Sustainability Reporting', 'Predictive Analytics', 'Cost Analysis', 'Automated Alerts', 'Compliance Monitoring'],
+    pricing: 'freemium',
     route: '/apps/waste-watchdog',
     requiresAuth: true,
-    permissions: ['analytics:read', 'inventory:read', 'reports:write']
+    permissions: ['analytics:read', 'inventory:read', 'camera:access', 'reports:write']
   }
 ];
 
