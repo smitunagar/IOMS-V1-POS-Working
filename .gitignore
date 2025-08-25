@@ -5,3 +5,4 @@ node_modules
 /generated/prisma
 .next/
 node_modules/
+.vercel

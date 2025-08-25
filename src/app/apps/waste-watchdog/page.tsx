@@ -76,8 +76,7 @@ export default function WasteWatchDogPage() {
               <li><strong>AI Waste Recognition:</strong> Intelligent identification of food waste types and quantities</li>
               <li><strong>Ingredient Waste Analysis:</strong> Detailed breakdown of which ingredients are being wasted</li>
               <li><strong>Carbon Footprint Calculation:</strong> Real-time environmental impact assessment</li>
-              <li><strong>WasteWatch Dashboard:</strong> Comprehensive analytics and reporting interface</li>
-              <li><strong>WasteWatch Module:</strong> AI-powered camera scanning and waste analysis</li>
+              <li><strong>Waste Dashboard:</strong> Comprehensive analytics and reporting interface</li>
               <li><strong>Sustainability Reporting:</strong> Track progress toward waste reduction goals</li>
               <li><strong>Predictive Analytics:</strong> AI-powered insights for waste prevention</li>
               <li><strong>Automated Alerts:</strong> Real-time notifications for waste anomalies</li>
@@ -96,26 +95,16 @@ export default function WasteWatchDogPage() {
               </p>
             </div>
             
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
-              <p className="text-green-800">
-                <strong>IOMS Integration:</strong> Once activated, WasteWatchDog will appear as a dedicated section in your IOMS sidebar with 
-                two powerful tools: <strong>WasteWatch Dashboard</strong> for analytics and <strong>WasteWatch Module</strong> for AI-powered waste analysis.
-              </p>
-            </div>
-            
             {/* Quick Access to Module */}
             <div className="mt-8 text-center">
               <Link 
-                href="/waste-watchdog/module"
+                href="/apps/waste-watchdog/module"
                 className="inline-flex items-center gap-3 bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
               >
                 <span className="text-2xl">🍽️</span>
                 <span>Start Waste Analysis</span>
                 <span className="text-sm opacity-90">→</span>
               </Link>
-              <p className="text-sm text-gray-500 mt-2">
-                Once activated, access WasteWatch Module from the IOMS sidebar
-              </p>
               <p className="text-gray-600 mt-3">
                 Access the AI-powered waste analysis module with camera scanning and dish identification
               </p>
