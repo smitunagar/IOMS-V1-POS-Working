@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  password        String
+  role            String
+  createdAt       DateTime @default(now())
+  orders          Order[]
+  analyticsEvents AnalyticsEvent[]
+  wasteEvents     WasteEvent[]     @relation("WasteEventStaff")
+  complianceChecks ComplianceCheck[] @relation("ComplianceAssignee")
+}
+
+model Customer {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  loyaltyPoints Int      @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  orders        Order[]
+  reservations  Reservation[]
+}
+
+model Table {
+  id           Int      @id @default(autoincrement())
+  number       String
+  capacity     Int
+  status       String   // e.g., 'available', 'occupied', 'reserved'
+  orders       Order[]
+  reservations Reservation[]
+}
+
+model MenuItem {
+  id           Int      @id @default(autoincrement())
+  name         String
+  price        Float
+  category     String
+  image        Json?
+  aiHint       String?
+  orderItems   OrderItem[]
+  ingredients  MenuItemIngredient[]
+}
+
+model Ingredient {
+  id           Int      @id @default(autoincrement())
+  name         String
+  unit         String?
+  inventory    Inventory[]
+  menuItems    MenuItemIngredient[]
+}
+
+model MenuItemIngredient {
+  id           Int      @id @default(autoincrement())
+  menuItem     MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId   Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId Int
+  quantity     Float
+}
+
+model Order {
+  id           Int      @id @default(autoincrement())
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       Int?
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId   Int?
+  table        Table?   @relation(fields: [tableId], references: [id])
+  tableId      Int?
+  total        Float
+  status       String   // e.g., 'pending', 'paid', 'cancelled'
+  paymentMode  String?  // e.g., 'cash', 'card', 'upi', etc.
+  createdAt    DateTime @default(now())
+  paidAt       DateTime?
+  orderItems   OrderItem[]
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  order        Order    @relation(fields: [orderId], references: [id])
+  orderId      Int
+  menuItem     MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId   Int
+  quantity     Int
+  price        Float
+}
+
+model Inventory {
+  id           Int      @id @default(autoincrement())
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId Int
+  quantity     Float
+  lastUpdated  DateTime @default(now())
+}
+
+model Reservation {
+  id           Int      @id @default(autoincrement())
+  table        Table    @relation(fields: [tableId], references: [id])
+  tableId      Int
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId   Int?
+  reservationTime DateTime
+  status       String   // e.g., 'reserved', 'completed', 'cancelled'
+  notes        String?
+}
+
+model AnalyticsEvent {
+  id           Int      @id @default(autoincrement())
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       Int?
+  eventType    String
+  eventData    String?
+  createdAt    DateTime @default(now())
+}
+
+model WasteEvent {
+  id          Int      @id @default(autoincrement())
+  amountKg    Float
+  type        String   // e.g., 'food', 'oil', 'packaging', 'organic'
+  station     String   // e.g., 'kitchen', 'bar', 'dining'
+  costEUR     Float
+  co2Kg       Float
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  staffId     Int?
+  staff       User?    @relation("WasteEventStaff", fields: [staffId], references: [id])
+  photoUrl    String?
+  confidence  Float?   // AI confidence score
+  notes       String?
+}
+
+model ComplianceCheck {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  severity    String   // 'critical', 'major', 'minor'
+  status      String   // 'open', 'in_progress', 'closed'
+  dueDate     DateTime
+  assignedTo  Int?
+  assignee    User?    @relation("ComplianceAssignee", fields: [assignedTo], references: [id])
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CoverCount {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  covers      Int
+  revenue     Float?
+  createdAt   DateTime @default(now())
+}
