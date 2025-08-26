@@ -1,0 +1,3 @@
+Chicken Curry,10.00 €
+Lamb Korma,11.00 €
+Fish Masala,10.50 €

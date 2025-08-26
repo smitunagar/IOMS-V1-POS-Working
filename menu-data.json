@@ -1,0 +1,489 @@
+[
+  {
+    "name": "Chicken Biryani",
+    "price": "12.90 EUR",
+    "category": "Hauptgerichte (Main Dishes)",
+    "ingredients": [
+      {
+        "name": "Chicken",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "Basmati Rice",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "name": "Onion",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Tomato",
+        "quantity": 30,
+        "unit": "g"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "quantity": 10,
+        "unit": "g"
+      },
+      {
+        "name": "Green Chili",
+        "quantity": 1,
+        "unit": "pcs"
+      },
+      {
+        "name": "Biryani Masala",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Turmeric Powder",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "name": "Red Chili Powder",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "name": "Ghee",
+        "quantity": 15,
+        "unit": "ml"
+      },
+      {
+        "name": "Mint Leaves",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Coriander Leaves",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Saffron Strands",
+        "quantity": 3,
+        "unit": "strands"
+      },
+      {
+        "name": "Milk",
+        "quantity": 10,
+        "unit": "ml"
+      },
+      {
+        "name": "Oil",
+        "quantity": 10,
+        "unit": "ml"
+      }
+    ],
+    "id": "Chicken Biryani__Hauptgerichte (Main Dishes)__12.90 EUR"
+  },
+  {
+    "name": "Dal Masoor Tadka",
+    "price": "9.90 EUR",
+    "category": "Hauptgerichte (Main Dishes)",
+    "ingredients": [
+      {
+        "name": "Masoor Dal (Red Lentils)",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Water",
+        "quantity": 150,
+        "unit": "ml"
+      },
+      {
+        "name": "Turmeric Powder",
+        "quantity": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "Salt",
+        "quantity": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "Ghee or Oil",
+        "quantity": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "Cumin Seeds",
+        "quantity": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "Mustard Seeds",
+        "quantity": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "Asafoetida (Hing)",
+        "quantity": 0.125,
+        "unit": "tsp"
+      },
+      {
+        "name": "Dry Red Chili",
+        "quantity": 1,
+        "unit": "pcs"
+      },
+      {
+        "name": "Garlic",
+        "quantity": 1,
+        "unit": "clove"
+      },
+      {
+        "name": "Ginger",
+        "quantity": 0.5,
+        "unit": "inch"
+      },
+      {
+        "name": "Onion",
+        "quantity": 25,
+        "unit": "g"
+      },
+      {
+        "name": "Cilantro",
+        "quantity": 1,
+        "unit": "tbsp"
+      }
+    ],
+    "id": "Dal Masoor Tadka__Hauptgerichte (Main Dishes)__9.90 EUR"
+  },
+  {
+    "name": "Grilled Chicken with Mozzarella Crust",
+    "price": "13.90 EUR",
+    "category": "Hauptgerichte (Main Dishes)",
+    "ingredients": [
+      {
+        "name": "Chicken Breast",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "Mozzarella Cheese",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Olive Oil",
+        "quantity": 1,
+        "unit": "tablespoon"
+      },
+      {
+        "name": "Garlic",
+        "quantity": 1,
+        "unit": "clove"
+      },
+      {
+        "name": "Dried Oregano",
+        "quantity": 0.5,
+        "unit": "teaspoon"
+      },
+      {
+        "name": "Salt",
+        "quantity": 0.25,
+        "unit": "teaspoon"
+      },
+      {
+        "name": "Black Pepper",
+        "quantity": 0.25,
+        "unit": "teaspoon"
+      }
+    ],
+    "id": "Grilled Chicken with Mozzarella Crust__Hauptgerichte (Main Dishes)__13.90 EUR"
+  },
+  {
+    "name": "Tomato & Onion Curry",
+    "price": "8.90 EUR",
+    "category": "Hauptgerichte (Main Dishes)",
+    "ingredients": [
+      {
+        "name": "Tomato",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "name": "Onion",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Ginger",
+        "quantity": 10,
+        "unit": "g"
+      },
+      {
+        "name": "Garlic",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Green Chili",
+        "quantity": 1,
+        "unit": "pcs"
+      },
+      {
+        "name": "Turmeric Powder",
+        "quantity": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "Chili Powder",
+        "quantity": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "Coriander Powder",
+        "quantity": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "Cumin Powder",
+        "quantity": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "Garam Masala",
+        "quantity": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "Cooking Oil",
+        "quantity": 2,
+        "unit": "tbsp"
+      },
+      {
+        "name": "Cilantro",
+        "quantity": 1,
+        "unit": "tbsp"
+      },
+      {
+        "name": "Salt",
+        "quantity": 2,
+        "unit": "g"
+      }
+    ],
+    "id": "Tomato & Onion Curry__Hauptgerichte (Main Dishes)__8.90 EUR"
+  },
+  {
+    "name": "Samosa Chaat",
+    "price": "6.50 EUR",
+    "category": "Vorspeisen & Snacks (Starters & Snacks)",
+    "ingredients": [
+      {
+        "name": "Samosas",
+        "quantity": 2,
+        "unit": "pcs"
+      },
+      {
+        "name": "Chickpeas",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Yogurt",
+        "quantity": 50,
+        "unit": "ml"
+      },
+      {
+        "name": "Tamarind Chutney",
+        "quantity": 20,
+        "unit": "ml"
+      },
+      {
+        "name": "Mint-Coriander Chutney",
+        "quantity": 20,
+        "unit": "ml"
+      },
+      {
+        "name": "Onion",
+        "quantity": 15,
+        "unit": "g"
+      },
+      {
+        "name": "Coriander Leaves",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Sev",
+        "quantity": 10,
+        "unit": "g"
+      },
+      {
+        "name": "Chaat Masala",
+        "quantity": 1,
+        "unit": "g"
+      }
+    ],
+    "id": "Samosa Chaat__Vorspeisen & Snacks (Starters & Snacks)__6.50 EUR"
+  },
+  {
+    "name": "Cheesy Samosa Bake",
+    "price": "7.00 EUR",
+    "category": "Vorspeisen & Snacks (Starters & Snacks)",
+    "ingredients": [
+      {
+        "name": "Samosas",
+        "quantity": 2,
+        "unit": "pcs"
+      },
+      {
+        "name": "Cheddar Cheese",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Mozzarella Cheese",
+        "quantity": 30,
+        "unit": "g"
+      },
+      {
+        "name": "Onion",
+        "quantity": 20,
+        "unit": "g"
+      },
+      {
+        "name": "Green Bell Pepper",
+        "quantity": 15,
+        "unit": "g"
+      },
+      {
+        "name": "Tomato Sauce",
+        "quantity": 30,
+        "unit": "ml"
+      },
+      {
+        "name": "Garam Masala",
+        "quantity": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "Cilantro",
+        "quantity": 5,
+        "unit": "g"
+      }
+    ],
+    "id": "Cheesy Samosa Bake__Vorspeisen & Snacks (Starters & Snacks)__7.00 EUR"
+  },
+  {
+    "name": "Plain Basmati Rice",
+    "price": "3.50 EUR",
+    "category": "Beilagen & Reis (Sides & Rice)",
+    "ingredients": [
+      {
+        "name": "Basmati Rice",
+        "quantity": 75,
+        "unit": "g"
+      },
+      {
+        "name": "Water",
+        "quantity": 150,
+        "unit": "ml"
+      },
+      {
+        "name": "Salt",
+        "quantity": 1,
+        "unit": "pinch"
+      }
+    ],
+    "id": "Plain Basmati Rice__Beilagen & Reis (Sides & Rice)__3.50 EUR"
+  },
+  {
+    "name": "Moong-Masoor Lentil Mix",
+    "price": "4.50 EUR",
+    "category": "Other",
+    "ingredients": [
+      {
+        "name": "Moong Dal",
+        "quantity": 30,
+        "unit": "g"
+      },
+      {
+        "name": "Masoor Dal",
+        "quantity": 30,
+        "unit": "g"
+      },
+      {
+        "name": "Water",
+        "quantity": 200,
+        "unit": "ml"
+      },
+      {
+        "name": "Turmeric Powder",
+        "quantity": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "Salt",
+        "quantity": 0.5,
+        "unit": "tsp"
+      },
+      {
+        "name": "Ghee",
+        "quantity": 1,
+        "unit": "tsp"
+      },
+      {
+        "name": "Cumin Seeds",
+        "quantity": 0.25,
+        "unit": "tsp"
+      },
+      {
+        "name": "Ginger",
+        "quantity": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Green Chili",
+        "quantity": 0.5,
+        "unit": "pcs"
+      }
+    ],
+    "id": "Moong-Masoor Lentil Mix__Other__4.50 EUR"
+  },
+  {
+    "name": "Tomato & Onion Salad",
+    "price": "4.00 EUR",
+    "category": "Salate (Salads)",
+    "ingredients": [
+      {
+        "name": "Tomato",
+        "quantity": 150,
+        "unit": "g"
+      },
+      {
+        "name": "Onion",
+        "quantity": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Olive Oil",
+        "quantity": 10,
+        "unit": "ml"
+      },
+      {
+        "name": "Vinegar",
+        "quantity": 5,
+        "unit": "ml"
+      },
+      {
+        "name": "Salt",
+        "quantity": 1,
+        "unit": "g"
+      },
+      {
+        "name": "Black Pepper",
+        "quantity": 0.5,
+        "unit": "g"
+      }
+    ],
+    "id": "Tomato & Onion Salad__Salate (Salads)__4.00 EUR"
+  }
+]
