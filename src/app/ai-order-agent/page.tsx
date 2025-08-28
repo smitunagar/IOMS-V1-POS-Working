@@ -109,39 +109,45 @@ export default function AiOrderAgentPage() {
     setAiExtractedOrder(null);
     setProcessedOrderItems([]);
 
-    startProcessingTranscript(async () => {
-      try {
-        const input: ExtractOrderInput = { transcript };
-        const result = await extractOrderFromText(input);
-        setAiExtractedOrder(result);
+    startProcessingTranscript(() => {
+      // Use a separate async function to handle the async operations
+      const processTranscript = async () => {
+        try {
+          const input: ExtractOrderInput = { transcript };
+          const result = await extractOrderFromText(input);
+          setAiExtractedOrder(result);
 
-        // Populate form fields with AI suggestions
-        setConfirmedOrderType((result.orderType || 'unknown') as AgentOrderType);
-        setCustomerName(result.customerName || "");
-        setCustomerPhone(result.customerPhone || "");
-        setCustomerAddress(result.customerAddress || "");
-        setOrderNotes(result.notes || "");
-        // Driver and table needs manual selection for now
+          // Populate form fields with AI suggestions
+          setConfirmedOrderType((result.orderType || 'unknown') as AgentOrderType);
+          setCustomerName(result.customerName || "");
+          setCustomerPhone(result.customerPhone || "");
+          setCustomerAddress(result.customerAddress || "");
+          setOrderNotes(result.notes || "");
+          // Driver and table needs manual selection for now
 
-        if (result.items && result.items.length > 0) {
-          const matchedItems: MatchedOrderItem[] = result.items.map(aiItem => {
-            const foundDish = menuDishes.find(menuDish => menuDish.name.toLowerCase() === aiItem.name.toLowerCase());
-            return {
-              menuDish: foundDish || null,
-              aiExtractedName: aiItem.name,
-              quantity: aiItem.quantity,
-              isMatched: !!foundDish,
-            };
-          });
-          setProcessedOrderItems(matchedItems);
+          if (result.items && result.items.length > 0) {
+            const matchedItems: MatchedOrderItem[] = result.items.map(aiItem => {
+              const foundDish = menuDishes.find(menuDish => menuDish.name.toLowerCase() === aiItem.name.toLowerCase());
+              return {
+                menuDish: foundDish || null,
+                aiExtractedName: aiItem.name,
+                quantity: aiItem.quantity,
+                isMatched: !!foundDish,
+              };
+            });
+            setProcessedOrderItems(matchedItems);
+          }
+          
+          toast({ title: "Transcript Processed", description: "AI has extracted order details. Please review." });
+        } catch (error) {
+          console.error("Error processing transcript:", error);
+          const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+          toast({ title: "Processing Failed", description: errorMessage, variant: "destructive" });
         }
-        
-        toast({ title: "Transcript Processed", description: "AI has extracted order details. Please review." });
-      } catch (error) {
-        console.error("Error processing transcript:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({ title: "Processing Failed", description: errorMessage, variant: "destructive" });
-      }
+      };
+      
+      // Call the async function
+      processTranscript();
     });
   };
 

@@ -283,23 +283,29 @@ export default function IngredientToolPage() {
 
     setEditableIngredients(null);
     
-    startGeneratingTransition(async () => {
-      try {
-        const input: GenerateIngredientsListInput = { dishName, numberOfServings: servings };
-        const result: GenerateIngredientsListOutput = await generateIngredientsList(input);
-        
-        if (result && result.ingredients && Array.isArray(result.ingredients)) {
-          setEditableIngredients(result.ingredients as EditableIngredient[]);
-          toast({ title: "Ingredients Generated!", description: `Successfully generated ingredients for ${dishName}. You can edit quantities below.` });
-        } else {
-          throw new Error("AI did not return a valid list of ingredients.");
+    startGeneratingTransition(() => {
+      // Use a separate async function to handle the async operations
+      const generateIngredients = async () => {
+        try {
+          const input: GenerateIngredientsListInput = { dishName, numberOfServings: servings };
+          const result: GenerateIngredientsListOutput = await generateIngredientsList(input);
+          
+          if (result && result.ingredients && Array.isArray(result.ingredients)) {
+            setEditableIngredients(result.ingredients as EditableIngredient[]);
+            toast({ title: "Ingredients Generated!", description: `Successfully generated ingredients for ${dishName}. You can edit quantities below.` });
+          } else {
+            throw new Error("AI did not return a valid list of ingredients.");
+          }
+        } catch (error) {
+          console.error("Error generating ingredients:", error);
+          const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+          toast({ title: "Generation Failed", description: `Could not generate ingredients: ${errorMessage}`, variant: "destructive" });
+          setEditableIngredients(null);
         }
-      } catch (error) {
-        console.error("Error generating ingredients:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({ title: "Generation Failed", description: `Could not generate ingredients: ${errorMessage}`, variant: "destructive" });
-        setEditableIngredients(null);
-      }
+      };
+      
+      // Call the async function
+      generateIngredients();
     });
   };
 
@@ -321,39 +327,45 @@ export default function IngredientToolPage() {
       return;
     }
 
-    startAddingToInventoryTransition(async () => {
-      let newItemsAddedCount = 0;
-      let existingItemsSkippedCount = 0;
+    startAddingToInventoryTransition(() => {
+      // Use a separate async function to handle the async operations
+      const addToInventory = async () => {
+        let newItemsAddedCount = 0;
+        let existingItemsSkippedCount = 0;
 
-      for (const ingredient of editableIngredients) {
-        const rawIngredient: InventoryItem = {
-          id: Date.now().toString(),
-          name: ingredient.name,
-          quantity: ingredient.quantity, 
-          unit: ingredient.unit,
-        };
-        const addedItem = await addIngredientToInventoryIfNotExists(currentUser.id, rawIngredient);
-        if (addedItem) {
-          newItemsAddedCount++;
-        } else {
-          existingItemsSkippedCount++;
+        for (const ingredient of editableIngredients) {
+          const rawIngredient: InventoryItem = {
+            id: Date.now().toString(),
+            name: ingredient.name,
+            quantity: ingredient.quantity, 
+            unit: ingredient.unit,
+          };
+          const addedItem = await addIngredientToInventoryIfNotExists(currentUser.id, rawIngredient);
+          if (addedItem) {
+            newItemsAddedCount++;
+          } else {
+            existingItemsSkippedCount++;
+          }
         }
-      }
 
-      if (newItemsAddedCount > 0) {
-        toast({
-          title: "Inventory Updated",
-          description: `${newItemsAddedCount} new ingredient(s) added to inventory with generated quantities. ${existingItemsSkippedCount} existing item(s) were not modified.`,
-          action: <PackagePlus className="h-5 w-5" />
-        });
-      } else if (existingItemsSkippedCount > 0) {
+        if (newItemsAddedCount > 0) {
           toast({
-          title: "Inventory Check",
-          description: `All ${existingItemsSkippedCount} generated ingredient(s) already exist in inventory and were not modified by this action.`,
-        });
-      } else {
-        toast({ title: "No Changes", description: "No new ingredients to add or inventory already up-to-date."});
-      }
+            title: "Inventory Updated",
+            description: `${newItemsAddedCount} new ingredient(s) added to inventory with generated quantities. ${existingItemsSkippedCount} existing item(s) were not modified.`,
+            action: <PackagePlus className="h-5 w-5" />
+          });
+        } else if (existingItemsSkippedCount > 0) {
+            toast({
+            title: "Inventory Check",
+            description: `All ${existingItemsSkippedCount} generated ingredient(s) already exist in inventory and were not modified by this action.`,
+          });
+        } else {
+          toast({ title: "No Changes", description: "No new ingredients to add or inventory already up-to-date."});
+        }
+      };
+      
+      // Call the async function
+      addToInventory();
     });
   };
 
@@ -368,36 +380,42 @@ export default function IngredientToolPage() {
       return;
     }
     
-    startAddingToMenuTransition(async () => {
-      try {
-        // Ensure editableIngredients conforms to the expected type for addDishToMenu
-        const newDish = await addDishToMenu(currentUser.id, {
-          name: dishName,
-          price: 0,
-          ingredients: editableIngredients.map(ing => ({
-            inventoryItemName: ing.name,
-            quantityPerDish: ing.quantity,
-            unit: ing.unit,
-          })),
-          id: Date.now().toString(),
-        });
-        if (newDish) {
-          toast({
-            title: "Dish Added to Menu!",
-            description: `"${dishName}" has been added to your menu with default price $${(typeof newDish.price === 'number' && !isNaN(newDish.price) ? newDish.price : parseFloat(newDish.price?.toString?.() ?? '') || 0).toFixed(2)} and category "${newDish.category}". Ingredients quantities are as specified.`,
+    startAddingToMenuTransition(() => {
+      // Use a separate async function to handle the async operations
+      const addToMenu = async () => {
+        try {
+          // Ensure editableIngredients conforms to the expected type for addDishToMenu
+          const newDish = await addDishToMenu(currentUser.id, {
+            name: dishName,
+            price: 0,
+            ingredients: editableIngredients.map(ing => ({
+              inventoryItemName: ing.name,
+              quantityPerDish: ing.quantity,
+              unit: ing.unit,
+            })),
+            id: Date.now().toString(),
           });
-        } else {
-           toast({
-            title: "Menu Update Failed",
-            description: `"${dishName}" might already exist or could not be added.`,
-            variant: "destructive"
-          });
+          if (newDish) {
+            toast({
+              title: "Dish Added to Menu!",
+              description: `"${dishName}" has been added to your menu with default price $${(typeof newDish.price === 'number' && !isNaN(newDish.price) ? newDish.price : parseFloat(newDish.price?.toString?.() ?? '') || 0).toFixed(2)} and category "${newDish.category}". Ingredients quantities are as specified.`,
+            });
+          } else {
+             toast({
+              title: "Menu Update Failed",
+              description: `"${dishName}" might already exist or could not be added.`,
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error("Error adding dish to menu:", error);
+          const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+          toast({ title: "Failed to Add to Menu", description: errorMessage, variant: "destructive" });
         }
-      } catch (error) {
-        console.error("Error adding dish to menu:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({ title: "Failed to Add to Menu", description: errorMessage, variant: "destructive" });
-      }
+      };
+      
+      // Call the async function
+      addToMenu();
     });
   };
 

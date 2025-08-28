@@ -118,74 +118,80 @@ export function NotificationBell() {
     if (!currentUser) return;
     setAiSuggestions(null);
 
-    startGeneratingSuggestionsTransition(async () => {
-      try {
-        const inventory = getInventory(currentUser.id);
-        const menu = getDishes(currentUser.id);
+    startGeneratingSuggestionsTransition(() => {
+      // Use a separate async function to handle the async operations
+      const generateSuggestions = async () => {
+        try {
+          const inventory = getInventory(currentUser.id);
+          const menu = getDishes(currentUser.id);
 
-        const expiringIngredientsForAI = inventory
-          .map(item => {
-            if (!item.expiryDate) return null;
-            const expiry = parseISO(item.expiryDate);
-            if (!isValid(expiry)) return null;
-            const daysUntil = differenceInDays(expiry, new Date());
-            if (daysUntil <= expiringSoonThresholdDays && daysUntil >= 0) { // Include items expiring today up to N days
-              return {
-                name: item.name,
-                quantity: item.quantity,
-                unit: item.unit,
-                daysUntilExpiry: daysUntil,
-              };
-            }
-            return null;
-          })
-          .filter(item => item !== null) as SuggestDiscountedDishesInput['expiringIngredients'];
+          const expiringIngredientsForAI = inventory
+            .map(item => {
+              if (!item.expiryDate) return null;
+              const expiry = parseISO(item.expiryDate);
+              if (!isValid(expiry)) return null;
+              const daysUntil = differenceInDays(expiry, new Date());
+              if (daysUntil <= expiringSoonThresholdDays && daysUntil >= 0) { // Include items expiring today up to N days
+                return {
+                  name: item.name,
+                  quantity: item.quantity,
+                  unit: item.unit,
+                  daysUntilExpiry: daysUntil,
+                };
+              }
+              return null;
+            })
+            .filter(item => item !== null) as SuggestDiscountedDishesInput['expiringIngredients'];
 
-        if (expiringIngredientsForAI.length === 0) {
-          toast({ title: "No Soon-to-Expire Items", description: "No ingredients are expiring soon enough to generate discount suggestions." });
-          setAiSuggestions([]); // Empty array to indicate check was made
-          return;
+          if (expiringIngredientsForAI.length === 0) {
+            toast({ title: "No Soon-to-Expire Items", description: "No ingredients are expiring soon enough to generate discount suggestions." });
+            setAiSuggestions([]); // Empty array to indicate check was made
+            return;
+          }
+          
+          const menuDishesForAI = menu.map(dish => ({
+            name: dish.name,
+            ingredients: (dish.ingredients || []).map(ing => {
+              if (typeof ing === 'string') {
+                return {
+                  name: ing,
+                  quantityPerDish: 1,
+                  unit: '',
+                };
+              } else {
+                return {
+                  name: ing.inventoryItemName,
+                  quantityPerDish: ing.quantityPerDish,
+                  unit: ing.unit,
+                };
+              }
+            }),
+            // We could add currentPrice here if AI should consider it for discount %
+          }));
+
+          const input: SuggestDiscountedDishesInput = {
+            expiringIngredients: expiringIngredientsForAI,
+            menuDishes: menuDishesForAI,
+          };
+          
+          const result: SuggestDiscountedDishesOutput = await suggestDiscountedDishes(input);
+          
+          if (result && result.suggestions) {
+            setAiSuggestions(result.suggestions);
+            toast({ title: "AI Suggestions Generated!", description: "Discount ideas are ready." });
+          } else {
+            throw new Error("AI did not return valid suggestions.");
+          }
+        } catch (error) {
+          console.error("Error generating AI discount suggestions:", error);
+          const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+          toast({ title: "Suggestion Failed", description: errorMessage, variant: "destructive" });
+          setAiSuggestions(null);
         }
-        
-        const menuDishesForAI = menu.map(dish => ({
-          name: dish.name,
-          ingredients: (dish.ingredients || []).map(ing => {
-            if (typeof ing === 'string') {
-              return {
-                name: ing,
-                quantityPerDish: 1,
-                unit: '',
-              };
-            } else {
-              return {
-                name: ing.inventoryItemName,
-                quantityPerDish: ing.quantityPerDish,
-                unit: ing.unit,
-              };
-            }
-          }),
-          // We could add currentPrice here if AI should consider it for discount %
-        }));
-
-        const input: SuggestDiscountedDishesInput = {
-          expiringIngredients: expiringIngredientsForAI,
-          menuDishes: menuDishesForAI,
-        };
-        
-        const result: SuggestDiscountedDishesOutput = await suggestDiscountedDishes(input);
-        
-        if (result && result.suggestions) {
-          setAiSuggestions(result.suggestions);
-          toast({ title: "AI Suggestions Generated!", description: "Discount ideas are ready." });
-        } else {
-          throw new Error("AI did not return valid suggestions.");
-        }
-      } catch (error) {
-        console.error("Error generating AI discount suggestions:", error);
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({ title: "Suggestion Failed", description: errorMessage, variant: "destructive" });
-        setAiSuggestions(null);
-      }
+      };
+      
+      // Call the async function
+      generateSuggestions();
     });
   };
 
