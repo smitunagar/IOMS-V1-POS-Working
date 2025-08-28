@@ -17,14 +17,11 @@ A comprehensive business applications marketplace built with Next.js, featuring 
 
 ### Smart POS 🛒
 - **Status**: Available
-- **Rating**: 4.8/5
-- **Downloads**: 15,420+
 - **Features**: AI Inventory Management, Real-time Analytics, Payment Processing, Barcode Scanning
 
 ### WasteWatchDog ♻️
 - **Status**: Available (Toggle-activated)
-- **Rating**: 4.9/5
-- **Downloads**: 3,240+
+
 - **Features**: 
   - AI-powered waste identification via camera
   - Image upload and analysis
@@ -35,14 +32,10 @@ A comprehensive business applications marketplace built with Next.js, featuring 
 
 ### Inventory Pro 📦
 - **Status**: Available
-- **Rating**: 4.6/5
-- **Downloads**: 8,920+
 - **Features**: Smart Forecasting, Automated Reordering, Multi-warehouse Support, CSV Import/Export
 
 ### Analytics Dashboard 📊
 - **Status**: Available
-- **Rating**: 4.7/5
-- **Downloads**: 12,340+
 - **Features**: Custom Dashboards, Real-time Reports, Data Visualization
 
 ### Customer CRM 👥
@@ -51,8 +44,6 @@ A comprehensive business applications marketplace built with Next.js, featuring 
 
 ### HR Management 👨‍💼
 - **Status**: Beta
-- **Rating**: 4.2/5
-- **Downloads**: 2,340+
 - **Features**: Employee Management, Payroll Processing, Performance Tracking
 
 ## 🆕 Recent Updates
