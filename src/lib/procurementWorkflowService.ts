@@ -117,7 +117,7 @@ export class ProcurementWorkflowService {
   private quotationRequests: Map<string, QuotationRequest> = new Map();
   private ownerApprovals: Map<string, OwnerApproval> = new Map();
   private purchaseOrders: Map<string, PurchaseOrder> = new Map();
-  private workflowSettings: WorkflowSettings;
+  private workflowSettings!: WorkflowSettings;
 
   public static getInstance(): ProcurementWorkflowService {
     if (!ProcurementWorkflowService.instance) {

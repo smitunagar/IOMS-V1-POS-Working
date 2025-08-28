@@ -160,7 +160,7 @@ class ProcurementWorkflowService {
   private quotationRequests: Map<string, QuotationRequest> = new Map();
   private ownerApprovals: Map<string, OwnerApproval> = new Map();
   private purchaseOrders: Map<string, PurchaseOrder> = new Map();
-  private workflowSettings: WorkflowSettings;
+  private workflowSettings!: WorkflowSettings;
 
   public static getInstance(): ProcurementWorkflowService {
     if (!ProcurementWorkflowService.instance) {
@@ -234,14 +234,14 @@ class ProcurementWorkflowService {
     console.log('[Procurement Workflow] Checking inventory thresholds...');
     
     // Get current inventory levels from SupplySync
-    const { supplySyncService } = await import('./supplySyncService');
-    const analysis = await supplySyncService.analyzeSupplyChain();
+    // const { supplySyncService } = await import('./supplySyncService');
+    // const analysis = await supplySyncService.analyzeSupplyChain();
     
-    for (const alert of analysis.inventoryAlerts) {
-      if (alert.daysUntilStockout <= this.workflowSettings.autoQuotationThreshold) {
-        await this.autoGenerateQuotationRequest(alert);
-      }
-    }
+    // for (const alert of analysis.inventoryAlerts) {
+    //   if (alert.daysUntilStockout <= this.workflowSettings.autoQuotationThreshold) {
+    //     await this.autoGenerateQuotationRequest(alert);
+    //   }
+    // }
   }
 
   private async autoGenerateQuotationRequest(alert: any) {

@@ -1,1 +1,313 @@
-{"version":3,"caseSensitive":false,"basePath":"","rewrites":{"beforeFiles":[],"afterFiles":[],"fallback":[]},"redirects":[{"source":"/:path+/","destination":"/:path+","permanent":true,"internal":true,"regex":"^(?:\\/((?:[^\\/]+?)(?:\\/(?:[^\\/]+?))*))\\/$"}],"headers":[]}
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/ai-order-agent",
+      "regex": "^/ai\\-order\\-agent(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ai\\-order\\-agent(?:/)?$"
+    },
+    {
+      "page": "/analytics",
+      "regex": "^/analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/analytics(?:/)?$"
+    },
+    {
+      "page": "/apps/ai-ingredient-generator",
+      "regex": "^/apps/ai\\-ingredient\\-generator(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/ai\\-ingredient\\-generator(?:/)?$"
+    },
+    {
+      "page": "/apps/customer-analytics",
+      "regex": "^/apps/customer\\-analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/customer\\-analytics(?:/)?$"
+    },
+    {
+      "page": "/apps/government-dashboard",
+      "regex": "^/apps/government\\-dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/government\\-dashboard(?:/)?$"
+    },
+    {
+      "page": "/apps/government-portal",
+      "regex": "^/apps/government\\-portal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/government\\-portal(?:/)?$"
+    },
+    {
+      "page": "/apps/ioms",
+      "regex": "^/apps/ioms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/ioms(?:/)?$"
+    },
+    {
+      "page": "/apps/smart-chef-pod",
+      "regex": "^/apps/smart\\-chef\\-pod(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/smart\\-chef\\-pod(?:/)?$"
+    },
+    {
+      "page": "/apps/smart-inventory",
+      "regex": "^/apps/smart\\-inventory(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/smart\\-inventory(?:/)?$"
+    },
+    {
+      "page": "/apps/smart-pos",
+      "regex": "^/apps/smart\\-pos(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/smart\\-pos(?:/)?$"
+    },
+    {
+      "page": "/apps/smart-pos/receptionist",
+      "regex": "^/apps/smart\\-pos/receptionist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/smart\\-pos/receptionist(?:/)?$"
+    },
+    {
+      "page": "/apps/supply-sync",
+      "regex": "^/apps/supply\\-sync(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/supply\\-sync(?:/)?$"
+    },
+    {
+      "page": "/apps/waste-watchdog/analytics",
+      "regex": "^/apps/waste\\-watchdog/analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/waste\\-watchdog/analytics(?:/)?$"
+    },
+    {
+      "page": "/apps/waste-watchdog/hardware",
+      "regex": "^/apps/waste\\-watchdog/hardware(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/waste\\-watchdog/hardware(?:/)?$"
+    },
+    {
+      "page": "/apps/wastewatchdog",
+      "regex": "^/apps/wastewatchdog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/wastewatchdog(?:/)?$"
+    },
+    {
+      "page": "/apps/wastewatchdog/dashboard",
+      "regex": "^/apps/wastewatchdog/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/wastewatchdog/dashboard(?:/)?$"
+    },
+    {
+      "page": "/apps/wastewatchdog/hardware",
+      "regex": "^/apps/wastewatchdog/hardware(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/apps/wastewatchdog/hardware(?:/)?$"
+    },
+    {
+      "page": "/barcode-scanner",
+      "regex": "^/barcode\\-scanner(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/barcode\\-scanner(?:/)?$"
+    },
+    {
+      "page": "/dashboard",
+      "regex": "^/dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard(?:/)?$"
+    },
+    {
+      "page": "/dining-area-setup",
+      "regex": "^/dining\\-area\\-setup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dining\\-area\\-setup(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/ingredient-manager",
+      "regex": "^/ingredient\\-manager(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ingredient\\-manager(?:/)?$"
+    },
+    {
+      "page": "/ingredient-tool",
+      "regex": "^/ingredient\\-tool(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ingredient\\-tool(?:/)?$"
+    },
+    {
+      "page": "/inventory",
+      "regex": "^/inventory(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inventory(?:/)?$"
+    },
+    {
+      "page": "/inventory-analytics",
+      "regex": "^/inventory\\-analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inventory\\-analytics(?:/)?$"
+    },
+    {
+      "page": "/inventory-import",
+      "regex": "^/inventory\\-import(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inventory\\-import(?:/)?$"
+    },
+    {
+      "page": "/inventory-test",
+      "regex": "^/inventory\\-test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/inventory\\-test(?:/)?$"
+    },
+    {
+      "page": "/ioms-ai-ingredient",
+      "regex": "^/ioms\\-ai\\-ingredient(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ioms\\-ai\\-ingredient(?:/)?$"
+    },
+    {
+      "page": "/ioms-dashboard",
+      "regex": "^/ioms\\-dashboard(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ioms\\-dashboard(?:/)?$"
+    },
+    {
+      "page": "/ioms-marketplace",
+      "regex": "^/ioms\\-marketplace(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ioms\\-marketplace(?:/)?$"
+    },
+    {
+      "page": "/ioms-unified",
+      "regex": "^/ioms\\-unified(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ioms\\-unified(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/menu-upload",
+      "regex": "^/menu\\-upload(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/menu\\-upload(?:/)?$"
+    },
+    {
+      "page": "/order-analytics",
+      "regex": "^/order\\-analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order\\-analytics(?:/)?$"
+    },
+    {
+      "page": "/order-entry",
+      "regex": "^/order\\-entry(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order\\-entry(?:/)?$"
+    },
+    {
+      "page": "/order-history",
+      "regex": "^/order\\-history(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order\\-history(?:/)?$"
+    },
+    {
+      "page": "/payment",
+      "regex": "^/payment(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment(?:/)?$"
+    },
+    {
+      "page": "/profile",
+      "regex": "^/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/profile(?:/)?$"
+    },
+    {
+      "page": "/receptionist",
+      "regex": "^/receptionist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/receptionist(?:/)?$"
+    },
+    {
+      "page": "/reservation-analytics",
+      "regex": "^/reservation\\-analytics(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reservation\\-analytics(?:/)?$"
+    },
+    {
+      "page": "/reservation-history",
+      "regex": "^/reservation\\-history(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reservation\\-history(?:/)?$"
+    },
+    {
+      "page": "/signup",
+      "regex": "^/signup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/signup(?:/)?$"
+    },
+    {
+      "page": "/table-management",
+      "regex": "^/table\\-management(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/table\\-management(?:/)?$"
+    },
+    {
+      "page": "/waste-watchdog",
+      "regex": "^/waste\\-watchdog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/waste\\-watchdog(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}

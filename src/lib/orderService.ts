@@ -1,110 +1,188 @@
-import { getDishes } from './menuService';
-import { getInventory, updateInventoryItem } from './inventoryService';
+
+// IMPORTANT: This service uses localStorage and will only work in the browser.
+// Ensure it's called within useEffect or client-side event handlers.
+
+export interface OrderItem {
+  dishId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export type OrderStatus = 'Pending Payment' | 'Completed' | 'Cancelled';
+export type OrderType = 'dine-in' | 'delivery';
+
+export interface Order {
+  id: string;
+  orderType: OrderType;
+  table: string;
+  tableId: string; // For dine-in, actual tableId; for delivery, could be 'delivery' or a unique delivery ID
+  items: OrderItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  totalAmount: number;
+  status: OrderStatus;
+  createdAt: string; // ISO date string
+  completedAt?: string; // ISO date string
+  
+  // Delivery specific fields
+  customerName?: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  driverName?: string;
+}
+
+const ORDERS_STORAGE_KEY_BASE = 'restaurantOrders';
+export const DEFAULT_TAX_RATE = 0.10;
+
+function generateId(prefix: string = "id"): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+function getUserOrdersStorageKey(userId: string): string {
+  return `${ORDERS_STORAGE_KEY_BASE}_${userId}`;
+}
+
+export function getOrders(userId: string | null): Order[] {
+  if (typeof window === 'undefined' || !userId) {
+    return [];
+  }
+  try {
+    const ordersStorageKey = getUserOrdersStorageKey(userId);
+    const storedOrders = localStorage.getItem(ordersStorageKey);
+    if (storedOrders) {
+      return JSON.parse(storedOrders) as Order[];
+    }
+    const emptyOrders: Order[] = [];
+    localStorage.setItem(ordersStorageKey, JSON.stringify(emptyOrders));
+    return emptyOrders;
+  } catch (error) {
+    console.error(`Error accessing localStorage for orders (user: ${userId}):`, error);
+    return [];
+  }
+}
+
+export function saveOrders(userId: string | null, orders: Order[]): void {
+  if (typeof window === 'undefined' || !userId) return;
+  try {
+    const ordersStorageKey = getUserOrdersStorageKey(userId);
+    localStorage.setItem(ordersStorageKey, JSON.stringify(orders));
+  } catch (error) {
+    console.error(`Error saving orders to localStorage (user: ${userId}):`, error);
+  }
+}
+
+// Broaden OrderData to accept all new fields
+export type NewOrderData = Omit<Order, 'id' | 'createdAt' | 'status' | 'taxAmount' | 'totalAmount'> & { subtotal: number };
+
+export function addOrder(userId: string | null, orderData: NewOrderData): Order | null {
+  if (typeof window === 'undefined' || !userId) return null;
+
+  const taxAmount = orderData.subtotal * (orderData.taxRate || DEFAULT_TAX_RATE);
+  const totalAmount = orderData.subtotal + taxAmount;
+
+  const newOrder: Order = {
+    ...orderData,
+    id: generateId("order"),
+    createdAt: new Date().toISOString(),
+    status: 'Pending Payment',
+    taxAmount,
+    totalAmount,
+    taxRate: orderData.taxRate || DEFAULT_TAX_RATE,
+  };
+
+  const currentOrders = getOrders(userId);
+  const updatedOrders = [...currentOrders, newOrder];
+  saveOrders(userId, updatedOrders);
+  return newOrder;
+}
+
+export function getPendingOrders(userId: string | null): Order[] {
+  const orders = getOrders(userId);
+  return orders.filter(order => order.status === 'Pending Payment').sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function getCompletedOrders(userId: string | null): Order[] {
+  const orders = getOrders(userId);
+  return orders.filter(order => order.status === 'Completed').sort((a, b) => new Date(b.completedAt || b.createdAt).getTime() - new Date(a.completedAt || a.createdAt).getTime());
+}
+
+export function getOrderById(userId: string | null, orderId: string): Order | undefined {
+  const orders = getOrders(userId);
+  return orders.find(order => order.id === orderId);
+}
+
+export function updateOrderStatus(userId: string | null, orderId: string, newStatus: OrderStatus): Order | null {
+  if (typeof window === 'undefined' || !userId) return null;
+  const currentOrders = getOrders(userId);
+  const orderIndex = currentOrders.findIndex(order => order.id === orderId);
+
+  if (orderIndex > -1) {
+    currentOrders[orderIndex].status = newStatus;
+    if (newStatus === 'Completed') {
+      currentOrders[orderIndex].completedAt = new Date().toISOString();
+    }
+    saveOrders(userId, currentOrders);
+    return currentOrders[orderIndex];
+  }
+  return null;
+}
+
+// Helper functions for managing occupied tables in localStorage
+const OCCUPIED_TABLES_KEY_BASE = 'occupiedTables';
 
 export interface OccupiedTableInfo {
   orderId: string;
-  // Add other relevant fields if needed
+  occupiedAt: string;
+}
+
+function getUserOccupiedTablesKey(userId: string): string {
+  return `${OCCUPIED_TABLES_KEY_BASE}_${userId}`;
 }
 
 export function getOccupiedTables(userId: string): Record<string, OccupiedTableInfo> {
   if (typeof window === 'undefined') return {};
-  const orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
-  const occupied: Record<string, OccupiedTableInfo> = {};
-  orders.forEach((order: any) => {
-    if (order.tableId && order.status !== 'Completed') {
-      occupied[order.tableId] = { orderId: order.id };
-    }
-  });
-  return occupied;
+  try {
+    const key = getUserOccupiedTablesKey(userId);
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : {};
+  } catch (error) {
+    console.error("Error getting occupied tables from localStorage:", error);
+    return {};
+  }
 }
 
-export interface Order {
-  id: string;
-  status: string;
-  items: any[];
-  totalAmount: number;
-  createdAt: string;
-  completedAt?: string;
-  paymentMode?: string;
-  tipAmount?: number;
-  amountPaid?: number;
-  [key: string]: any;
-}
-
-export function getCompletedOrders(userId: string): Order[] {
-  if (typeof window === 'undefined') return [];
-  const orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
-  return orders.filter((order: any) => order.status === 'Completed');
-}
-
-export function getPendingOrders(userId: string): Order[] {
-  if (typeof window === 'undefined') return [];
-  const orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
-  return orders.filter((order: any) => order.status === 'Pending');
-}
-
-export function updateOrderStatus(userId: string, orderId: string, status: string): void {
+export function setOccupiedTable(userId: string, tableId: string, orderId: string): void {
   if (typeof window === 'undefined') return;
-  const orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
-  const idx = orders.findIndex((order: any) => order.id === orderId);
-  if (idx !== -1) {
-    orders[idx].status = status;
-    if (status === 'Completed') {
-      orders[idx].completedAt = new Date().toISOString();
-      // Inventory deduction logic
-      const order = orders[idx];
-      console.log('[Inventory Deduction] Completing order:', order);
-      const dishes = getDishes(userId);
-      const inventory = getInventory(userId);
-      let lowStockAlerts: string[] = [];
-      for (const item of order.items || []) {
-        console.log('[Inventory Deduction] Processing order item:', item);
-        // Find dish in menu
-        const dish = dishes.find((d: any) => d.name === item.name);
-        console.log('[Inventory Deduction] Matched dish:', dish);
-        if (dish && Array.isArray(dish.ingredients)) {
-          for (const ing of dish.ingredients) {
-            console.log('[Inventory Deduction] Processing ingredient:', ing);
-            let ingName = typeof ing === 'string' ? ing : ing.inventoryItemName;
-            let qtyPerDish = typeof ing === 'string' ? 1 : ing.quantityPerDish;
-            let unit = typeof ing === 'string' ? '' : ing.unit;
-            // Find inventory item
-            const invIdx = inventory.findIndex(i => i.name.toLowerCase() === ingName.toLowerCase());
-            console.log('[Inventory Deduction] Inventory index:', invIdx, 'for', ingName);
-            if (invIdx !== -1) {
-              const invItem = inventory[invIdx];
-              console.log('[Inventory Deduction] Matched inventory item before deduction:', invItem);
-              // Deduct quantity
-              invItem.quantity = Math.max(0, (invItem.quantity || 0) - (qtyPerDish * (item.quantity || 1)));
-              invItem.quantityUsed = (invItem.quantityUsed || 0) + (qtyPerDish * (item.quantity || 1));
-              invItem.totalUsed = (invItem.totalUsed || 0) + (qtyPerDish * (item.quantity || 1));
-              console.log('[Inventory Deduction] Deducted', qtyPerDish * (item.quantity || 1), 'from', ingName, 'New stock:', invItem.quantity, 'Stock used:', invItem.quantityUsed, 'Total used:', invItem.totalUsed);
-              // Low stock alert
-              if (invItem.lowStockThreshold && invItem.quantity <= invItem.lowStockThreshold) {
-                lowStockAlerts.push(`Low stock: ${invItem.name} (${invItem.quantity} ${invItem.unit})`);
-              }
-              // Always use the correct id for update
-              updateInventoryItem(userId, { ...invItem, id: inventory[invIdx].id });
-              console.log('[Inventory Deduction] Inventory item after update:', getInventory(userId)[invIdx]);
-            }
-          }
-        }
-      }
-      if (lowStockAlerts.length > 0) {
-        alert(lowStockAlerts.join('\n'));
-      }
+  try {
+    // Ensure tableId is not a delivery identifier before marking it as occupied
+    if (tableId.startsWith('delivery-')) {
+        console.warn("Attempted to mark a delivery pseudo-table as physically occupied. Skipping.");
+        return;
     }
-    localStorage.setItem(`orders_${userId}`, JSON.stringify(orders));
+    const key = getUserOccupiedTablesKey(userId);
+    const occupiedTables = getOccupiedTables(userId);
+    occupiedTables[tableId] = { orderId, occupiedAt: new Date().toISOString() };
+    localStorage.setItem(key, JSON.stringify(occupiedTables));
+  } catch (error)
+    {
+    console.error("Error setting occupied table in localStorage:", error);
   }
 }
 
 export function clearOccupiedTable(userId: string, tableId: string): void {
   if (typeof window === 'undefined') return;
-  const orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
-  for (const order of orders) {
-    if (order.tableId === tableId && order.status !== 'Completed') {
-      order.tableId = undefined;
+  try {
+    if (tableId.startsWith('delivery-')) {
+      return; // Don't try to clear pseudo-tables
     }
+    const key = getUserOccupiedTablesKey(userId);
+    const occupiedTables = getOccupiedTables(userId);
+    delete occupiedTables[tableId];
+    localStorage.setItem(key, JSON.stringify(occupiedTables));
+  } catch (error) {
+    console.error("Error clearing occupied table from localStorage:", error);
   }
-  localStorage.setItem(`orders_${userId}`, JSON.stringify(orders));
-} 
+}

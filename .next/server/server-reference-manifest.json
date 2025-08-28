@@ -1,5 +1,1 @@
-{
-  "node": {},
-  "edge": {},
-  "encryptionKey": "KGtQLrpLUbHmhpVGBb+Zgt3bAxE/5O64dY826jgVJX4="
-}
+{"node":{"40d23dd0be3e7adb8dbf46627fd26ddb244478dff6":{"workers":{"app/api/menuCsv/route":{"moduleId":"78422","async":false},"app/api/uploadMenu/route":{"moduleId":"78422","async":false},"app/ingredient-tool/page":{"moduleId":"41638","async":false}},"layer":{"app/api/menuCsv/route":"rsc","app/api/uploadMenu/route":"rsc","app/ingredient-tool/page":"action-browser"}},"401bd67f6bb0184aec306bf3e199f6747423c0580e":{"workers":{"app/ai-order-agent/page":{"moduleId":"45634","async":false}},"layer":{"app/ai-order-agent/page":"action-browser"}},"40e5d17b52948d1623947f5f6af2acc0d0de91ac0d":{"workers":{"app/barcode-scanner/page":{"moduleId":"91777","async":false}},"layer":{"app/barcode-scanner/page":"action-browser"}}},"edge":{},"encryptionKey":"JzfFfdTvQBM79tNztpO3A/DCBuayXk5tVRAuIEbXPq0="}

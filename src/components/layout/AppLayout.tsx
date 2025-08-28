@@ -9,16 +9,13 @@ import {
   CreditCard,
   Sparkles,
   Boxes,
+  BarChartBig,
   UtensilsCrossed,
   History,
   Barcode, // Import BarcodeIcon
   LogOut, 
   Loader2,
   MessageSquareQuote, // Added for AI Order Agent
-  BarChart3,
-  Calendar,
-  User, // Added for Receptionist
-  Settings, // Added for module settings
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -34,19 +31,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogDescription
-} from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useWasteWatchDog } from "@/contexts/WasteWatchDogContext";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { NotificationBell } from "./NotificationBell";
 
 interface NavItem {
@@ -56,8 +43,17 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: "/menu-upload", label: "Menu Upload", icon: Boxes },
-  { href: "/receptionist", label: "Receptionist", icon: User },
+  { href: "/", label: "Order Entry", icon: ShoppingCart },
+  { href: "/tables", label: "Table Management", icon: Table },
+  { href: "/payment", label: "Payment", icon: CreditCard },
+  { href: "/order-history", label: "Order History", icon: History },
+  { href: "/ingredient-tool", label: "AI Ingredient Tool", icon: Sparkles },
+  { href: "/inventory", label: "Inventory", icon: Boxes },
+  { href: "/serving-availability", label: "Serving Availability", icon: UtensilsCrossed },
+  { href: "/ai-order-agent", label: "AI Order Agent", icon: MessageSquareQuote }, // New Item
+  { href: "/barcode-scanner", label: "Barcode Scanner", icon: Barcode }, // New Item for Barcode Scanner
+  { href: "/dashboard", label: "Analytics", icon: BarChartBig },
+  { href: "/menu-upload", label: "Menu Upload", icon: Boxes }, // <-- Added Menu Upload here
 ];
 
 function SiteHeader({ pageTitle }: { pageTitle?: string }) {
@@ -132,6 +128,7 @@ function SiteHeader({ pageTitle }: { pageTitle?: string }) {
   );
 }
 
+
 export function AppLayout({
   children,
   pageTitle,
@@ -141,101 +138,7 @@ export function AppLayout({
 }) {
   const pathname = usePathname();
   const { currentUser, isLoading, logout } = useAuth();
-  const { isActive: isWasteWatchDogActive } = useWasteWatchDog();
   const router = useRouter();
-  const [setupOpen, setSetupOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarSetupOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [ordersOpen, setOrdersOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarOrdersOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [reservationsOpen, setReservationsOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarReservationsOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [aiToolOpen, setAiToolOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarAiToolOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [inventoryOpen, setInventoryOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarInventoryOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [wasteWatchDogOpen, setWasteWatchDogOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarWasteWatchDogOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  // Module visibility states
-  const [moduleVisibility, setModuleVisibility] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('ioms-module-visibility');
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    }
-    return {
-      'WasteWatchDog': true,
-      'SmartInventory': false,
-      'SmartChef': false,
-      'Marketplace': true
-    };
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem('sidebarSetupOpen', setupOpen ? 'true' : 'false');
-  }, [setupOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarOrdersOpen', ordersOpen ? 'true' : 'false');
-  }, [ordersOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarReservationsOpen', reservationsOpen ? 'true' : 'false');
-  }, [reservationsOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarAiToolOpen', aiToolOpen ? 'true' : 'false');
-  }, [aiToolOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarInventoryOpen', inventoryOpen ? 'true' : 'false');
-  }, [inventoryOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarWasteWatchDogOpen', wasteWatchDogOpen ? 'true' : 'false');
-  }, [wasteWatchDogOpen]);
-
-  // Persist module visibility
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ioms-module-visibility', JSON.stringify(moduleVisibility));
-    }
-  }, [moduleVisibility]);
-
-  const toggleModuleVisibility = (moduleName: string) => {
-    setModuleVisibility((prev: any) => ({
-      ...prev,
-      [moduleName]: !prev[moduleName]
-    }));
-  };
 
   useEffect(() => {
     if (!isLoading && !currentUser) {
@@ -265,493 +168,25 @@ export function AppLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.filter(item => !['POS', 'Order History', 'Order Analytics', 'Menu Upload', 'Reservation History', 'Reservation Analytics', 'Table Management', 'Receptionist'].includes(item.label)).map((item) => (
+            {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href}
                   className={cn(
-                    "justify-start transition-all",
-                    pathname === item.href
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                    "justify-start",
+                    pathname === item.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
+
                 >
-                  <Link href={item.href} className="flex items-center gap-3">
+                  <Link href={item.href}>
                     <item.icon className="mr-2 h-5 w-5 shrink-0" />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-            {/* Receptionist link */}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === '/receptionist'}
-                className={cn(
-                  "justify-start transition-all",
-                  pathname === '/receptionist'
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                )}
-              >
-                <Link href="/receptionist" className="flex items-center gap-3">
-                  <User className="mr-2 h-5 w-5 shrink-0" />
-                  <span className="truncate">Receptionist</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {/* 2. Reservations Section Dropdown */}
-            <SidebarMenuItem>
-              <button
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
-                  reservationsOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-                onClick={() => setReservationsOpen((open) => !open)}
-                aria-expanded={reservationsOpen}
-              >
-                <span className="mr-2">📅</span>
-                Reservations
-                <span className="ml-auto">{reservationsOpen ? '▲' : '▼'}</span>
-              </button>
-              {reservationsOpen && (
-                <ul className="ml-6 mt-1 flex flex-col gap-1">
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/table-management'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/table-management'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/table-management" className="flex items-center gap-3">
-                        <Table className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Table Management</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/reservation-history'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/reservation-history'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/reservation-history" className="flex items-center gap-3">
-                        <History className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Reservation History</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/reservation-analytics'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/reservation-analytics'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/reservation-analytics" className="flex items-center gap-3">
-                        <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Reservation Analytics</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                </ul>
-              )}
-            </SidebarMenuItem>
-            {/* 3. Orders Section Dropdown */}
-            <SidebarMenuItem>
-              <button
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
-                  ordersOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-                onClick={() => setOrdersOpen((open) => !open)}
-                aria-expanded={ordersOpen}
-              >
-                <span className="mr-2">🧾</span>
-                Orders
-                <span className="ml-auto">{ordersOpen ? '▲' : '▼'}</span>
-              </button>
-              {ordersOpen && (
-                <ul className="ml-6 mt-1 flex flex-col gap-1">
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/payment'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/payment'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/payment" className="flex items-center gap-3">
-                        <CreditCard className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Payment</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/order-entry'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/order-entry'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/order-entry" className="flex items-center gap-3">
-                        <ShoppingCart className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">POS</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/order-history'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/order-history'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/order-history" className="flex items-center gap-3">
-                        <History className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Order History</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/order-analytics'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/order-analytics'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/order-analytics" className="flex items-center gap-3">
-                        <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Order Analytics</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                </ul>
-              )}
-            </SidebarMenuItem>
-            {/* 4. Inventory Section Dropdown with subsections */}
-            <SidebarMenuItem>
-              <button
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
-                  inventoryOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-                onClick={() => setInventoryOpen((open) => !open)}
-                aria-expanded={inventoryOpen}
-              >
-                <span className="mr-2">📦</span>
-                Inventory
-                <span className="ml-auto">{inventoryOpen ? '▲' : '▼'}</span>
-              </button>
-              {inventoryOpen && (
-                <ul className="ml-6 mt-1 flex flex-col gap-1">
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/inventory'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/inventory'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/inventory" className="flex items-center gap-3">
-                        <Boxes className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Inventory</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/serving-availability'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/serving-availability'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/serving-availability" className="flex items-center gap-3">
-                        <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Serving Availability</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/inventory-analytics'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/inventory-analytics'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/inventory-analytics" className="flex items-center gap-3">
-                        <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Inventory Analytics</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/barcode-scanner'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/barcode-scanner'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/barcode-scanner" className="flex items-center gap-3">
-                        <Barcode className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Barcode Scanner</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                </ul>
-              )}
-            </SidebarMenuItem>
-            {/* Setup Section */}
-            <SidebarMenuItem>
-              <button
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
-                  setupOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-                onClick={() => setSetupOpen((open) => !open)}
-                aria-expanded={setupOpen}
-              >
-                <span className="mr-2">⚙️</span>
-                Setup
-                <span className="ml-auto">{setupOpen ? '▲' : '▼'}</span>
-              </button>
-              {setupOpen && (
-                <ul className="ml-6 mt-1 flex flex-col gap-1">
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/menu-upload'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/menu-upload'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/menu-upload" className="flex items-center gap-3">
-                        <Boxes className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Menu Upload</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  <li>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === '/dining-area-setup'}
-                      className={cn(
-                        "justify-start transition-all",
-                        pathname === '/dining-area-setup'
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                          : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                      )}
-                    >
-                      <Link href="/dining-area-setup" className="flex items-center gap-3">
-                        <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
-                        <span className="truncate">Dining Area Setup</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </li>
-                  {/* Add more setup links here */}
-                </ul>
-              )}
-            </SidebarMenuItem>
-
-            
-            {/* WasteWatchDog Section - Only visible when activated and module is visible */}
-            {isWasteWatchDogActive && moduleVisibility['WasteWatchDog'] !== false && (
-              <SidebarMenuItem>
-                <button
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-md p-2 text-left text-sm outline-none transition font-semibold",
-                    wasteWatchDogOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  )}
-                  onClick={() => setWasteWatchDogOpen((open) => !open)}
-                  aria-expanded={wasteWatchDogOpen}
-                >
-                  <span className="mr-2">♻️</span>
-                  WasteWatchDog
-                  <span className="ml-auto">{wasteWatchDogOpen ? '▲' : '▼'}</span>
-                </button>
-                {wasteWatchDogOpen && (
-                  <ul className="ml-6 mt-1 flex flex-col gap-1">
-                    <li>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={pathname === '/apps/wastewatchdog'}
-                        className={cn(
-                          "justify-start transition-all",
-                          pathname === '/apps/wastewatchdog'
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                        )}
-                      >
-                        <Link href="/apps/wastewatchdog" className="flex items-center gap-3">
-                          <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
-                          <span className="truncate">WasteWatch Dashboard</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </li>
-                    <li>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={pathname === '/apps/wastewatchdog/analytics'}
-                        className={cn(
-                          "justify-start transition-all",
-                          pathname === '/apps/wastewatchdog/analytics'
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
-                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
-                        )}
-                      >
-                        <Link href="/apps/wastewatchdog/analytics" className="flex items-center gap-3">
-                          <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
-                          <span className="truncate">WasteWatch Analytics</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </li>
-                  </ul>
-                )}
-              </SidebarMenuItem>
-            )}
           </SidebarMenu>
-          
-          {/* Module Settings */}
-          <div className="px-4 py-2 border-t border-sidebar-border mt-4">
-            <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Module Settings
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
-                    Module Visibility Settings
-                  </DialogTitle>
-                  <DialogDescription>
-                    Toggle which specialized modules appear in your sidebar. Core navigation items are always visible.
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">♻️</span>
-                      <div>
-                        <div className="font-medium">WasteWatchDog</div>
-                        <div className="text-sm text-gray-500">2 features</div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={moduleVisibility['WasteWatchDog'] !== false}
-                      onCheckedChange={() => toggleModuleVisibility('WasteWatchDog')}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">📦</span>
-                      <div>
-                        <div className="font-medium">SmartInventory</div>
-                        <div className="text-sm text-gray-500">AI optimization</div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={moduleVisibility['SmartInventory'] !== false}
-                      onCheckedChange={() => toggleModuleVisibility('SmartInventory')}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">👨‍🍳</span>
-                      <div>
-                        <div className="font-medium">SmartChef</div>
-                        <div className="text-sm text-gray-500">Recipe management</div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={moduleVisibility['SmartChef'] !== false}
-                      onCheckedChange={() => toggleModuleVisibility('SmartChef')}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">🏪</span>
-                      <div>
-                        <div className="font-medium">Marketplace</div>
-                        <div className="text-sm text-gray-500">Browse apps</div>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={moduleVisibility['Marketplace'] !== false}
-                      onCheckedChange={() => toggleModuleVisibility('Marketplace')}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end pt-4 border-t">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSettingsOpen(false)}
-                  >
-                    Done
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
         </SidebarContent>
         <SidebarHeader className="border-t border-sidebar-border mt-auto">
            <SidebarMenu>
@@ -762,6 +197,7 @@ export function AppLayout({
                         "justify-start w-full",
                         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
+
                 >
                     <LogOut className="mr-2 h-5 w-5 shrink-0" />
                     <span className="truncate">Logout</span>
@@ -778,4 +214,4 @@ export function AppLayout({
       </SidebarInset>
     </SidebarProvider>
   );
-} 
+}

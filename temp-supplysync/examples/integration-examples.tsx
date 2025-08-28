@@ -1,5 +1,5 @@
 import React from 'react';
-import SupplySyncBot from './components/SupplySyncBot';
+import SupplySyncBot from '../components/SupplySyncBot';
 
 // Example 1: Full Page Integration
 export function SupplyChainPage() {
@@ -12,9 +12,9 @@ export function SupplyChainPage() {
 }
 
 // Example 2: Modal Integration
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 
-export function SupplyChainModal({ isOpen, onClose }) {
+export function SupplyChainModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[95vw] max-h-[90vh] overflow-hidden">
