@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   BarChart3,
@@ -744,7 +744,7 @@ function WasteWatchHardware() {
   );
 }
 
-export default function WasteWatchDogPage() {
+function WasteWatchDogPageContent() {
   const searchParams = useSearchParams();
   const activeView = searchParams.get('view') || 'dashboard';
 
@@ -1099,5 +1099,13 @@ export default function WasteWatchDogPage() {
     <MainLayout>
       {renderContent()}
     </MainLayout>
+  );
+}
+
+export default function WasteWatchDogPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WasteWatchDogPageContent />
+    </Suspense>
   );
 }
