@@ -1,1 +1,5 @@
-{"node":{"7ee6b205466b2b6322bb1117b93963fadbc9674e":{"workers":{"app/ai-order-agent/page":"94883"},"layer":{"app/ai-order-agent/page":"action-browser"}},"3b83ea4043b3afc3e40d501966f3f375702f104d":{"workers":{"app/barcode-scanner/page":"81343"},"layer":{"app/barcode-scanner/page":"action-browser"}},"82727833da42bba9f14649d67150c335743a1b8d":{"workers":{"app/ingredient-tool/page":"60123"},"layer":{"app/ingredient-tool/page":"action-browser"}}},"edge":{},"encryptionKey":"OFd6z0XYNeysYai+BmhHAEASXb42gcm4E2U3h/o4j9g="}
+{
+  "node": {},
+  "edge": {},
+  "encryptionKey": "CKNM3d79JhGgleK8FOtgUTA8qv6g7n1yUOf/p9GCa3s="
+}

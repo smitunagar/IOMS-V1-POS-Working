@@ -4,7 +4,7 @@
   "description": "WebMesiter360 App Marketplace - A comprehensive platform for business applications",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3000",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
