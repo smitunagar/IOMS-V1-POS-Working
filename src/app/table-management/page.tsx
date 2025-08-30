@@ -177,27 +177,27 @@ export default function TableManagementPage() {
 
   return (
     <AppLayout>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Table Management</h1>
-          <p className="text-sm text-gray-500 mt-1">by IOMS team</p>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+      <div className="p-3 sm:p-4 lg:p-6">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Table Management</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">by IOMS team</p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs sm:text-sm">
               Available
             </Badge>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs sm:text-sm">
               Occupied
             </Badge>
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs sm:text-sm">
               Reserved
             </Badge>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 text-xs sm:text-sm">
               Cleaning
             </Badge>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="bg-white rounded-xl shadow p-3 sm:p-4 lg:p-6">
           <TableGrid 
             tables={areas} 
             setTables={setAreas}

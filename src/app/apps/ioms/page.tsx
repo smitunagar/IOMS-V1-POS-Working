@@ -101,7 +101,6 @@ export default function IOMSApp() {
       'Upload': '📤',
       'BarChart3': '📊',
       'MapPin': '📍',
-      'ChefHat': '👨‍🍳',
       'Package': '📦',
       'Users': '👥',
       'FileText': '📄',
@@ -501,16 +500,16 @@ export default function IOMSApp() {
       </div>
 
       {/* Tab Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
         {activeTab === 'dashboard' && (
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-gray-900">Quick Actions</h2>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Quick Actions</h2>
               <div className="flex space-x-2">
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="bg-blue-600 text-white px-2 py-1 rounded text-sm hover:bg-blue-700 transition-colors flex items-center space-x-1"
+                    className="bg-blue-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm hover:bg-blue-700 transition-colors flex items-center space-x-1"
                   >
                     <Edit3 className="w-3 h-3" />
                     <span>Customize</span>
@@ -520,14 +519,14 @@ export default function IOMSApp() {
                   <>
                     <button
                       onClick={() => setShowAddModal(true)}
-                      className="bg-green-600 text-white px-2 py-1 rounded text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+                      className="bg-green-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add Action</span>
                     </button>
                     <button
                       onClick={() => setIsEditing(false)}
-                      className="bg-gray-600 text-white px-2 py-1 rounded text-sm hover:bg-gray-700 transition-colors"
+                      className="bg-gray-600 text-white px-2 sm:px-3 py-1 sm:py-2 rounded text-xs sm:text-sm hover:bg-gray-700 transition-colors"
                     >
                       Done
                     </button>
@@ -536,7 +535,7 @@ export default function IOMSApp() {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
               {quickActions.map((action) => (
                 <div
                   key={action.id}
@@ -544,57 +543,57 @@ export default function IOMSApp() {
                   onDragStart={() => handleDragStart(action.id)}
                   onDragOver={(e) => handleDragOver(e, action.id)}
                   onDragEnd={handleDragEnd}
-                  className={`relative bg-${action.color}-600 text-white p-3 rounded-lg hover:bg-${action.color}-700 transition-colors text-center cursor-pointer ${
+                  className={`relative bg-${action.color}-600 text-white p-2 sm:p-3 rounded-lg hover:bg-${action.color}-700 transition-colors text-center cursor-pointer ${
                     isEditing ? 'cursor-move' : ''
                   }`}
                 >
                   {isEditing && (
                     <button
                       onClick={() => handleRemoveQuickAction(action.id)}
-                      className="absolute -top-2 -left-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors"
+                      className="absolute -top-1 -left-1 sm:-top-2 sm:-left-2 bg-red-500 text-white rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-2 h-2 sm:w-3 sm:h-3" />
                     </button>
                   )}
                   
                   {isEditing && (
                     <div className="absolute top-1 right-1 text-white/70">
-                      <GripVertical className="w-3 h-3" />
+                      <GripVertical className="w-2 h-2 sm:w-3 sm:h-3" />
                     </div>
                   )}
                   
                   <Link href={action.href} className="block">
-                    <div className="text-xl mb-1">{getActionIcon(action.icon)}</div>
-                    <div className="font-semibold text-sm">{action.title}</div>
-                    <div className="text-xs opacity-90">{action.description}</div>
+                    <div className="text-lg sm:text-xl mb-1">{getActionIcon(action.icon)}</div>
+                    <div className="font-semibold text-xs sm:text-sm">{action.title}</div>
+                    <div className="text-xs opacity-90 hidden sm:block">{action.description}</div>
                   </Link>
                 </div>
               ))}
             </div>
             
             {quickActions.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <p>No quick actions configured. Click "Customize" to add some!</p>
+              <div className="text-center py-6 sm:py-8 text-gray-500">
+                <p className="text-sm sm:text-base">No quick actions configured. Click "Customize" to add some!</p>
               </div>
             )}
           </div>
         )}
 
         {activeTab === 'menu' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Menu Upload</h2>
-            <div className="text-center py-12">
-              <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Upload Your Menu</h3>
-              <p className="text-gray-600 mb-6">Upload PDF or CSV files to automatically extract menu items</p>
-              <div className="flex justify-center space-x-4">
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Menu Upload</h2>
+            <div className="text-center py-8 sm:py-12">
+              <Upload className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Upload Your Menu</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">Upload PDF or CSV files to automatically extract menu items</p>
+              <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <Link 
                   href="/menu-upload"
-                  className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors"
+                  className="bg-green-600 text-white px-4 sm:px-6 py-2 rounded-md hover:bg-green-700 transition-colors text-sm sm:text-base"
                 >
                   Upload Menu
                 </Link>
-                <button className="bg-gray-100 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-200 transition-colors">
+                <button className="bg-gray-100 text-gray-700 px-4 sm:px-6 py-2 rounded-md hover:bg-gray-200 transition-colors text-sm sm:text-base">
                   View Current Menu
                 </button>
               </div>

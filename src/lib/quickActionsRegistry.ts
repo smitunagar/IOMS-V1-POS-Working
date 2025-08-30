@@ -54,17 +54,6 @@ export const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
     isDefault: true,
     isEnabled: true,
     order: 4
-  },
-  {
-    id: 'ingredient-tool',
-    title: 'AI Ingredient Generator',
-    description: 'Generate ingredients for dishes',
-    icon: 'ChefHat',
-    href: '/ingredient-tool',
-    color: 'indigo',
-    isDefault: true,
-    isEnabled: true,
-    order: 5
   }
 ];
 

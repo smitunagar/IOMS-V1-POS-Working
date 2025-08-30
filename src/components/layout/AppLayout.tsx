@@ -177,7 +177,6 @@ export function AppLayout({
                     "justify-start",
                     pathname === item.href ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   )}
-
                 >
                   <Link href={item.href}>
                     <item.icon className="mr-2 h-5 w-5 shrink-0" />
@@ -197,7 +196,6 @@ export function AppLayout({
                         "justify-start w-full",
                         "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )}
-
                 >
                     <LogOut className="mr-2 h-5 w-5 shrink-0" />
                     <span className="truncate">Logout</span>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
-  CreditCard, Upload, BarChart3, MapPin, ChefHat, Package, 
+  CreditCard, Upload, BarChart3, MapPin, Package, 
   Users, FileText, Settings, Scan, Plus, X, GripVertical,
   Edit3, Trash2
 } from 'lucide-react'
@@ -21,7 +21,6 @@ const iconMap: Record<string, any> = {
   Upload,
   BarChart3,
   MapPin,
-  ChefHat,
   Package,
   Users,
   FileText,
@@ -110,30 +109,30 @@ export default function QuickActions({ className = '' }: QuickActionsProps) {
   const availableActions = getAvailableActionsForAdding()
 
   return (
-    <div className={`bg-white rounded-lg shadow p-6 ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
+    <div className={`bg-white rounded-lg shadow p-4 sm:p-6 ${className}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 space-y-3 sm:space-y-0">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900">Quick Actions</h2>
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center space-x-1 text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <Edit3 className="w-4 h-4" />
+            <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>{isEditing ? 'Done' : 'Customize'}</span>
           </button>
           {isEditing && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              className="flex items-center space-x-1 text-xs sm:text-sm text-blue-600 hover:text-blue-700 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>Add Action</span>
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
         {quickActions.map((action) => {
           const IconComponent = iconMap[action.icon]
           return (
@@ -147,26 +146,26 @@ export default function QuickActions({ className = '' }: QuickActionsProps) {
             >
               <Link
                 href={action.href}
-                className={`flex items-center p-4 rounded-lg border-2 transition-colors ${colorClasses[action.color]}`}
+                className={`flex flex-col sm:flex-row sm:items-center p-3 sm:p-4 rounded-lg border-2 transition-colors ${colorClasses[action.color]}`}
               >
                 {isEditing && (
-                  <div className="absolute -top-2 -left-2 flex items-center space-x-1">
-                    <GripVertical className="w-4 h-4 text-gray-400" />
+                  <div className="absolute -top-1 -left-1 sm:-top-2 sm:-left-2 flex items-center space-x-1">
+                    <GripVertical className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                     <button
                       onClick={(e) => {
                         e.preventDefault()
                         handleRemoveAction(action.id)
                       }}
-                      className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      className="w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-2 h-2 sm:w-3 sm:h-3" />
                     </button>
                   </div>
                 )}
-                <IconComponent className="w-6 h-6 mr-3" />
-                <div className="text-left">
-                  <h3 className="font-semibold text-gray-900">{action.title}</h3>
-                  <p className="text-sm text-gray-600">{action.description}</p>
+                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 mr-0 sm:mr-3 mb-2 sm:mb-0" />
+                <div className="text-center sm:text-left">
+                  <h3 className="font-semibold text-xs sm:text-sm text-gray-900">{action.title}</h3>
+                  <p className="text-xs text-gray-600 hidden sm:block">{action.description}</p>
                 </div>
               </Link>
             </div>
@@ -176,35 +175,44 @@ export default function QuickActions({ className = '' }: QuickActionsProps) {
 
       {/* Add Action Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Quick Action</h3>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Add Quick Action</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
               {availableActions.map((action) => {
                 const IconComponent = iconMap[action.icon]
                 return (
                   <button
                     key={action.id}
                     onClick={() => handleAddAction(action)}
-                    className="w-full flex items-center p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors text-left"
+                    className="w-full p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
                   >
-                    <IconComponent className={`w-5 h-5 mr-3 ${colorClasses[action.color].split(' ')[0]}`} />
-                    <div>
-                      <h4 className="font-medium text-gray-900">{action.title}</h4>
-                      <p className="text-sm text-gray-600">{action.description}</p>
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${colorClasses[action.color]}`}>
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-900">{action.title}</h4>
+                        <p className="text-xs text-gray-600">{action.description}</p>
+                      </div>
                     </div>
                   </button>
                 )
               })}
             </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
+            
+            {availableActions.length === 0 && (
+              <p className="text-center text-gray-500 py-4">No more actions available to add.</p>
+            )}
           </div>
         </div>
       )}

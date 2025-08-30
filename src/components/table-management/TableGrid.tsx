@@ -40,7 +40,7 @@ export default function TableGrid({ tables, setTables, onTableClick }: { tables:
   };
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bg-blue-50 rounded-lg p-4 min-h-[400px] grid grid-cols-6 gap-4 border border-blue-100">
+      <div className="bg-blue-50 rounded-lg p-3 sm:p-4 lg:p-6 min-h-[300px] sm:min-h-[400px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 border border-blue-100">
         {tables.map((table, idx) => (
           <DraggableTableCard key={table.id} table={table} index={idx} moveTable={moveTable} onTableClick={onTableClick} />
         ))}

@@ -403,44 +403,43 @@ export default function OrderEntryPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto p-3 sm:p-4 lg:p-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
           {/* Menu Section */}
-          <div className="lg:col-span-2">
+          <div className="xl:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="h-5 w-5" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                   Menu Items
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm sm:text-base">
                   Select items to add to your order
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 {/* Search and Filter */}
-                <div className="mb-6 space-y-4">
-                  <div className="flex gap-2">
+                <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search menu items..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 text-sm sm:text-base"
                       />
                     </div>
-                    <Button variant="outline" size="icon">
+                    <Button variant="outline" size="icon" className="w-full sm:w-auto">
                       <Filter className="h-4 w-4" />
                     </Button>
                   </div>
                   
                   {/* Category Filter */}
-                  {/* 3. Category badges horizontally scrollable, highlight active */}
                   <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2 mb-2">
                     <Badge
                       variant={selectedCategory === 'all' ? 'default' : 'secondary'}
-                      className={`cursor-pointer whitespace-nowrap ${selectedCategory === 'all' ? 'border-blue-500 border-b-2' : ''}`}
+                      className={`cursor-pointer whitespace-nowrap text-xs sm:text-sm ${selectedCategory === 'all' ? 'border-blue-500 border-b-2' : ''}`}
                       onClick={() => setSelectedCategory('all')}
                     >
                       All Categories
@@ -449,7 +448,7 @@ export default function OrderEntryPage() {
                       <Badge
                         key={category}
                         variant={selectedCategory === category ? 'default' : 'secondary'}
-                        className={`cursor-pointer whitespace-nowrap ${selectedCategory === category ? 'border-blue-500 border-b-2' : ''}`}
+                        className={`cursor-pointer whitespace-nowrap text-xs sm:text-sm ${selectedCategory === category ? 'border-blue-500 border-b-2' : ''}`}
                         onClick={() => setSelectedCategory(category)}
                       >
                         {category}
@@ -460,9 +459,9 @@ export default function OrderEntryPage() {
 
                 {/* Menu Items Grid */}
                 {filteredItems.length === 0 ? (
-                  <div className="text-center py-12">
-                    <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-8 sm:py-12">
+                    <ShoppingCart className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground text-sm sm:text-base">
                       {menuItems.length === 0 
                         ? 'No menu items available. Please upload a menu first.'
                         : 'No items match your search criteria.'
@@ -470,7 +469,7 @@ export default function OrderEntryPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                     {filteredItems.map((item, index) => {
                       // Ensure unique key - use item.id if available and unique, otherwise generate one
                       const uniqueKey = item.id && item.id.length > 0 ? item.id : `${item.name}__${item.category}__${item.price}__${index}`;
@@ -491,11 +490,11 @@ export default function OrderEntryPage() {
           </div>
 
           {/* Order Section */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <Card className="sticky top-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
                   Current Order
                 </CardTitle>
                 <CardDescription>
