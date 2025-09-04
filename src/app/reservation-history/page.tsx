@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 import { History } from 'lucide-react';
 
 export default function ReservationHistoryPage() {
   return (
-    <AppLayout pageTitle="Reservation History">
+    <EnterpriseLayout pageTitle="Reservation History">
       <div className="container mx-auto p-6">
         <Card>
           <CardHeader>
@@ -29,6 +29,6 @@ export default function ReservationHistoryPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 } 

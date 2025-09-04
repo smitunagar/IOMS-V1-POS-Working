@@ -19,6 +19,11 @@ import {
   Calendar,
   User, // Added for Receptionist
   Settings, // Added for module settings
+  TrendingUp, // Added for Analytics
+  Truck, // Added for Supply Chain
+  Camera, // Added for Hardware Capture
+  FileText, // Added for Compliance Center
+  TrendingDown, // Added for Predictive Analytics
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -145,56 +150,14 @@ export function AppLayout({
   const { isActive: isWasteWatchDogActive } = useWasteWatchDog();
   const { isActive: isSupplySyncActive } = useSupplySync();
   const router = useRouter();
-  const [setupOpen, setSetupOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarSetupOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [ordersOpen, setOrdersOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarOrdersOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [reservationsOpen, setReservationsOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarReservationsOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [aiToolOpen, setAiToolOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarAiToolOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [inventoryOpen, setInventoryOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarInventoryOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
-  const [wasteWatchDogOpen, setWasteWatchDogOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarWasteWatchDogOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [reservationsOpen, setReservationsOpen] = useState(false);
+  const [aiToolOpen, setAiToolOpen] = useState(false);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [wasteWatchDogOpen, setWasteWatchDogOpen] = useState(false);
   
-  const [supplySyncOpen, setSupplySyncOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('sidebarSupplySyncOpen');
-      return stored === 'true';
-    }
-    return false;
-  });
+  const [supplySyncOpen, setSupplySyncOpen] = useState(false);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -215,28 +178,18 @@ export function AppLayout({
     };
   });
 
+  // Clear any existing sidebar state on component mount to ensure fresh start
   useEffect(() => {
-    sessionStorage.setItem('sidebarSetupOpen', setupOpen ? 'true' : 'false');
-  }, [setupOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarOrdersOpen', ordersOpen ? 'true' : 'false');
-  }, [ordersOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarReservationsOpen', reservationsOpen ? 'true' : 'false');
-  }, [reservationsOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarAiToolOpen', aiToolOpen ? 'true' : 'false');
-  }, [aiToolOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarInventoryOpen', inventoryOpen ? 'true' : 'false');
-  }, [inventoryOpen]);
-  useEffect(() => {
-    sessionStorage.setItem('sidebarWasteWatchDogOpen', wasteWatchDogOpen ? 'true' : 'false');
-  }, [wasteWatchDogOpen]);
-  
-  useEffect(() => {
-    sessionStorage.setItem('sidebarSupplySyncOpen', supplySyncOpen ? 'true' : 'false');
-  }, [supplySyncOpen]);
+    if (typeof window !== 'undefined') {
+      // Clear all sidebar-related sessionStorage keys
+      const keys = Object.keys(sessionStorage);
+      keys.forEach(key => {
+        if (key.startsWith('sidebar') && key.includes('Open')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+  }, []);
 
   // Persist module visibility
   useEffect(() => {
@@ -637,34 +590,85 @@ export function AppLayout({
                     <li>
                       <SidebarMenuButton
                         asChild
-                        isActive={pathname === '/apps/wastewatchdog'}
+                        isActive={pathname === '/apps/waste-watchdog'}
                         className={cn(
                           "justify-start transition-all",
-                          pathname === '/apps/wastewatchdog'
+                          pathname === '/apps/waste-watchdog'
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
                             : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
                         )}
                       >
-                        <Link href="/apps/wastewatchdog" className="flex items-center gap-3">
+                        <Link href="/apps/waste-watchdog" className="flex items-center gap-3">
                           <BarChart3 className="mr-2 h-5 w-5 shrink-0" />
-                          <span className="truncate">WasteWatch Dashboard</span>
+                          <span className="truncate">Dashboard</span>
                         </Link>
                       </SidebarMenuButton>
                     </li>
                     <li>
                       <SidebarMenuButton
                         asChild
-                        isActive={pathname === '/apps/wastewatchdog/analytics'}
+                        isActive={pathname === '/apps/waste-watchdog/analytics'}
                         className={cn(
                           "justify-start transition-all",
-                          pathname === '/apps/wastewatchdog/analytics'
+                          pathname === '/apps/waste-watchdog/analytics'
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
                             : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
                         )}
                       >
-                        <Link href="/apps/wastewatchdog/analytics" className="flex items-center gap-3">
-                          <UtensilsCrossed className="mr-2 h-5 w-5 shrink-0" />
-                          <span className="truncate">WasteWatch Analytics</span>
+                        <Link href="/apps/waste-watchdog/analytics" className="flex items-center gap-3">
+                          <TrendingUp className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">Analytics</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </li>
+                    <li>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === '/apps/waste-watchdog/hardware'}
+                        className={cn(
+                          "justify-start transition-all",
+                          pathname === '/apps/waste-watchdog/hardware'
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                        )}
+                      >
+                        <Link href="/apps/waste-watchdog/hardware" className="flex items-center gap-3">
+                          <Camera className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">Hardware Capture</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </li>
+                    <li>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === '/apps/waste-watchdog/compliance'}
+                        className={cn(
+                          "justify-start transition-all",
+                          pathname === '/apps/waste-watchdog/compliance'
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                        )}
+                      >
+                        <Link href="/apps/waste-watchdog/compliance" className="flex items-center gap-3">
+                          <FileText className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">Compliance Center</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </li>
+                    <li>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === '/apps/waste-watchdog/predictive'}
+                        className={cn(
+                          "justify-start transition-all",
+                          pathname === '/apps/waste-watchdog/predictive'
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold shadow-sm border-l-4 border-[#4C8BF5]"
+                            : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-4 border-transparent"
+                        )}
+                      >
+                        <Link href="/apps/waste-watchdog/predictive" className="flex items-center gap-3">
+                          <TrendingDown className="mr-2 h-5 w-5 shrink-0" />
+                          <span className="truncate">Predictive Analytics</span>
                         </Link>
                       </SidebarMenuButton>
                     </li>

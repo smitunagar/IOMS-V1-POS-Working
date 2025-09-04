@@ -33,10 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const saveUserToStorage = (user: User | null) => {
     if (user) {
       localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
-      console.log('[AuthProvider] Saved user to localStorage:', user);
     } else {
       localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-      console.log('[AuthProvider] Removed user from localStorage');
     }
   };
 
@@ -91,13 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentUser]);
 
-  // Check auth status on every render
+  // Check auth status on mount only
   useEffect(() => {
     checkAuthStatus();
-  });
+  }, [checkAuthStatus]);
 
   useEffect(() => {
-    console.log('[AuthProvider] useEffect: Starting user load');
     setIsLoading(true);
     setIsInitialized(false);
     
@@ -106,38 +103,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Validate that the user still exists in the users list
     if (user && validateUserExists(user)) {
       setCurrentUser(user);
-      console.log('[AuthProvider] Valid user loaded:', user);
     } else if (user) {
-      console.log('[AuthProvider] User found but invalid, clearing...');
       saveUserToStorage(null);
       setCurrentUser(null);
     } else {
       setCurrentUser(null);
-      console.log('[AuthProvider] No user found in localStorage');
     }
     
     setIsInitialized(true);
     setIsLoading(false);
-    console.log('[AuthProvider] Finished user load, currentUser:', user);
   }, []);
 
-  // Debug effect to log state changes
-  useEffect(() => {
-    console.log('[AuthProvider] State changed - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
-    
-    // Log localStorage state for debugging
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
-      const usersList = localStorage.getItem(LOCAL_STORAGE_USERS_LIST_KEY);
-      console.log('[AuthProvider] localStorage state - user:', storedUser, 'users:', usersList);
-    }
-  }, [currentUser, isLoading, isInitialized]);
-
-  // Log every render for debugging
-  console.log('[AuthProvider] Render - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
-
   const login = async (email: string, pass: string): Promise<boolean> => {
-    console.log('[AuthProvider] Login attempt for:', email);
     setIsLoading(true);
     
     try {

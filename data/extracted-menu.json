@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-09-03T17:49:50.419Z",
+  "itemCount": 3,
+  "extractionMethod": "ai-enhanced",
+  "items": [
+    {
+      "id": "item-1",
+      "name": "Menu Item 1",
+      "price": "8.50 €",
+      "category": "Appetizers",
+      "image": "",
+      "ingredients": [],
+      "extractionMethod": "ai-enhanced",
+      "isTemplate": true
+    },
+    {
+      "id": "item-2",
+      "name": "Menu Item 2",
+      "price": "12.90 €",
+      "category": "Main Dishes",
+      "image": "",
+      "ingredients": [],
+      "extractionMethod": "ai-enhanced",
+      "isTemplate": true
+    },
+    {
+      "id": "item-3",
+      "name": "Menu Item 3",
+      "price": "15.50 €",
+      "category": "Main Dishes",
+      "image": "",
+      "ingredients": [],
+      "extractionMethod": "ai-enhanced",
+      "isTemplate": true
+    }
+  ]
+}

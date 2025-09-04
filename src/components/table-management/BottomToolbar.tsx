@@ -1,20 +1,56 @@
-import React from 'react';
+'use client';
 
-export default function BottomToolbar() {
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { useTableStore } from '@/contexts/tableStore';
+import { 
+  Circle, 
+  Square, 
+  Rectangle,
+  Plus
+} from 'lucide-react';
+
+export function BottomToolbar() {
+  const { addTable } = useTableStore();
+
+  const handleAddTable = (shape: 'round' | 'square' | 'rect') => {
+    // Add table at center of canvas with slight randomization
+    const x = 300 + Math.random() * 100;
+    const y = 200 + Math.random() * 100;
+    addTable({ x, y, shape });
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-blue-100 shadow flex justify-center gap-6 py-3 z-40">
-      <button className="bg-blue-700 text-white rounded px-4 py-2 flex items-center gap-2">
-        <span role="img" aria-label="refresh">🔄</span> Refresh Table Status
-      </button>
-      <button className="bg-blue-700 text-white rounded px-4 py-2 flex items-center gap-2">
-        <span role="img" aria-label="cleaned">🧹</span> Mark as Cleaned
-      </button>
-      <button className="bg-blue-700 text-white rounded px-4 py-2 flex items-center gap-2">
-        <span role="img" aria-label="waiters">👥</span> View Waiter Assignments
-      </button>
-      <button className="bg-blue-700 text-white rounded px-4 py-2 flex items-center gap-2">
-        <span role="img" aria-label="settings">⚙️</span> Settings
-      </button>
+    <div className="space-y-2">
+      <Button
+        onClick={() => handleAddTable('round')}
+        variant="outline"
+        className="w-full justify-start"
+        size="sm"
+      >
+        <Circle className="h-4 w-4 mr-2" />
+        Round Table
+      </Button>
+      
+      <Button
+        onClick={() => handleAddTable('square')}
+        variant="outline"
+        className="w-full justify-start"
+        size="sm"
+      >
+        <Square className="h-4 w-4 mr-2" />
+        Square Table
+      </Button>
+      
+      <Button
+        onClick={() => handleAddTable('rect')}
+        variant="outline"
+        className="w-full justify-start"
+        size="sm"
+      >
+        <Rectangle className="h-4 w-4 mr-2" />
+        Rectangle Table
+      </Button>
     </div>
   );
 } 

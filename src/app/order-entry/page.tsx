@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { useRouter } from 'next/navigation';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -188,6 +189,7 @@ interface CustomerInfo {
 }
 
 export default function OrderEntryPage() {
+  const router = useRouter();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -368,15 +370,20 @@ export default function OrderEntryPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
       });
-      alert('Order placed successfully!');
+      
+      // Clear current order state
       setOrderItems([]);
       setCustomerInfo({ name: '', phone: '', tableNumber: '', email: '' });
       setDriver('');
       setOrderType('dine-in');
+      
       // Refresh available tables
       const res = await fetch('/api/tables');
       const data = await res.json();
       setAvailableTables(data.tables.filter((t: any) => t.status === 'Available').map((t: any) => t.id));
+      
+      // Redirect to payment page
+      router.push('/payment');
     } catch (error) {
       console.error('Error placing order:', error);
       alert('Error placing order. Please try again.');
@@ -390,19 +397,19 @@ export default function OrderEntryPage() {
 
   if (loading) {
     return (
-      <MainLayout>
+      <AppLayout pageTitle="Order Entry">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading menu...</p>
           </div>
         </div>
-      </MainLayout>
+      </AppLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <AppLayout pageTitle="Order Entry">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Menu Section */}
@@ -656,10 +663,10 @@ export default function OrderEntryPage() {
                     onClick={handlePlaceOrder}
                     disabled={orderItems.length === 0 || (orderType === 'dine-in' && !customerInfo.tableNumber)}
                     className={`w-full transition-all ${orderItems.length === 0 || (orderType === 'dine-in' && !customerInfo.tableNumber) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
-                    title={orderItems.length === 0 ? 'Add items to order' : (orderType === 'dine-in' && !customerInfo.tableNumber ? 'Select a table' : 'Place Order')}
+                    title={orderItems.length === 0 ? 'Add items to order' : (orderType === 'dine-in' && !customerInfo.tableNumber ? 'Select a table' : 'Place Order and Go to Payment')}
                   >
                     <CreditCard className="h-4 w-4 mr-2" />
-                    Place Order
+                    Place Order & Pay
                   </Button>
                 </div>
               </CardContent>
@@ -667,6 +674,6 @@ export default function OrderEntryPage() {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </AppLayout>
   );
 } 

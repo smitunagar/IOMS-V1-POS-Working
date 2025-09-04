@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { AppLayout } from "@/components/layout/AppLayout";
+import { EnterpriseLayout } from "@/components/layout/EnterpriseLayout";
 import {
   Table,
   TableHeader,
@@ -123,7 +123,7 @@ export default function OrderHistoryPage() {
   }
 
   return (
-    <AppLayout pageTitle="Order History">
+    <EnterpriseLayout pageTitle="Order History">
       <div className="ml-0 md:ml-64 transition-all">
         <Card>
           <CardHeader>
@@ -244,6 +244,6 @@ export default function OrderHistoryPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 }

@@ -1,387 +1,425 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, UploadCloud, ChevronDown, ChevronUp, Plus, Trash2, RefreshCw, Boxes } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { addOrUpdateIngredientInInventory } from '@/lib/inventoryService';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { CheckCircle } from 'lucide-react';
 
 export default function MenuUploadPage() {
-  const { toast } = useToast();
   const { currentUser } = useAuth();
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [expandedRows, setExpandedRows] = useState<{ [key: number]: boolean }>({});
-  const [modalOpen, setModalOpen] = useState(false);
+  const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [menuDraft, setMenuDraft] = useState<any[]>([]);
+  const [menuSaved, setMenuSaved] = useState(false);
+  const [ingredientModalOpen, setIngredientModalOpen] = useState(false);
   const [modalIngredients, setModalIngredients] = useState<any[]>([]);
-  const [modalDish, setModalDish] = useState<string>('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [currentDishIndex, setCurrentDishIndex] = useState(-1);
 
-  // Helper to get default expiry date based on ingredient name
-  function getDefaultExpiry(ingredientName: string): string {
-    const now = new Date();
-    const lower = ingredientName.toLowerCase();
-    if (/(milk|cheese|cream|paneer|yogurt|curd|meat|chicken|fish|egg|seafood|dairy)/.test(lower)) {
-      now.setDate(now.getDate() + 7); // 7 days
-    } else if (/(lettuce|spinach|greens|vegetable|tomato|onion|potato|carrot|cabbage|pepper|broccoli|cauliflower|bean|pea|okra|zucchini|cucumber|mushroom)/.test(lower)) {
-      now.setDate(now.getDate() + 5); // 5 days
-    } else if (/(spice|salt|pepper|masala|herb|powder|dry|rice|lentil|bean|flour|grain|sugar|oil|vinegar|pasta|noodle|baking|yeast|nut|seed)/.test(lower)) {
-      now.setMonth(now.getMonth() + 6); // 6 months
-    } else if (/(frozen|ice|icecream)/.test(lower)) {
-      now.setFullYear(now.getFullYear() + 1); // 1 year
-    } else {
-      now.setDate(now.getDate() + 14); // Default 2 weeks
-    }
-    return now.toISOString().slice(0, 10);
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setMenuItems([]);
-      setError(null);
-      setSuccess(false);
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
     }
   };
 
   const handleUpload = async () => {
-    if (!file) return;
-    setUploading(true);
-    setMenuItems([]);
-    setError(null);
-    setSuccess(false);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/menuCsv", {
-        method: "POST",
-        body: formData,
+    if (!selectedFile || !currentUser?.id) {
+      toast({ 
+        title: 'Error', 
+        description: 'Please select a PDF file and ensure you are logged in.', 
+        variant: 'destructive' 
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Extraction failed");
-      setMenuItems(data.menuItems || []);
-      if ((data.menuItems || []).length === 0) {
-        setError("No menu items found in the file.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      console.log('📄 Processing file:', selectedFile.name);
+      const fileData = await selectedFile.arrayBuffer();
+      const base64File = Buffer.from(fileData).toString('base64');
+
+      const response = await fetch('/api/uploadMenu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: base64File, userId: currentUser.id }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && Array.isArray(data.menu)) {
+        setMenuDraft(data.menu);
+        setMenuSaved(false);
+        toast({ 
+          title: 'Success!', 
+          description: `Extracted ${data.menu.length} menu items from your PDF`
+        });
+      } else {
+        throw new Error(data.error || 'Failed to process menu');
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to extract menu items.");
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Ingredient table handlers
-  const handleIngredientChange = (itemIdx: number, ingIdx: number, field: string, value: string | number) => {
-    setMenuItems(prev => {
-      const updated = [...prev];
-      const ings = [...(updated[itemIdx].ingredients || [])];
-      ings[ingIdx] = { ...ings[ingIdx], [field]: value };
-      updated[itemIdx] = { ...updated[itemIdx], ingredients: ings };
-      return updated;
-    });
-  };
-
-  const handleAddIngredient = (itemIdx: number) => {
-    setMenuItems(prev => {
-      const updated = [...prev];
-      const ings = [...(updated[itemIdx].ingredients || [])];
-      ings.push({ name: "", quantity: 0, unit: "" });
-      updated[itemIdx] = { ...updated[itemIdx], ingredients: ings };
-      return updated;
-    });
-  };
-
-  const handleRemoveIngredient = (itemIdx: number, ingIdx: number) => {
-    setMenuItems(prev => {
-      const updated = [...prev];
-      const ings = [...(updated[itemIdx].ingredients || [])];
-      ings.splice(ingIdx, 1);
-      updated[itemIdx] = { ...updated[itemIdx], ingredients: ings };
-      return updated;
-    });
-  };
-
-  const handleToggleExpand = (idx: number) => {
-    setExpandedRows(prev => ({ ...prev, [idx]: !prev[idx] }));
-  };
-
-  const handleSaveMenu = async () => {
-    if (!currentUser) {
-      toast({ title: "Not logged in", description: "Please log in to save menu.", variant: "destructive" });
-      return;
-    }
-    try {
-      // Save menu to localStorage under menu_{userId}
-      const key = `menu_${currentUser.id}`;
-      localStorage.setItem(key, JSON.stringify(menuItems));
-      console.log('Saved menu to localStorage:', key, menuItems);
-      setSuccess(true);
-      toast({ title: "Menu Saved", description: "Menu items have been saved to the system." });
     } catch (error) {
-      setSuccess(false);
-      toast({ title: "Error", description: "Failed to save menu." });
-    }
-  };
-
-  const handleSaveIngredients = async () => {
-    // TODO: Implement saving only ingredients to backend
-    setSuccess(true);
-    toast({ title: "Ingredients Saved", description: "Ingredients have been saved." });
-  };
-
-  const handleRefreshMenu = async () => {
-    setUploading(true);
-    setError(null);
-    setSuccess(false);
-    try {
-      const res = await fetch("/api/menuCsv?action=delete", { method: "POST" });
-      if (!res.ok) throw new Error("Failed to refresh menu");
-      setMenuItems([]);
-      setFile(null);
-      toast({ title: "Menu Reset", description: "Previous menu data deleted. You can now upload a new menu." });
-    } catch (err: any) {
-      setError(err.message || "Failed to refresh menu.");
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleAddAllToInventory = (itemIdx: number) => {
-    if (!currentUser) {
-      toast({ title: "Not logged in", description: "Please log in to add to inventory.", variant: "destructive" });
-      return;
-    }
-    const dish = menuItems[itemIdx];
-    if (!dish.ingredients || dish.ingredients.length === 0) {
-      toast({ title: "No ingredients", description: "No ingredients to add for this dish." });
-      return;
-    }
-    // Prepare modal state
-    setModalIngredients(
-      dish.ingredients.filter((ing: any) => ing.name && ing.quantity > 0 && ing.unit).map((ing: any) => ({
-        ...ing,
-        expiryDate: getDefaultExpiry(ing.name),
-      }))
-    );
-    setModalDish(dish.name);
-    setModalOpen(true);
-  };
-
-  const handleAddIngredientToInventory = (itemIdx: number, ingIdx: number) => {
-    if (!currentUser) {
-      toast({ title: "Not logged in", description: "Please log in to add to inventory.", variant: "destructive" });
-      return;
-    }
-    const dish = menuItems[itemIdx];
-    const ing = dish.ingredients[ingIdx];
-    if (ing.name && ing.quantity > 0 && ing.unit) {
-      setModalIngredients([
-        { ...ing, expiryDate: getDefaultExpiry(ing.name) }
-      ]);
-      setModalDish(dish.name);
-      setModalOpen(true);
-    } else {
-      toast({ title: "Invalid ingredient", description: "Ingredient must have a name, quantity > 0, and unit.", variant: "destructive" });
-    }
-  };
-
-  const handleModalExpiryChange = (idx: number, value: string) => {
-    setModalIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, expiryDate: value } : ing));
-  };
-
-  const handleConfirmAddToInventory = () => {
-    if (!currentUser) return;
-    modalIngredients.forEach((ing: any) => {
-      addOrUpdateIngredientInInventory(currentUser.id, {
-        id: '',
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit,
-        category: modalDish,
-        expiryDate: ing.expiryDate,
+      console.error('Upload error:', error);
+      toast({ 
+        title: 'Upload Failed', 
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: 'destructive' 
       });
-    });
-    toast({ title: "Added to Inventory", description: `${modalIngredients.length} item(s) added to inventory.` });
-    setModalOpen(false);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleEditCell = (index: number, field: string, value: any) => {
+    const updatedMenu = [...menuDraft];
+    updatedMenu[index] = { ...updatedMenu[index], [field]: value };
+    setMenuDraft(updatedMenu);
+  };
+
+  const handleDeleteRow = (index: number) => {
+    const updatedMenu = menuDraft.filter((_, i) => i !== index);
+    setMenuDraft(updatedMenu);
+  };
+
+  const handleAddRow = () => {
+    const newRow = {
+      id: `custom-${Date.now()}`,
+      name: '',
+      category: '',
+      price: '',
+      image: '',
+      ingredients: [],
+    };
+    setMenuDraft([...menuDraft, newRow]);
+  };
+
+  const openIngredientModal = (dishIndex: number) => {
+    setCurrentDishIndex(dishIndex);
+    setModalIngredients(menuDraft[dishIndex]?.ingredients || []);
+    setIngredientModalOpen(true);
+  };
+
+  const handleGenerateIngredients = async (dishIndex: number) => {
+    const dish = menuDraft[dishIndex];
+    if (!dish?.name) {
+      toast({ 
+        title: 'Error', 
+        description: 'Dish name is required to generate ingredients', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch('/api/ai-ingredient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dishName: dish.name, category: dish.category || '' }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.ingredients) {
+        handleEditCell(dishIndex, 'ingredients', data.ingredients);
+        toast({ 
+          title: 'Success!', 
+          description: `Generated ${data.ingredients.length} ingredients for ${dish.name}` 
+        });
+      } else {
+        throw new Error(data.error || 'Failed to generate ingredients');
+      }
+    } catch (error) {
+      console.error('Ingredient generation error:', error);
+      toast({ 
+        title: 'Generation Failed', 
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDeleteIngredient = (dishIndex: number, ingredientIndex: number) => {
+    const updatedMenu = [...menuDraft];
+    if (updatedMenu[dishIndex]?.ingredients) {
+      updatedMenu[dishIndex].ingredients = updatedMenu[dishIndex].ingredients.filter(
+        (_: any, i: number) => i !== ingredientIndex
+      );
+      setMenuDraft(updatedMenu);
+    }
+  };
+
+  const saveMenu = async () => {
+    if (!currentUser?.id || menuDraft.length === 0) {
+      toast({ 
+        title: 'Error', 
+        description: 'No menu data to save or user not logged in', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch('/api/saveMenu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menu: menuDraft, userId: currentUser.id }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setMenuSaved(true);
+        toast({ title: 'Success!', description: 'Menu saved successfully to database' });
+      } else {
+        throw new Error(data.error || 'Failed to save menu');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({ 
+        title: 'Save Failed', 
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <AppLayout pageTitle="Menu Upload">
-      <div className="flex flex-col items-center justify-center min-h-[80vh] bg-muted/50">
-        <Card className="w-full max-w-3xl shadow-lg">
-          <CardHeader>
-            <CardTitle>Menu Upload</CardTitle>
-            <p className="text-sm text-gray-500 mt-1">by IOMS team</p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center gap-4">
-              <label className="w-full flex flex-col items-center px-4 py-8 bg-white rounded-lg shadow-md tracking-wide uppercase border border-blue-200 cursor-pointer hover:bg-blue-50 transition">
-                <UploadCloud className="h-8 w-8 text-blue-500 mb-2" />
-                <span className="text-base leading-normal mb-2">Select a PDF or CSV file to upload</span>
-                <Input type="file" accept=".pdf,.csv" className="hidden" onChange={handleFileChange} />
-                {file && <span className="text-sm text-gray-600 mt-2">{file.name}</span>}
+    <AppLayout>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Menu Upload & Management</h1>
+          <p className="text-gray-600">Upload your restaurant menu PDF and manage your dishes with AI assistance</p>
+        </div>
+
+        {/* Upload Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Menu PDF</h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="menu-file" className="block text-sm font-medium text-gray-700 mb-2">
+                Select PDF File
               </label>
-              <Button onClick={handleUpload} disabled={!file || uploading} className="w-full mt-2">
-                {uploading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <UploadCloud className="h-4 w-4 mr-2" />}
-                {uploading ? "Extracting..." : "Extract Menu Items"}
-              </Button>
-              {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
-              {menuItems.length > 0 && (
-                <div className="w-full mt-6">
-                  <div className="font-semibold mb-2">Extracted Menu Items:</div>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border text-sm">
-                      <thead>
-                        <tr>
-                          <th className="border px-2 py-1">Expand</th>
-                          <th className="border px-2 py-1">Name</th>
-                          <th className="border px-2 py-1">Price</th>
-                          <th className="border px-2 py-1">Category</th>
-                          <th className="border px-2 py-1">Size</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {menuItems.map((item, idx) => (
-                          <React.Fragment key={item.id || idx}>
-                            <tr>
-                              <td className="border px-2 py-1 text-center">
-                                <Button variant="ghost" size="icon" onClick={() => handleToggleExpand(idx)}>
-                                  {expandedRows[idx] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                </Button>
-                              </td>
-                              <td className="border px-2 py-1">{item.name}</td>
-                              <td className="border px-2 py-1">{item.price}</td>
-                              <td className="border px-2 py-1">{item.category}</td>
-                              <td className="border px-2 py-1">{item.size ?? null}</td>
-                            </tr>
-                            {expandedRows[idx] && (
-                              <tr>
-                                <td colSpan={5} className="border px-2 py-1 bg-gray-50">
-                                  <div className="mb-2 flex justify-between items-center">
-                                    <span className="font-semibold">Ingredients</span>
-                                    <div className="flex gap-2">
-                                      <Button size="sm" variant="outline" onClick={() => handleAddIngredient(idx)}>
-                                        <Plus className="h-4 w-4 mr-1" /> Add Ingredient
-                                      </Button>
-                                      <Button size="sm" variant="default" onClick={() => handleAddAllToInventory(idx)}>
-                                        <Boxes className="h-4 w-4 mr-1" /> Add All to Inventory
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  <table className="min-w-full border text-xs">
-                                    <thead>
-                                      <tr>
-                                        <th className="border px-2 py-1">Name</th>
-                                        <th className="border px-2 py-1">Quantity</th>
-                                        <th className="border px-2 py-1">Unit</th>
-                                        <th className="border px-2 py-1">Remove</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {(item.ingredients || []).map((ing: any, ingIdx: number) => (
-                                        <tr key={ingIdx}>
-                                          <td className="border px-2 py-1">
-                                            <Input
-                                              value={ing.name}
-                                              onChange={e => handleIngredientChange(idx, ingIdx, "name", e.target.value)}
-                                              className="w-32"
-                                            />
-                                          </td>
-                                          <td className="border px-2 py-1">
-                                            <Input
-                                              type="number"
-                                              value={ing.quantity}
-                                              onChange={e => handleIngredientChange(idx, ingIdx, "quantity", Number(e.target.value))}
-                                              className="w-20"
-                                            />
-                                          </td>
-                                          <td className="border px-2 py-1">
-                                            <Input
-                                              value={ing.unit}
-                                              onChange={e => handleIngredientChange(idx, ingIdx, "unit", e.target.value)}
-                                              className="w-16"
-                                            />
-                                          </td>
-                                          <td className="border px-2 py-1 text-center flex gap-2 items-center justify-center">
-                                            <Button size="icon" variant="destructive" onClick={() => handleRemoveIngredient(idx, ingIdx)}>
-                                              <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                            <Button size="icon" variant="default" onClick={() => handleAddIngredientToInventory(idx, ingIdx)}>
-                                              <Boxes className="h-4 w-4" />
-                                            </Button>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="flex gap-4 mt-6 justify-end">
-                    <Button onClick={handleSaveIngredients} variant="secondary">Save Ingredients</Button>
-                    <Button onClick={handleSaveMenu} variant="default">Save Menu</Button>
-                  </div>
-                  {success && <div className="text-green-600 text-sm mt-2">Saved successfully!</div>}
-                </div>
-              )}
+              <input
+                id="menu-file"
+                type="file"
+                accept=".pdf"
+                onChange={handleFileSelect}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Add to Inventory</DialogTitle>
-          </DialogHeader>
-          <div className="mb-4">
-            <div className="font-semibold mb-2">Dish: {modalDish}</div>
-            <table className="min-w-full border text-xs">
-              <thead>
-                <tr>
-                  <th className="border px-2 py-1">Ingredient</th>
-                  <th className="border px-2 py-1">Quantity</th>
-                  <th className="border px-2 py-1">Unit</th>
-                  <th className="border px-2 py-1">Expiry Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {modalIngredients.map((ing, idx) => (
-                  <tr key={idx}>
-                    <td className="border px-2 py-1">{ing.name}</td>
-                    <td className="border px-2 py-1">{ing.quantity}</td>
-                    <td className="border px-2 py-1">{ing.unit}</td>
-                    <td className="border px-2 py-1">
-                      <input
-                        type="date"
-                        value={ing.expiryDate}
-                        onChange={e => handleModalExpiryChange(idx, e.target.value)}
-                        className="border rounded px-2 py-1"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+            {selectedFile && (
+              <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                <span className="text-sm text-gray-700">📄 {selectedFile.name}</span>
+                <span className="text-xs text-gray-500">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+              </div>
+            )}
+
+            <Button
+              onClick={handleUpload}
+              disabled={!selectedFile || isUploading}
+              className="w-full sm:w-auto"
+            >
+              {isUploading ? 'Processing...' : 'Upload & Extract Menu'}
+            </Button>
           </div>
-          <DialogFooter>
-            <Button onClick={handleConfirmAddToInventory} variant="default">Confirm and Add to Inventory</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+
+        {/* Menu Preview Section */}
+        {menuDraft.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Extracted Menu Items ({menuDraft.length})
+              </h2>
+              
+              <div className="flex gap-3">
+                <Button onClick={handleAddRow} variant="outline" size="sm">
+                  + Add Item
+                </Button>
+                <Button
+                  onClick={saveMenu}
+                  disabled={isSaving}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isSaving ? 'Saving...' : 'Save Menu'}
+                </Button>
+              </div>
+            </div>
+
+            {menuSaved && (
+              <div className="flex items-center gap-2 mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <span className="text-green-800 font-medium">Menu successfully saved to database!</span>
+              </div>
+            )}
+
+            {/* Menu Items Grid */}
+            <div className="space-y-4">
+              {menuDraft.map((dish, index) => (
+                <div key={dish.id || index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    {/* Dish Name */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Dish Name</label>
+                      <input
+                        type="text"
+                        value={dish.name || ''}
+                        onChange={(e) => handleEditCell(index, 'name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="Enter dish name"
+                      />
+                    </div>
+
+                    {/* Category */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+                      <input
+                        type="text"
+                        value={dish.category || ''}
+                        onChange={(e) => handleEditCell(index, 'category', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="e.g., Appetizer, Main Course"
+                      />
+                    </div>
+
+                    {/* Price */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Price</label>
+                      <input
+                        type="text"
+                        value={dish.price || ''}
+                        onChange={(e) => handleEditCell(index, 'price', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        placeholder="e.g., $12.99"
+                      />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-end gap-2">
+                      <Button
+                        onClick={() => handleGenerateIngredients(index)}
+                        disabled={isGenerating}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        {isGenerating ? 'Generating...' : 'AI Ingredients'}
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteRow(index)}
+                        size="sm"
+                        variant="destructive"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Ingredients Display */}
+                  {dish.ingredients && Array.isArray(dish.ingredients) && dish.ingredients.length > 0 && (
+                    <div className="mt-3 p-3 bg-white rounded border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-gray-700">
+                          Ingredients ({dish.ingredients.length})
+                        </span>
+                        <Button
+                          onClick={() => openIngredientModal(index)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          Manage
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {dish.ingredients.slice(0, 5).map((ingredient: any, i: number) => (
+                          <span
+                            key={i}
+                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                          >
+                            {typeof ingredient === 'string' ? ingredient : ingredient.name}
+                          </span>
+                        ))}
+                        {dish.ingredients.length > 5 && (
+                          <span className="text-xs text-gray-500">
+                            +{dish.ingredients.length - 5} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {menuDraft.length === 0 && (
+          <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <div className="max-w-md mx-auto">
+              <div className="text-4xl mb-4">📋</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Menu Uploaded Yet</h3>
+              <p className="text-gray-600 mb-4">
+                Upload a PDF menu file to get started. Our AI will extract and organize your menu items automatically.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Ingredient Management Modal */}
+        {ingredientModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+              <h3 className="text-lg font-semibold mb-4">
+                Manage Ingredients - {menuDraft[currentDishIndex]?.name}
+              </h3>
+              
+              <div className="space-y-2 mb-4">
+                {modalIngredients.map((ingredient, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                    <span className="text-sm">
+                      {typeof ingredient === 'string' ? ingredient : ingredient.name}
+                    </span>
+                    <Button
+                      onClick={() => handleDeleteIngredient(currentDishIndex, i)}
+                      size="sm"
+                      variant="destructive"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => setIngredientModalOpen(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => handleGenerateIngredients(currentDishIndex)}
+                  disabled={isGenerating}
+                  className="flex-1"
+                >
+                  {isGenerating ? 'Generating...' : 'Regenerate Ingredients'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </AppLayout>
   );
-} 
+}

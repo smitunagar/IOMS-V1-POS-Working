@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/alvi/IOMS/IOMS_V1_POS_Working_main_20_08_2025/src/app/apps/waste-watchdog/analytics/page.tsx"],"sourcesContent":["\"use client\";\n\nimport React from 'react';\n\nexport default function WasteAnalyticsPage() {\n  return (\n    <div className=\"max-w-7xl mx-auto p-6\">\n      <div className=\"text-center\">\n        <h1 className=\"text-3xl font-bold text-slate-900 mb-4\">\n          Waste Analytics Dashboard\n        </h1>\n        <p className=\"text-slate-600\">\n          Comprehensive waste management insights and reporting\n        </p>\n      </div>\n    </div>\n  );\n}\r\n"],"names":[],"mappings":";;;;AAAA;;AAIe,SAAS;IACtB,qBACE,6LAAC;QAAI,WAAU;kBACb,cAAA,6LAAC;YAAI,WAAU;;8BACb,6LAAC;oBAAG,WAAU;8BAAyC;;;;;;8BAGvD,6LAAC;oBAAE,WAAU;8BAAiB;;;;;;;;;;;;;;;;;AAMtC;KAbwB","debugId":null}}]
-}

@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 import { BarChart3 } from 'lucide-react';
 
 export default function ReservationAnalyticsPage() {
   return (
-    <AppLayout pageTitle="Reservation Analytics">
+    <EnterpriseLayout pageTitle="Reservation Analytics">
       <div className="container mx-auto p-6">
         <Card>
           <CardHeader>
@@ -29,6 +29,6 @@ export default function ReservationAnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 } 

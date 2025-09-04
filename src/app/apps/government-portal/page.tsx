@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -164,7 +164,7 @@ export default function GovernmentPortalPage() {
 
   if (loading) {
     return (
-      <MainLayout>
+      <EnterpriseLayout>
         <div className="p-6">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -173,12 +173,12 @@ export default function GovernmentPortalPage() {
             </div>
           </div>
         </div>
-      </MainLayout>
+      </EnterpriseLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <EnterpriseLayout>
       <div className="p-6 space-y-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -574,6 +574,6 @@ export default function GovernmentPortalPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </EnterpriseLayout>
   );
 }

@@ -15,6 +15,7 @@ import {
   validateDishAvailability 
 } from '@/lib/posInventoryIntegration';
 import { getDishes } from '@/lib/menuService';
+import { getInventory, saveInventory } from '@/lib/inventoryService';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import jsPDF from 'jspdf';
@@ -39,6 +40,21 @@ const PaymentPage: React.FC = () => {
     async function fetchActiveOrders() {
       try {
         setIsLoading(true);
+        
+        // First, sync inventory from localStorage to server
+        if (currentUser) {
+          const localInventory = getInventory(currentUser.id);
+          await fetch('/api/inventory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              inventory: localInventory,
+              action: 'sync'
+            })
+          });
+        }
+        
         const res = await fetch('/api/orders');
         const data = await res.json();
         // Show all non-completed orders (dine-in, take-away, delivery) created via Order Entry
@@ -146,6 +162,13 @@ const PaymentPage: React.FC = () => {
       
       if (patchRes.ok) {
         const { order: processedOrder } = await patchRes.json();
+        
+        // Sync updated inventory back to localStorage
+        if (currentUser) {
+          const serverInventoryRes = await fetch(`/api/inventory?userId=${currentUser.id}`);
+          const { inventory: serverInventory } = await serverInventoryRes.json();
+          saveInventory(currentUser.id, serverInventory);
+        }
         
         // Remove the completed order from activeOrders
         setActiveOrders((prev: any[]) => prev.filter((o: any) => o.id !== processedOrder.id));
@@ -298,8 +321,7 @@ const PaymentPage: React.FC = () => {
 
   return (
     <AppLayout pageTitle="Payment Processing">
-      <div className="ml-0 md:ml-64 transition-all">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Left Panel: Order Selection */}
           <div>
             <Card className="mb-6">

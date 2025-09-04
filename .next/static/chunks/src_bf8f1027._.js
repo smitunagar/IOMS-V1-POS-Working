@@ -461,10 +461,8 @@ const AuthProvider = (param)=>{
     const saveUserToStorage = (user)=>{
         if (user) {
             localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
-            console.log('[AuthProvider] Saved user to localStorage:', user);
         } else {
             localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-            console.log('[AuthProvider] Removed user from localStorage');
         }
     };
     // Function to load user from localStorage
@@ -518,55 +516,33 @@ const AuthProvider = (param)=>{
     }["AuthProvider.useCallback[checkAuthStatus]"], [
         currentUser
     ]);
-    // Check auth status on every render
+    // Check auth status on mount only
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthProvider.useEffect": ()=>{
             checkAuthStatus();
         }
-    }["AuthProvider.useEffect"]);
+    }["AuthProvider.useEffect"], [
+        checkAuthStatus
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthProvider.useEffect": ()=>{
-            console.log('[AuthProvider] useEffect: Starting user load');
             setIsLoading(true);
             setIsInitialized(false);
             const user = loadUserFromStorage();
             // Validate that the user still exists in the users list
             if (user && validateUserExists(user)) {
                 setCurrentUser(user);
-                console.log('[AuthProvider] Valid user loaded:', user);
             } else if (user) {
-                console.log('[AuthProvider] User found but invalid, clearing...');
                 saveUserToStorage(null);
                 setCurrentUser(null);
             } else {
                 setCurrentUser(null);
-                console.log('[AuthProvider] No user found in localStorage');
             }
             setIsInitialized(true);
             setIsLoading(false);
-            console.log('[AuthProvider] Finished user load, currentUser:', user);
         }
     }["AuthProvider.useEffect"], []);
-    // Debug effect to log state changes
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "AuthProvider.useEffect": ()=>{
-            console.log('[AuthProvider] State changed - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
-            // Log localStorage state for debugging
-            if ("TURBOPACK compile-time truthy", 1) {
-                const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
-                const usersList = localStorage.getItem(LOCAL_STORAGE_USERS_LIST_KEY);
-                console.log('[AuthProvider] localStorage state - user:', storedUser, 'users:', usersList);
-            }
-        }
-    }["AuthProvider.useEffect"], [
-        currentUser,
-        isLoading,
-        isInitialized
-    ]);
-    // Log every render for debugging
-    console.log('[AuthProvider] Render - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
     const login = async (email, pass)=>{
-        console.log('[AuthProvider] Login attempt for:', email);
         setIsLoading(true);
         try {
             // Simulate checking user credentials
@@ -637,11 +613,11 @@ const AuthProvider = (param)=>{
         children: children
     }, void 0, false, {
         fileName: "[project]/src/contexts/AuthContext.tsx",
-        lineNumber: 206,
+        lineNumber: 183,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };
-_s(AuthProvider, "PTJoESSg77BY/vhZg+mb7HokPxg=", false, function() {
+_s(AuthProvider, "YwOFQMN/YriBAn9CZahdhqkmpaw=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

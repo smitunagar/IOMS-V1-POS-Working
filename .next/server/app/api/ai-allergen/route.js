@@ -1,43 +1,27 @@
-const CHUNK_PUBLIC_PATH = "server/app/api/ai-allergen/route.js";
-const runtime = require("../../../chunks/[turbopack]_runtime.js");
-runtime.loadChunk("server/chunks/node_modules_6c39bf9a._.js");
-runtime.loadChunk("server/chunks/node_modules_next_08691ae0._.js");
-runtime.loadChunk("server/chunks/node_modules_@genkit-ai_core_lib_2f104091._.js");
-runtime.loadChunk("server/chunks/node_modules_zod_156c1dea._.js");
-runtime.loadChunk("server/chunks/node_modules_ajv_dist_4699a16a._.js");
-runtime.loadChunk("server/chunks/node_modules_zod-to-json-schema_dist_e510fa2f._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_0cf3c2c1._.js");
-runtime.loadChunk("server/chunks/bf1d5_@opentelemetry_semantic-conventions_build_esm_41c4fa04._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_semantic-conventions_build_esm_10ca951e._.js");
-runtime.loadChunk("server/chunks/03f21_@opentelemetry_semantic-conventions_build_esm_7544600d._.js");
-runtime.loadChunk("server/chunks/996e2_@opentelemetry_semantic-conventions_build_esm_55d94766._.js");
-runtime.loadChunk("server/chunks/a7d31_@opentelemetry_semantic-conventions_build_esm_c2a64f07._.js");
-runtime.loadChunk("server/chunks/1309e_@opentelemetry_semantic-conventions_build_esm_006cc250._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_cb68fcf2._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_resources_build_esm_53b99a33._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_sdk-metrics_build_esm_36d82ede._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_sdk-trace-base_build_esm_2004cd04._.js");
-runtime.loadChunk("server/chunks/node_modules_protobufjs_d5aa50b8._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_otlp-transformer_build_esm_8f2a63ec._.js");
-runtime.loadChunk("server/chunks/node_modules_@grpc_grpc-js_eb53fed0._.js");
-runtime.loadChunk("server/chunks/node_modules_thriftrw_062273ac._.js");
-runtime.loadChunk("server/chunks/node_modules_tr46_816df9d9._.js");
-runtime.loadChunk("server/chunks/node_modules_be7521e3._.js");
-runtime.loadChunk("server/chunks/node_modules_google-auth-library_78e0d5a0._.js");
-runtime.loadChunk("server/chunks/node_modules_google-gax_1a2937eb._.js");
-runtime.loadChunk("server/chunks/node_modules_@google-cloud_logging_build_src_e703eec4._.js");
-runtime.loadChunk("server/chunks/node_modules_@google-cloud_logging_build_protos_protos_2b18114d.js");
-runtime.loadChunk("server/chunks/node_modules_@google-cloud_logging_build_protos_protos_json_f62f38de._.js");
-runtime.loadChunk("server/chunks/node_modules_@google-cloud_logging_package_json_219b67f3._.js");
-runtime.loadChunk("server/chunks/node_modules_@genkit-ai_ai_lib_1e97b73b._.js");
-runtime.loadChunk("server/chunks/node_modules_handlebars_d645c47f._.js");
-runtime.loadChunk("server/chunks/node_modules_yaml_dist_04fd9803._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_resource-detector-aws_build_esm_29d5d7ba._.js");
-runtime.loadChunk("server/chunks/node_modules_@opentelemetry_fdc5ac75._.js");
-runtime.loadChunk("server/chunks/node_modules_@google-cloud_7fce48cb._.js");
-runtime.loadChunk("server/chunks/node_modules_@genkit-ai_b534a270._.js");
-runtime.loadChunk("server/chunks/node_modules_244506bb._.js");
-runtime.loadChunk("server/chunks/[root-of-the-server]__80148211._.js");
-runtime.getOrInstantiateRuntimeModule("[project]/.next-internal/server/app/api/ai-allergen/route/actions.js [app-rsc] (server actions loader, ecmascript)", CHUNK_PUBLIC_PATH);
-runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ai-allergen/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", CHUNK_PUBLIC_PATH);
-module.exports = runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ai-allergen/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", CHUNK_PUBLIC_PATH).exports;
+var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/ai-allergen/route.js")
+R.c("server/chunks/node_modules_node-fetch_src_index_3172f721.js")
+R.c("server/chunks/node_modules_next_8fa446a4._.js")
+R.c("server/chunks/node_modules_@opentelemetry_api_build_esm_7e8f41ca._.js")
+R.c("server/chunks/node_modules_zod_47c66ef9._.js")
+R.c("server/chunks/node_modules_@genkit-ai_core_lib_1425fadc._.js")
+R.c("server/chunks/node_modules_ajv_dist_c772eb45._.js")
+R.c("server/chunks/node_modules_zod-to-json-schema_dist_25728226._.js")
+R.c("server/chunks/node_modules_@opentelemetry_199b1d99._.js")
+R.c("server/chunks/node_modules_@opentelemetry_2069c423._.js")
+R.c("server/chunks/node_modules_@genkit-ai_ai_lib_2c17f019._.js")
+R.c("server/chunks/node_modules_handlebars_4fa5359a._.js")
+R.c("server/chunks/node_modules_yaml_dist_49c13b35._.js")
+R.c("server/chunks/node_modules_@opentelemetry_resources_build_esm_ec85b102._.js")
+R.c("server/chunks/node_modules_@opentelemetry_sdk-metrics_build_esm_468707ab._.js")
+R.c("server/chunks/node_modules_@opentelemetry_sdk-trace-base_build_esm_fafd38bf._.js")
+R.c("server/chunks/node_modules_protobufjs_c594357a._.js")
+R.c("server/chunks/node_modules_@opentelemetry_otlp-transformer_build_esm_7709639d._.js")
+R.c("server/chunks/node_modules_@grpc_grpc-js_1115a3d5._.js")
+R.c("server/chunks/node_modules_thriftrw_50d90f67._.js")
+R.c("server/chunks/node_modules_@genkit-ai_e3ab7b1f._.js")
+R.c("server/chunks/node_modules_@opentelemetry_23edb15b._.js")
+R.c("server/chunks/node_modules_a77189d9._.js")
+R.c("server/chunks/[root-of-the-server]__10f373f0._.js")
+R.m("[project]/.next-internal/server/app/api/ai-allergen/route/actions.js [app-rsc] (server actions loader, ecmascript)")
+R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ai-allergen/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/ai-allergen/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInventory, updateInventoryAlerts } from '@/lib/inventoryService';
 import { getDishes } from '@/lib/menuService';
 
 // Sample orders data
@@ -151,20 +150,21 @@ function isIngredientQuantity(obj: any): obj is { inventoryItemName: string; qua
 }
 
 /**
- * Update inventory based on order items
+ * Update inventory based on order items using the server-side inventory API
  */
 async function updateInventoryFromOrder(order: any, userId: string) {
   console.log('🔄 Updating inventory for order:', order.id);
   
   try {
-    // Get current inventory
-    const inventory = getInventory(userId);
+    // Get current inventory and menu
+    const inventoryRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/inventory?userId=${userId}`);
+    const { inventory } = await inventoryRes.json();
     const menu = getDishes(userId);
     
     console.log('📊 Current inventory items:', inventory.length);
     console.log('🍽️ Available dishes:', menu.length);
     
-    // Track inventory updates
+    // Prepare inventory updates
     const inventoryUpdates: any[] = [];
     
     // Process each order item
@@ -201,65 +201,52 @@ async function updateInventoryFromOrder(order: any, userId: string) {
           
           console.log(`🥘 Ingredient: ${ingredientName} - ${quantityPerDish} ${unit} per dish × ${orderQuantity} dishes = ${totalQuantityNeeded} ${unit} total`);
           
-          // Find inventory item
-          const inventoryItem = inventory.find(item => 
-            item.name.toLowerCase() === ingredientName.toLowerCase() ||
-            item.name.toLowerCase().includes(ingredientName.toLowerCase()) ||
-            ingredientName.toLowerCase().includes(item.name.toLowerCase())
-          );
-          
-          if (!inventoryItem) {
-            console.warn(`⚠️ Inventory item not found: ${ingredientName}`);
-            continue;
-          }
-          
-          console.log(`📦 Inventory item found: ${inventoryItem.name} (current: ${inventoryItem.quantity} ${inventoryItem.unit})`);
-          
-          // Convert units if needed
-          let convertedQuantity = totalQuantityNeeded;
-          if (unit.toLowerCase() !== inventoryItem.unit.toLowerCase()) {
-            convertedQuantity = convertUnits(totalQuantityNeeded, unit, inventoryItem.unit);
-            console.log(`🔄 Unit conversion: ${totalQuantityNeeded} ${unit} = ${convertedQuantity} ${inventoryItem.unit}`);
-          }
-          
-          // Check if enough stock
-          if (inventoryItem.quantity < convertedQuantity) {
-            console.warn(`⚠️ Insufficient stock for ${ingredientName}: available ${inventoryItem.quantity} ${inventoryItem.unit}, needed ${convertedQuantity} ${inventoryItem.unit}`);
-            continue;
-          }
-          
-          // Update inventory
-          const oldQuantity = inventoryItem.quantity;
-          inventoryItem.quantity -= convertedQuantity;
-          inventoryItem.quantityUsed = (inventoryItem.quantityUsed || 0) + convertedQuantity;
-          inventoryItem.totalUsed = (inventoryItem.totalUsed || 0) + convertedQuantity;
-          
-          console.log(`✅ Updated ${ingredientName}: ${oldQuantity} → ${inventoryItem.quantity} ${inventoryItem.unit} (used: +${convertedQuantity})`);
-          
+          // Add to inventory updates
           inventoryUpdates.push({
-            item: ingredientName,
-            oldQuantity,
-            newQuantity: inventoryItem.quantity,
-            used: convertedQuantity,
-            unit: inventoryItem.unit
+            ingredientName,
+            quantityToReduce: totalQuantityNeeded,
+            unit
           });
         }
       }
     }
     
-    // Update inventory alerts
-    updateInventoryAlerts(userId);
-    const newAlerts: string[] = [];
-    
-    console.log(`✅ Inventory update completed: ${inventoryUpdates.length} items updated`);
-    console.log(`🚨 New alerts generated: ${newAlerts.length}`);
-    
-    return {
-      success: true,
-      message: `Inventory updated successfully. ${inventoryUpdates.length} items modified.`,
-      updates: inventoryUpdates,
-      alerts: newAlerts
-    };
+    // Send inventory updates to the inventory API
+    if (inventoryUpdates.length > 0) {
+      const updateRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/inventory`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          updates: inventoryUpdates
+        })
+      });
+      
+      const updateResult = await updateRes.json();
+      
+      if (updateResult.success) {
+        console.log(`✅ Inventory update completed: ${updateResult.updates.filter((u: any) => u.success).length} items updated`);
+        return {
+          success: true,
+          message: updateResult.message,
+          updates: updateResult.updates
+        };
+      } else {
+        console.error('❌ Error updating inventory:', updateResult.error);
+        return {
+          success: false,
+          message: 'Error updating inventory',
+          error: updateResult.error
+        };
+      }
+    } else {
+      console.log('ℹ️ No inventory updates needed');
+      return {
+        success: true,
+        message: 'No inventory updates needed',
+        updates: []
+      };
+    }
     
   } catch (error) {
     console.error('❌ Error updating inventory:', error);

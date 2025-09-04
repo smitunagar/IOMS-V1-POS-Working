@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -155,7 +155,7 @@ export default function WasteWatchDogDashboard() {
   ];
 
   return (
-    <MainLayout>
+    <AppLayout pageTitle="WasteWatchDog Dashboard">
       <div className="space-y-8">
         {/* Header with Controls */}
         <div className="bg-white rounded-xl p-6 shadow-sm border">
@@ -404,6 +404,6 @@ export default function WasteWatchDogDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
+    </AppLayout>
   );
 }

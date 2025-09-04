@@ -1,14 +1,14 @@
-import { AppLayout } from '@/components/layout/AppLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 
 export default function InventoryAnalyticsPage() {
   return (
-    <AppLayout pageTitle="Inventory Analytics">
+    <EnterpriseLayout pageTitle="Inventory Analytics">
       <div className="max-w-4xl mx-auto mt-8">
         <h1 className="text-3xl font-bold mb-4">Inventory Analytics</h1>
         <div className="bg-white rounded-xl shadow p-6">
           <p className="text-gray-600">Inventory analytics and insights will appear here.</p>
         </div>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 } 

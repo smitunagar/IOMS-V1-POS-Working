@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { getInventory } from '@/lib/inventoryService';
 import { Badge } from '@/components/ui/badge';
@@ -451,36 +451,36 @@ export default function InventoryPage() {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <AppLayout pageTitle="Inventory Management">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-      </MainLayout>
+      </AppLayout>
     );
   }
 
   if (!currentUser) {
     return (
-      <MainLayout>
+      <AppLayout pageTitle="Inventory Management">
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">Please log in to view inventory.</p>
         </div>
-      </MainLayout>
+      </AppLayout>
     );
   }
 
   if (inventoryError) {
     return (
-      <MainLayout>
+      <AppLayout pageTitle="Inventory Management">
         <div className="flex items-center justify-center h-64">
           <p className="text-red-500">{inventoryError}</p>
         </div>
-      </MainLayout>
+      </AppLayout>
     );
   }
 
   return (
-    <MainLayout>
+    <AppLayout pageTitle="Inventory Management">
       <div className="w-full">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Inventory Management</h1>
@@ -726,6 +726,6 @@ export default function InventoryPage() {
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>
+    </AppLayout>
   );
 } 

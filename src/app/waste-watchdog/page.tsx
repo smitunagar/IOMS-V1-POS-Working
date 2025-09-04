@@ -24,7 +24,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { MainLayout } from '@/components/layout/MainLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -1096,8 +1096,8 @@ export default function WasteWatchDogPage() {
   };
 
   return (
-    <MainLayout>
+    <AppLayout pageTitle="WasteWatchDog">
       {renderContent()}
-    </MainLayout>
+    </AppLayout>
   );
 }

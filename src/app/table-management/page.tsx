@@ -1,226 +1,322 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import TableGrid from '@/components/table-management/TableGrid';
-import TableSidePanel from '@/components/table-management/TableSidePanel';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getDiningSetup } from '@/lib/diningSetupStorage';
-
-// Global polling guard to prevent multiple intervals
-declare global {
-  interface Window {
-    __tableManagementPollingActive?: boolean;
-    __tableManagementIntervalId?: NodeJS.Timeout;
-  }
-}
-
-interface Table {
-  id: string;
-  number: string;
-  capacity: number;
-  status: 'available' | 'occupied' | 'reserved' | 'cleaning';
-  area?: string;
-  waiter?: string;
-  occupiedSince?: string;
-  shape?: string;
-  location?: string;
-  bookingRules?: string;
-  accessibility?: string;
-  seasonalAvailability?: string;
-}
-
-interface Order {
-  id: string;
-  tableId: string;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
-  total: number;
-  status: 'pending' | 'preparing' | 'ready' | 'served' | 'completed';
-  createdAt: string;
-  updatedAt: string;
-}
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { FloorEditorCanvas } from '@/components/table-management/FloorEditorCanvas';
+import { BottomToolbar } from '@/components/table-management/BottomToolbar';
+import { SaveDraftButton } from '@/components/table-management/SaveDraftButton';
+import { ActivateLayoutButton } from '@/components/table-management/ActivateLayoutButton';
+import { ZoneLegend } from '@/components/table-management/ZoneLegend';
+import { TableMergeTool } from '@/components/table-management/TableMergeTool';
+import { TableSplitTool } from '@/components/table-management/TableSplitTool';
+import { QRCodeManager } from '@/components/table-management/QRCodeManager';
+import { ReservationLink } from '@/components/table-management/ReservationLink';
+import { useTableStore } from '@/contexts/tableStore';
+import { 
+  Layout, 
+  Grid3X3, 
+  Palette, 
+  Settings, 
+  History, 
+  Users, 
+  QrCode,
+  Calendar,
+  Merge,
+  Split,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Layers
+} from 'lucide-react';
 
 export default function TableManagementPage() {
-  console.log('[DEBUG] TableManagementPage component rendering at', new Date().toISOString());
-  
-  const pathname = usePathname();
-  console.log('[DEBUG] Current pathname:', pathname);
-  
-  const [areas, setAreas] = useState<Table[]>([]);
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
-  
-  console.log('[DEBUG] Component state - areas count:', areas.length, 'selectedTable:', selectedTable?.id, 'isDialogOpen:', isDialogOpen);
+  const { 
+    tables, 
+    zones, 
+    selectedTableId, 
+    isDraftMode, 
+    isLoading, 
+    error, 
+    validationErrors,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+    saveDraft,
+    activateLayout,
+    loadDraft
+  } = useTableStore();
 
-  // Load dining setup data
+  const [activeTab, setActiveTab] = useState('editor');
+  const [showAdvancedTools, setShowAdvancedTools] = useState(false);
+
+  // Load draft on mount
   useEffect(() => {
-    console.log('[DEBUG] Loading dining setup data...');
-    const diningSetup = getDiningSetup();
-    if (diningSetup && diningSetup.areas) {
-      const allTables = diningSetup.areas.flatMap(area => 
-        area.tables.map(table => ({
-          id: table.id,
-          number: table.name,
-          capacity: table.occupancy,
-          status: 'available' as const,
-          area: area.name
-        }))
-      );
-      console.log('[DEBUG] Loaded tables from dining setup:', allTables.length);
-      setAreas(allTables);
-    }
-  }, []);
+    loadDraft('main-floor');
+  }, [loadDraft]);
 
-  // Fetch orders data
-  useEffect(() => {
-    console.log('[DEBUG] Fetching orders data...');
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch('/api/orders');
-        if (response.ok) {
-          const data = await response.json();
-          console.log('[DEBUG] Orders fetched:', data.orders?.length || 0);
-          setOrders(data.orders || []);
-        }
-      } catch (error) {
-        console.error('[DEBUG] Error fetching orders:', error);
-      }
-    };
-    fetchOrders();
-  }, []);
-
-  // REMOVED: All polling logic to prevent persistent API calls
-  // Data will be loaded once on mount and can be refreshed manually if needed
-
-  // Handle storage events for dining setup sync
-  useEffect(() => {
-    console.log('[DEBUG] Setting up storage event listener');
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'diningSetup') {
-        console.log('[DEBUG] Dining setup changed in storage, reloading...');
-        const diningSetup = getDiningSetup();
-        if (diningSetup && diningSetup.areas) {
-          const allTables = diningSetup.areas.flatMap(area => 
-            area.tables.map(table => ({
-              id: table.id,
-              number: table.name,
-              capacity: table.occupancy,
-              status: 'available' as const,
-              area: area.name
-            }))
-          );
-          setAreas(allTables);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      console.log('[DEBUG] Removing storage event listener');
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  // Global cleanup effect - ensures polling is cleared on unmount
-  useEffect(() => {
-    console.log('[DEBUG] Setting up global cleanup effect');
-    return () => {
-      console.log('[DEBUG] Component unmounting - clearing all polling');
-      if (window.__tableManagementIntervalId) {
-        clearInterval(window.__tableManagementIntervalId);
-        window.__tableManagementIntervalId = undefined;
-        window.__tableManagementPollingActive = false;
-      }
-      if (intervalIdRef.current) {
-        clearInterval(intervalIdRef.current);
-        intervalIdRef.current = null;
-      }
-    };
-  }, []);
-
-  const handleTableClick = (table: Table) => {
-    console.log('[DEBUG] Table clicked:', table.id);
-    setSelectedTable(table);
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    console.log('[DEBUG] Closing dialog');
-    setIsDialogOpen(false);
-    setSelectedTable(null);
-  };
-
-  const getTableOrders = (tableId: string) => {
-    return orders.filter(order => order.tableId === tableId);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available': return 'bg-green-100 text-green-800';
-      case 'occupied': return 'bg-blue-100 text-blue-800';
-      case 'reserved': return 'bg-yellow-100 text-yellow-800';
-      case 'cleaning': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  console.log('[DEBUG] Rendering table management page with', areas.length, 'tables');
+  const hasErrors = validationErrors.length > 0;
+  const selectedTable = tables.find(t => t.id === selectedTableId);
+  const totalTables = tables.length;
+  const totalCapacity = tables.reduce((sum, table) => sum + table.capacity, 0);
 
   return (
-    <AppLayout>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Table Management</h1>
-          <p className="text-sm text-gray-500 mt-1">by IOMS team</p>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              Available
-            </Badge>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Occupied
-            </Badge>
-            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-              Reserved
-            </Badge>
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-              Cleaning
-            </Badge>
+    <AppLayout pageTitle="Table Management">
+      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        
+        {/* Header Section */}
+        <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Layout className="h-6 w-6 text-blue-600" />
+                <h1 className="text-2xl font-bold text-slate-900">Floor Plan Designer</h1>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant={isDraftMode ? "secondary" : "default"} className="text-xs">
+                  {isDraftMode ? "Draft Mode" : "Live Layout"}
+                </Badge>
+                {hasErrors && (
+                  <Badge variant="destructive" className="text-xs animate-pulse">
+                    {validationErrors.length} Issues
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              {/* Stats */}
+              <div className="hidden md:flex items-center space-x-4 text-sm text-slate-600">
+                <div className="flex items-center space-x-1">
+                  <Grid3X3 className="h-4 w-4" />
+                  <span>{totalTables} Tables</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Users className="h-4 w-4" />
+                  <span>{totalCapacity} Seats</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Layers className="h-4 w-4" />
+                  <span>{zones.length} Zones</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className="flex items-center space-x-1"
+                >
+                  <History className="h-4 w-4" />
+                  <span className="hidden sm:inline">Undo</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className="flex items-center space-x-1"
+                >
+                  <History className="h-4 w-4 rotate-180" />
+                  <span className="hidden sm:inline">Redo</span>
+                </Button>
+                <SaveDraftButton />
+                <ActivateLayoutButton />
+              </div>
+            </div>
+          </div>
+
+          {/* Validation Errors */}
+          {hasErrors && (
+            <Alert className="mt-4 border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>Layout Issues:</strong> {validationErrors.join(', ')}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* Left Sidebar */}
+          <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+              <TabsList className="grid w-full grid-cols-4 m-2">
+                <TabsTrigger value="editor" className="text-xs">
+                  <Settings className="h-4 w-4 mr-1" />
+                  Editor
+                </TabsTrigger>
+                <TabsTrigger value="zones" className="text-xs">
+                  <Palette className="h-4 w-4 mr-1" />
+                  Zones
+                </TabsTrigger>
+                <TabsTrigger value="tools" className="text-xs">
+                  <Merge className="h-4 w-4 mr-1" />
+                  Tools
+                </TabsTrigger>
+                <TabsTrigger value="export" className="text-xs">
+                  <QrCode className="h-4 w-4 mr-1" />
+                  Export
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="editor" className="p-4 space-y-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Grid3X3 className="h-4 w-4 mr-2" />
+                        Add Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <BottomToolbar />
+                    </CardContent>
+                  </Card>
+
+                  {selectedTable && (
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Table Properties
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-slate-600">Table ID</label>
+                          <div className="text-sm font-mono bg-slate-100 px-2 py-1 rounded">
+                            {selectedTable.label}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600">Capacity</label>
+                          <div className="text-sm">{selectedTable.capacity} guests</div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-slate-600">Shape</label>
+                          <div className="text-sm capitalize">{selectedTable.shape}</div>
+                        </div>
+                        {selectedTable.zone && (
+                          <div>
+                            <label className="text-xs font-medium text-slate-600">Zone</label>
+                            <div className="text-sm">{selectedTable.zone}</div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Reservations
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ReservationLink />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="zones" className="p-4">
+                  <ZoneLegend />
+                </TabsContent>
+
+                <TabsContent value="tools" className="p-4 space-y-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Merge className="h-4 w-4 mr-2" />
+                        Merge Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <TableMergeTool />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Split className="h-4 w-4 mr-2" />
+                        Split Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <TableSplitTool />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="export" className="p-4">
+                  <QRCodeManager />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+
+          {/* Canvas Area */}
+          <div className="flex-1 relative">
+            <FloorEditorCanvas />
+            
+            {/* Loading Overlay */}
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-lg">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm text-slate-600">Loading...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Canvas Help */}
+            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg text-xs text-slate-600 max-w-xs">
+              <div className="flex items-center space-x-1 mb-2">
+                <Info className="h-3 w-3" />
+                <span className="font-medium">Quick Help</span>
+              </div>
+              <div className="space-y-1">
+                <div>• Click and drag to move tables</div>
+                <div>• Use corner handles to resize</div>
+                <div>• Arrow keys for precise positioning</div>
+                <div>• Shift+Click for multi-select</div>
+              </div>
+            </div>
+
+            {/* Status Indicator */}
+            <div className="absolute bottom-4 right-4 flex items-center space-x-2">
+              {!hasErrors ? (
+                <div className="flex items-center space-x-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Layout Valid</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-medium">
+                  <AlertTriangle className="h-3 w-3" />
+                  <span>{validationErrors.length} Issues</span>
+                </div>
+              )}
+              <div className="flex items-center space-x-1 bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs">
+                <Clock className="h-3 w-3" />
+                <span>Auto-save: ON</span>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="bg-white rounded-xl shadow p-6">
-          <TableGrid 
-            tables={areas} 
-            setTables={setAreas}
-            onTableClick={handleTableClick}
-          />
-        </div>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Table Details</DialogTitle>
-            </DialogHeader>
-            {selectedTable && (
-              <TableSidePanel
-                tableNumber={selectedTable.number}
-                status={selectedTable.status}
-                capacity={selectedTable.capacity}
-                waiter={selectedTable.waiter}
-                onClose={handleCloseDialog}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </AppLayout>
   );

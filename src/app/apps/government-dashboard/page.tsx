@@ -1,12 +1,12 @@
 "use client";
 
-import { MainLayout } from '@/components/layout/MainLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, CheckCircle, AlertTriangle, FileText, Calendar, TrendingUp } from 'lucide-react';
 
 export default function GovernmentDashboardPage() {
   return (
-    <MainLayout>
+    <EnterpriseLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-white rounded-xl p-6 shadow-sm border">
@@ -166,6 +166,6 @@ export default function GovernmentDashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </EnterpriseLayout>
   );
 }

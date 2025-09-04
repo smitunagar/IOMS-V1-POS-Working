@@ -13,6 +13,7 @@ import {
   Brain,
   Store,
   CreditCard,
+  TrendingUp,
   LucideIcon
 } from 'lucide-react';
 
@@ -163,27 +164,33 @@ export const sidebarConfig: SidebarConfig = {
       section: 'modules',
       subItems: [
         {
-          title: "Dashboard",
+          title: "Main Dashboard",
           icon: BarChart3,
-          href: "/apps/wastewatchdog/dashboard",
-          description: "Analytics & Overview"
+          href: "/apps/waste-watchdog",
+          description: "WasteWatchDog Overview & Controls"
+        },
+        {
+          title: "Analytics",
+          icon: TrendingUp,
+          href: "/apps/waste-watchdog/analytics",
+          description: "Detailed Analytics & Reports"
         },
         {
           title: "Hardware",
           icon: Camera,
-          href: "/apps/wastewatchdog/hardware",
+          href: "/apps/waste-watchdog/hardware",
           description: "Device Management & AI Analysis"
         },
         {
           title: "Compliance",
           icon: Shield,
-          href: "/apps/wastewatchdog/dashboard?view=compliance",
+          href: "/apps/waste-watchdog/analytics?view=compliance",
           description: "SDG, KRWG, GDPR"
         },
         {
           title: "Reports",
           icon: FileText,
-          href: "/apps/wastewatchdog/dashboard?view=reports",
+          href: "/apps/waste-watchdog/analytics?view=reports",
           description: "Generate Reports"
         }
       ]

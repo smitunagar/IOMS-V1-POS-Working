@@ -146,7 +146,7 @@ const defaultApps: App[] = [
     downloads: 1890,
     price: 'premium',
     tags: ['waste', 'sustainability', 'analytics', 'compliance', 'cost-savings'],
-    route: '/apps/wastewatchdog/dashboard',
+    route: '/apps/waste-watchdog',
     isInstalled: false
   }
 ]

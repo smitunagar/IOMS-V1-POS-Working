@@ -186,5 +186,5 @@ export type SidebarState = {
 
 export const defaultSidebarState: SidebarState = {
   isCollapsed: false,
-  expandedModules: ['reservations', 'orders', 'inventory', 'setup', 'wastewatchdog']
+  expandedModules: [] // No auto-expanded sections - user controls manually
 };

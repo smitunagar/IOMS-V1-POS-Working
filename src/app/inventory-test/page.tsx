@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { AppLayout } from "@/components/layout/AppLayout";
+import { EnterpriseLayout } from "@/components/layout/EnterpriseLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -206,7 +206,7 @@ export default function InventoryTestPage() {
   };
 
   return (
-    <AppLayout>
+    <EnterpriseLayout pageTitle="Inventory Testing">
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Inventory Tracking Test</h1>
@@ -344,6 +344,6 @@ export default function InventoryTestPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 } 

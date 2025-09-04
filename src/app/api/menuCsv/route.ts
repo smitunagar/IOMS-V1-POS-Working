@@ -36,10 +36,18 @@ export async function POST(request: Request) {
   const contentType = request.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
     const body = await request.json();
+    console.log('MenuCsv POST body:', body);
     if (body.action === 'save' && Array.isArray(body.menuItems)) {
       // Save menuItems to file
-      fs.writeFileSync(MENU_JSON_PATH, JSON.stringify(body.menuItems, null, 2), 'utf-8');
-      return NextResponse.json({ success: true });
+      console.log('Saving menu items to:', MENU_JSON_PATH);
+      try {
+        fs.writeFileSync(MENU_JSON_PATH, JSON.stringify(body.menuItems, null, 2), 'utf-8');
+        console.log('Menu items saved successfully');
+        return NextResponse.json({ success: true });
+      } catch (error) {
+        console.error('Error saving menu items:', error);
+        return NextResponse.json({ error: 'Failed to save menu items' }, { status: 500 });
+      }
     }
     return NextResponse.json({ error: 'Invalid save request' }, { status: 400 });
   }

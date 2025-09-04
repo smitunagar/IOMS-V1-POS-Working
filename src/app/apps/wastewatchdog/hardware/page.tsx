@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from 'react';
-import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import {
   Camera,
   Upload,
@@ -187,7 +187,7 @@ export default function WasteWatchHardware() {
   };
 
   return (
-    <EnterpriseLayout pageTitle="WasteWatch Hardware">
+    <AppLayout pageTitle="WasteWatch Hardware">
       <TooltipProvider>
         <div className="p-6 space-y-6 max-w-7xl mx-auto">
           {/* Header */}
@@ -525,6 +525,6 @@ export default function WasteWatchHardware() {
           </div>
         </div>
       </TooltipProvider>
-    </EnterpriseLayout>
+    </AppLayout>
   );
 }

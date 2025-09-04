@@ -8,7 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { EnterpriseLayout } from "@/components/layout/EnterpriseLayout";
 
 export default function ProfilePage() {
   const { currentUser, isLoading, logout } = useAuth();
@@ -37,12 +37,12 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <AppLayout pageTitle="User Profile">
+      <EnterpriseLayout pageTitle="User Profile">
         <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-background">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
           <p className="mt-4 text-lg">Loading...</p>
         </div>
-      </AppLayout>
+      </EnterpriseLayout>
     );
   }
 
@@ -54,7 +54,7 @@ export default function ProfilePage() {
   const qrUrl = typeof window !== 'undefined' ? `${window.location.origin}/scan/${currentUser.id}` : `/scan/${currentUser.id}`;
 
   return (
-    <AppLayout pageTitle="User Profile">
+    <EnterpriseLayout pageTitle="User Profile">
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
         <Card className="w-full max-w-lg">
           <CardHeader>
@@ -93,6 +93,6 @@ export default function ProfilePage() {
           </CardFooter>
         </Card>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 } 

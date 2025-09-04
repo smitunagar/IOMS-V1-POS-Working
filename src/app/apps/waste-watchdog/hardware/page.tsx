@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
+import POSWasteIntegrationService from '@/lib/posWasteIntegration';
 import { 
   Camera, 
   Upload, 
@@ -19,6 +21,7 @@ import {
   Eye,
   Scale,
   Trash2,
+  Activity,
   Clock,
   User,
   MapPin
@@ -55,15 +58,51 @@ export default function HardwareCapturePage() {
   const [lastThrottle, setLastThrottle] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [recordingToPOS, setRecordingToPOS] = useState(false);
   
   // Form data for manual confirmation
   const [wasteType, setWasteType] = useState<'food' | 'oil' | 'packaging' | 'organic'>('food');
   const [station, setStation] = useState<'kitchen' | 'bar' | 'dining'>('kitchen');
   const [notes, setNotes] = useState('');
 
+  const { currentUser } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Record waste event to POS system
+  const recordWasteEventToPOS = async (wasteData: any) => {
+    if (!currentUser) return;
+    
+    try {
+      setRecordingToPOS(true);
+      const integrationService = POSWasteIntegrationService.getInstance();
+      
+      await integrationService.recordWasteEvent(currentUser.id, {
+        type: 'food_waste',
+        itemName: wasteData.name || 'Unknown waste',
+        quantity: wasteData.weight || 0,
+        unit: 'kg',
+        cost: wasteData.costEUR || 0,
+        reason: 'captured_via_scanner',
+        category: wasteData.category || wasteType
+      });
+      
+      toast({
+        title: "✅ Recorded to POS",
+        description: "Waste event synced with point of sale system"
+      });
+    } catch (error) {
+      console.error('Failed to record to POS:', error);
+      toast({
+        title: "Warning",
+        description: "Waste recorded locally, POS sync failed",
+        variant: "destructive"
+      });
+    } finally {
+      setRecordingToPOS(false);
+    }
+  };
 
   // Throttling mechanism (5 seconds)
   const checkThrottle = useCallback(() => {
@@ -220,6 +259,7 @@ export default function HardwareCapturePage() {
     };
     
     try {
+      // Record to waste tracking API
       const response = await fetch('/api/waste/events', {
         method: 'POST',
         headers: {
@@ -228,10 +268,18 @@ export default function HardwareCapturePage() {
         body: JSON.stringify(eventData)
       });
       
+      // Record to POS integration system
+      await recordWasteEventToPOS({
+        name: scanResult.items[0]?.name || 'Mixed waste',
+        weight: scanResult.totalWeightKg,
+        costEUR: scanResult.totalCostEUR,
+        category: wasteType
+      });
+      
       if (response.ok) {
         toast({
           title: "Waste Event Logged",
-          description: `Successfully logged ${scanResult.totalWeightKg.toFixed(1)}kg of ${wasteType} waste`,
+          description: `Successfully logged ${scanResult.totalWeightKg.toFixed(1)}kg of ${wasteType} waste • Synced with POS`,
           variant: "default"
         });
         
@@ -275,7 +323,7 @@ export default function HardwareCapturePage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:w-96">
+        <TabsList className="grid w-full grid-cols-3 lg:w-full">
           <TabsTrigger value="camera" className="flex items-center space-x-2">
             <Camera className="w-4 h-4" />
             <span>Camera</span>
@@ -283,6 +331,10 @@ export default function HardwareCapturePage() {
           <TabsTrigger value="upload" className="flex items-center space-x-2">
             <Upload className="w-4 h-4" />
             <span>Upload</span>
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex items-center space-x-2">
+            <Scale className="w-4 h-4" />
+            <span>Manual Entry</span>
           </TabsTrigger>
         </TabsList>
 
@@ -549,6 +601,230 @@ export default function HardwareCapturePage() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+
+        {/* Manual Entry Tab */}
+        <TabsContent value="manual" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Manual Entry Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Scale className="w-5 h-5" />
+                  <span>Manual Entry</span>
+                </CardTitle>
+                <CardDescription>Manually log waste items without scanning</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-weight">Weight (kg)</Label>
+                    <Input
+                      id="manual-weight"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      placeholder="0.0"
+                      className="text-lg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-items">Number of Items</Label>
+                    <Input
+                      id="manual-items"
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manual-category">Waste Category</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="food">Food Waste</SelectItem>
+                      <SelectItem value="oil">Oil Waste</SelectItem>
+                      <SelectItem value="packaging">Packaging</SelectItem>
+                      <SelectItem value="organic">Organic Waste</SelectItem>
+                      <SelectItem value="mixed">Mixed Waste</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manual-station">Station</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select station" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kitchen">Kitchen</SelectItem>
+                      <SelectItem value="bar">Bar</SelectItem>
+                      <SelectItem value="dining">Dining Area</SelectItem>
+                      <SelectItem value="storage">Storage</SelectItem>
+                      <SelectItem value="prep">Prep Area</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manual-staff">Staff Member</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select staff member" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Chef John</SelectItem>
+                      <SelectItem value="2">Server Maria</SelectItem>
+                      <SelectItem value="3">Manager Alex</SelectItem>
+                      <SelectItem value="4">Bartender Sam</SelectItem>
+                      <SelectItem value="5">Prep Cook Lisa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manual-reason">Waste Reason (Optional)</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="overproduction">Overproduction</SelectItem>
+                      <SelectItem value="spoilage">Spoilage</SelectItem>
+                      <SelectItem value="customer-leftover">Customer Leftover</SelectItem>
+                      <SelectItem value="prep-waste">Prep Waste</SelectItem>
+                      <SelectItem value="expired">Expired Items</SelectItem>
+                      <SelectItem value="accident">Accident/Spill</SelectItem>
+                      <SelectItem value="portion-error">Portion Error</SelectItem>
+                      <SelectItem value="quality-issue">Quality Issue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="manual-notes">Additional Notes</Label>
+                  <Input
+                    id="manual-notes"
+                    placeholder="Optional details about the waste..."
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm text-blue-800">
+                    Manual entries are marked for verification by management
+                  </span>
+                </div>
+
+                <Button className="w-full" size="lg">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Log Waste Entry
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions & Stats */}
+            <div className="space-y-6">
+              {/* Today's Manual Entries */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Clock className="w-5 h-5" />
+                    <span>Today's Entries</span>
+                  </CardTitle>
+                  <CardDescription>Manual waste logs for today</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                        <div>
+                          <p className="font-medium">Food waste - Kitchen</p>
+                          <p className="text-sm text-gray-600">2.3 kg • Chef John • 14:30</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Manual</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div>
+                          <p className="font-medium">Packaging - Bar</p>
+                          <p className="text-sm text-gray-600">0.8 kg • Server Maria • 13:15</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Manual</Badge>
+                    </div>
+
+                    <div className="text-center pt-3">
+                      <p className="text-sm text-gray-600">5 manual entries today</p>
+                      <p className="text-xs text-gray-500">€12.45 estimated cost</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Activity className="w-5 h-5" />
+                    <span>Entry Stats</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <p className="text-2xl font-bold text-green-600">87%</p>
+                      <p className="text-sm text-green-800">AI Scanned</p>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-600">13%</p>
+                      <p className="text-sm text-blue-800">Manual Entry</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 border rounded-lg">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>This Week</span>
+                      <span className="font-medium">23 entries</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm mt-1">
+                      <span>Average per day</span>
+                      <span className="font-medium">3.3 entries</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Eye className="w-4 h-4 mr-2" />
+                    View All Manual Entries
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <User className="w-4 h-4 mr-2" />
+                    Staff Entry History
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Station Breakdown
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

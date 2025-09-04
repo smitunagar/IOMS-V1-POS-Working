@@ -83,6 +83,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/apps/ioms">
 }
 
+// Validate ..\..\src\app\apps\pos\table-management\page.tsx
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\apps\\pos\\table-management\\page.js")
+  handler satisfies AppPageConfig<"/apps/pos/table-management">
+}
+
 // Validate ..\..\src\app\apps\smart-chef-pod\page.tsx
 {
   const handler = {} as typeof import("..\\..\\src\\app\\apps\\smart-chef-pod\\page.js")
@@ -119,10 +125,28 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/apps/waste-watchdog/analytics">
 }
 
+// Validate ..\..\src\app\apps\waste-watchdog\compliance\page.tsx
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\apps\\waste-watchdog\\compliance\\page.js")
+  handler satisfies AppPageConfig<"/apps/waste-watchdog/compliance">
+}
+
 // Validate ..\..\src\app\apps\waste-watchdog\hardware\page.tsx
 {
   const handler = {} as typeof import("..\\..\\src\\app\\apps\\waste-watchdog\\hardware\\page.js")
   handler satisfies AppPageConfig<"/apps/waste-watchdog/hardware">
+}
+
+// Validate ..\..\src\app\apps\waste-watchdog\page.tsx
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\apps\\waste-watchdog\\page.js")
+  handler satisfies AppPageConfig<"/apps/waste-watchdog">
+}
+
+// Validate ..\..\src\app\apps\waste-watchdog\predictive\page.tsx
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\apps\\waste-watchdog\\predictive\\page.js")
+  handler satisfies AppPageConfig<"/apps/waste-watchdog/predictive">
 }
 
 // Validate ..\..\src\app\apps\wastewatchdog\dashboard\page.tsx
@@ -353,10 +377,34 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/api/inventory-import/update">
 }
 
+// Validate ..\..\src\app\api\inventory\low-stock\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\inventory\\low-stock\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/inventory/low-stock">
+}
+
+// Validate ..\..\src\app\api\inventory\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\inventory\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/inventory">
+}
+
+// Validate ..\..\src\app\api\jobs\[id]\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\jobs\\[id]\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/jobs/[id]">
+}
+
 // Validate ..\..\src\app\api\menuCsv\route.ts
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\menuCsv\\route.js")
   handler satisfies RouteHandlerConfig<"/api/menuCsv">
+}
+
+// Validate ..\..\src\app\api\menuUpload\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\menuUpload\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/menuUpload">
 }
 
 // Validate ..\..\src\app\api\orders\route.ts
@@ -369,6 +417,42 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\owner\\summary\\route.js")
   handler satisfies RouteHandlerConfig<"/api/owner/summary">
+}
+
+// Validate ..\..\src\app\api\pos\floor\layout\activate-new\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\floor\\layout\\activate-new\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/floor/layout/activate-new">
+}
+
+// Validate ..\..\src\app\api\pos\floor\layout\activate\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\floor\\layout\\activate\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/floor/layout/activate">
+}
+
+// Validate ..\..\src\app\api\pos\floor\layout\active\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\floor\\layout\\active\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/floor/layout/active">
+}
+
+// Validate ..\..\src\app\api\pos\floor\layout\draft\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\floor\\layout\\draft\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/floor/layout/draft">
+}
+
+// Validate ..\..\src\app\api\pos\reservation\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\reservation\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/reservation">
+}
+
+// Validate ..\..\src\app\api\pos\table\status\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\table\\status\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/table/status">
 }
 
 // Validate ..\..\src\app\api\reservations\route.ts
@@ -405,6 +489,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\tables\\route.js")
   handler satisfies RouteHandlerConfig<"/api/tables">
+}
+
+// Validate ..\..\src\app\api\test\reset-tables\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\test\\reset-tables\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/test/reset-tables">
 }
 
 // Validate ..\..\src\app\api\uploadMenu\route.ts
@@ -467,6 +557,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/api/waste/kpis">
 }
 
+// Validate ..\..\src\app\api\waste\predictive\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\waste\\predictive\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/waste/predictive">
+}
+
 // Validate ..\..\src\app\api\waste\recent\route.ts
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\waste\\recent\\route.js")
@@ -483,6 +579,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\waste\\summary\\route.js")
   handler satisfies RouteHandlerConfig<"/api/waste/summary">
+}
+
+// Validate ..\..\src\app\api\waste\sustainability\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\waste\\sustainability\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/waste/sustainability">
 }
 
 // Validate ..\..\src\app\api\waste\trend\route.ts

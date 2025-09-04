@@ -385,22 +385,6 @@ export function EnterpriseLayout({
                     
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === '/order-analytics'}
-                      className={cn(
-                        "w-full justify-start text-sm",
-                        pathname === '/order-analytics'
-                          ? "bg-green-100 text-green-700 font-medium"
-                          : "text-gray-600 hover:text-green-600 hover:bg-green-50"
-                      )}
-                    >
-                      <Link href="/order-analytics" className="flex items-center space-x-2 px-3 py-1">
-                        <BarChart3 className="h-4 w-4" />
-                        <span>Analytics</span>
-                      </Link>
-                    </SidebarMenuButton>
-
-                    <SidebarMenuButton
-                      asChild
                       isActive={pathname === '/payment'}
                       className={cn(
                         "w-full justify-start text-sm",
@@ -412,6 +396,38 @@ export function EnterpriseLayout({
                       <Link href="/payment" className="flex items-center space-x-2 px-3 py-1">
                         <CreditCard className="h-4 w-4" />
                         <span>Payment</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/order-history'}
+                      className={cn(
+                        "w-full justify-start text-sm",
+                        pathname === '/order-history'
+                          ? "bg-green-100 text-green-700 font-medium"
+                          : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                      )}
+                    >
+                      <Link href="/order-history" className="flex items-center space-x-2 px-3 py-1">
+                        <History className="h-4 w-4" />
+                        <span>Order History</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === '/order-analytics'}
+                      className={cn(
+                        "w-full justify-start text-sm",
+                        pathname === '/order-analytics'
+                          ? "bg-green-100 text-green-700 font-medium"
+                          : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                      )}
+                    >
+                      <Link href="/order-analytics" className="flex items-center space-x-2 px-3 py-1">
+                        <BarChart3 className="h-4 w-4" />
+                        <span>Analytics</span>
                       </Link>
                     </SidebarMenuButton>
                   </div>
@@ -536,33 +552,65 @@ export function EnterpriseLayout({
                         <div className="ml-11 space-y-1">
                           <SidebarMenuButton
                             asChild
-                            isActive={pathname === '/apps/wastewatchdog'}
+                            isActive={pathname === '/apps/waste-watchdog'}
                             className={cn(
                               "w-full justify-start text-sm",
-                              pathname === '/apps/wastewatchdog'
+                              pathname === '/apps/waste-watchdog'
                                 ? "bg-green-100 text-green-700 font-medium"
                                 : "text-gray-600 hover:text-green-600 hover:bg-green-50"
                             )}
                           >
-                            <Link href="/apps/wastewatchdog" className="flex items-center space-x-2 px-3 py-1">
+                            <Link href="/apps/waste-watchdog" className="flex items-center space-x-2 px-3 py-1">
                               <BarChart3 className="h-4 w-4" />
-                              <span>Dashboard</span>
+                              <span>Main Dashboard</span>
                             </Link>
                           </SidebarMenuButton>
                           
                           <SidebarMenuButton
                             asChild
-                            isActive={pathname === '/apps/wastewatchdog/analytics'}
+                            isActive={pathname === '/apps/waste-watchdog/analytics'}
                             className={cn(
                               "w-full justify-start text-sm",
-                              pathname === '/apps/wastewatchdog/analytics'
+                              pathname === '/apps/waste-watchdog/analytics'
                                 ? "bg-green-100 text-green-700 font-medium"
                                 : "text-gray-600 hover:text-green-600 hover:bg-green-50"
                             )}
                           >
-                            <Link href="/apps/wastewatchdog/analytics" className="flex items-center space-x-2 px-3 py-1">
+                            <Link href="/apps/waste-watchdog/analytics" className="flex items-center space-x-2 px-3 py-1">
                               <Sparkles className="h-4 w-4" />
                               <span>AI Analytics</span>
+                            </Link>
+                          </SidebarMenuButton>
+
+                          <SidebarMenuButton
+                            asChild
+                            isActive={pathname === '/apps/waste-watchdog/compliance'}
+                            className={cn(
+                              "w-full justify-start text-sm",
+                              pathname === '/apps/waste-watchdog/compliance'
+                                ? "bg-green-100 text-green-700 font-medium"
+                                : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                            )}
+                          >
+                            <Link href="/apps/waste-watchdog/compliance" className="flex items-center space-x-2 px-3 py-1">
+                              <User className="h-4 w-4" />
+                              <span>Compliance Center</span>
+                            </Link>
+                          </SidebarMenuButton>
+
+                          <SidebarMenuButton
+                            asChild
+                            isActive={pathname === '/apps/waste-watchdog/predictive'}
+                            className={cn(
+                              "w-full justify-start text-sm",
+                              pathname === '/apps/waste-watchdog/predictive'
+                                ? "bg-green-100 text-green-700 font-medium"
+                                : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                            )}
+                          >
+                            <Link href="/apps/waste-watchdog/predictive" className="flex items-center space-x-2 px-3 py-1">
+                              <BarChart3 className="h-4 w-4" />
+                              <span>Predictive Analytics</span>
                             </Link>
                           </SidebarMenuButton>
                         </div>
@@ -572,6 +620,51 @@ export function EnterpriseLayout({
                 )}
               </div>
             )}
+
+            {/* Setup Section */}
+            <div className="mb-4">
+              <div className="px-3 py-2">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Setup</h3>
+              </div>
+
+              {/* Dining Area Setup */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/dining-area-setup'}
+                  className={cn(
+                    "w-full justify-start transition-all duration-200 rounded-lg",
+                    pathname === '/dining-area-setup'
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "hover:bg-white hover:shadow-sm"
+                  )}
+                >
+                  <Link href="/dining-area-setup" className="flex items-center space-x-3 px-3 py-2">
+                    <Table className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium">Dining Area Setup</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* System Settings */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/system-settings'}
+                  className={cn(
+                    "w-full justify-start transition-all duration-200 rounded-lg",
+                    pathname === '/system-settings'
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "hover:bg-white hover:shadow-sm"
+                  )}
+                >
+                  <Link href="/system-settings" className="flex items-center space-x-3 px-3 py-2">
+                    <Settings className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium">System Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </div>
 
             {/* Module Settings */}
             <div className="mt-auto pt-4 border-t border-gray-200">

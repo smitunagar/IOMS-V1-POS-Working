@@ -9,13 +9,86 @@ import { generateIngredientsList } from '@/ai/flows/generate-ingredients-list';
  * Cuts off after last valid object and closes with a bracket.
  */
 function recoverLongestValidArray(jsonString: string): string {
+  console.log('🔧 Attempting array recovery for truncated JSON...');
+  
+  // Remove any trailing commas
   jsonString = jsonString.replace(/,\s*([\]}])/g, '$1');
+  
+  // Find the start of the array
   let arrStart = jsonString.indexOf('[');
-  let lastObjClose = jsonString.lastIndexOf('}');
-  if (arrStart === -1 || lastObjClose === -1 || lastObjClose < arrStart) return '[]';
-  let cut = jsonString.slice(arrStart, lastObjClose + 1);
-  if (!cut.trim().endsWith(']')) cut += "\n]\n";
-  return cut;
+  if (arrStart === -1) {
+    console.log('❌ No opening bracket found');
+    return '[]';
+  }
+  
+  // Find all complete objects by looking for closing braces
+  const completeObjects: string[] = [];
+  let currentPos = arrStart + 1;
+  let braceCount = 0;
+  let currentObject = '';
+  let inString = false;
+  let escapeNext = false;
+  
+  for (let i = currentPos; i < jsonString.length; i++) {
+    const char = jsonString[i];
+    
+    if (escapeNext) {
+      escapeNext = false;
+      currentObject += char;
+      continue;
+    }
+    
+    if (char === '\\') {
+      escapeNext = true;
+      currentObject += char;
+      continue;
+    }
+    
+    if (char === '"' && !escapeNext) {
+      inString = !inString;
+      currentObject += char;
+      continue;
+    }
+    
+    if (inString) {
+      currentObject += char;
+      continue;
+    }
+    
+    if (char === '{') {
+      braceCount++;
+      currentObject += char;
+    } else if (char === '}') {
+      braceCount--;
+      currentObject += char;
+      
+      if (braceCount === 0) {
+        // We have a complete object
+        const trimmed = currentObject.trim();
+        if (trimmed.length > 0) {
+          completeObjects.push(trimmed);
+          console.log(`✅ Found complete object ${completeObjects.length}`);
+        }
+        currentObject = '';
+        
+        // Skip any whitespace and commas
+        while (i + 1 < jsonString.length && /[\s,]/.test(jsonString[i + 1])) {
+          i++;
+        }
+      }
+    } else if (braceCount > 0) {
+      currentObject += char;
+    }
+  }
+  
+  if (completeObjects.length === 0) {
+    console.log('❌ No complete objects found');
+    return '[]';
+  }
+  
+  const recovered = '[' + completeObjects.join(',') + ']';
+  console.log(`✅ Recovered ${completeObjects.length} complete objects`);
+  return recovered;
 }
 
 /**
@@ -50,7 +123,17 @@ async function batchWithConcurrencyLimit<T, R>(items: T[], fn: (item: T) => Prom
 /**
  * Extracts menu data from a PDF using Gemini and robust post-processing.
  */
-export async function extractMenuFromPdf({ pdfDataUri, userId, numberOfServings = 1 }: { pdfDataUri: string, userId?: string, numberOfServings?: number }) {
+export async function extractMenuFromPdf({ 
+  pdfDataUri, 
+  userId, 
+  numberOfServings = 1, 
+  skipIngredients = false 
+}: { 
+  pdfDataUri: string, 
+  userId?: string, 
+  numberOfServings?: number,
+  skipIngredients?: boolean 
+}) {
   const prompt = `
 You are an expert at reading restaurant menu PDFs in any language (e.g., German, English, French, etc.). Extract every dish, drink, or menu item as a JSON object.
 
@@ -87,7 +170,9 @@ Example output:
     { text: prompt },
     { media: { url: pdfDataUri } }
   ]);
-  console.log('GENKIT RAW RESULT:', result);
+  console.log('GENKIT RAW RESULT type:', typeof result);
+  console.log('GENKIT RAW RESULT keys:', result ? Object.keys(result) : 'null');
+  console.log('GENKIT RAW RESULT text length:', result?.text ? result.text.length : 0);
 
   // Extract text, from code block or raw
   let text = typeof result.text === 'string' ? result.text : '';
@@ -105,27 +190,83 @@ Example output:
     .replace(/^\s*\/\/.*$/gm, '')
     .trim();
 
-  // DEBUG: See what we are trying to parse
-  console.log('CLEAN JSON TO PARSE:', cleanText);
+  // IMPORTANT: Remove the "json" prefix that Gemini sometimes adds
+  if (cleanText.startsWith('json\n')) {
+    console.log('🔧 Removing "json" prefix from response');
+    cleanText = cleanText.substring(5).trim();
+  } else if (cleanText.startsWith('json ')) {
+    console.log('🔧 Removing "json " prefix from response');
+    cleanText = cleanText.substring(5).trim();
+  }
+
+  // DEBUG: See what we are trying to parse (first 500 chars only)
+  console.log('CLEAN JSON TO PARSE (first 500 chars):', cleanText.substring(0, 500));
+  console.log('CLEAN JSON TO PARSE length:', cleanText.length);
+  
+  // Check if it looks like a valid JSON start
+  if (!cleanText.startsWith('[') && !cleanText.startsWith('{')) {
+    console.log('⚠️ Text does not start with JSON bracket, full text (first 1000 chars):', cleanText.substring(0, 1000));
+  }
 
   let items: any[] = [];
+  let parseSuccess = false;
+  
   try {
     // 1. Try straight parse
     items = JSON.parse(cleanText);
+    console.log('✅ Successfully parsed JSON directly, items count:', Array.isArray(items) ? items.length : 'not an array');
+    parseSuccess = true;
   } catch (e) {
+    console.log('❌ Direct JSON parse failed:', e instanceof Error ? e.message.substring(0, 200) : 'unknown error');
     // 2. Try jsonrepair
     try {
-      items = JSON.parse(jsonrepair(cleanText));
+      const repairedJson = jsonrepair(cleanText);
+      console.log('🔧 JSON repair attempted, repaired length:', repairedJson.length);
+      console.log('🔧 Repaired JSON (first 200 chars):', repairedJson.substring(0, 200));
+      items = JSON.parse(repairedJson);
+      console.log('✅ Successfully parsed repaired JSON, items count:', Array.isArray(items) ? items.length : 'not an array');
+      parseSuccess = true;
     } catch (e2) {
+      console.log('❌ JSON repair also failed:', e2 instanceof Error ? e2.message.substring(0, 200) : 'unknown error');
       // 3. Try best-effort recovery for truncation
       try {
         const partial = recoverLongestValidArray(cleanText);
+        console.log('🔧 Array recovery attempted, recovered length:', partial.length);
+        console.log('🔧 Recovered JSON (first 200 chars):', partial.substring(0, 200));
         items = JSON.parse(partial);
+        console.log('✅ Successfully parsed recovered array, items count:', Array.isArray(items) ? items.length : 'not an array');
+        parseSuccess = true;
       } catch (e3) {
+        console.log('❌ Array recovery also failed:', e3 instanceof Error ? e3.message.substring(0, 200) : 'unknown error');
         // 4. Give up, show nothing
         items = [];
       }
     }
+  }
+  
+  // Log what we actually got
+  if (parseSuccess) {
+    console.log('🎉 JSON parsing succeeded!');
+    if (Array.isArray(items)) {
+      console.log(`📊 Parsed array with ${items.length} items`);
+      if (items.length > 0) {
+        console.log('🔍 First item sample:', JSON.stringify(items[0]).substring(0, 100));
+        
+        // Check if this is the ["json", actual_menu_array] structure
+        if (items.length === 2 && 
+            items[0] === 'json' && 
+            Array.isArray(items[1])) {
+          console.log('🔧 Detected ["json", menu_array] structure, extracting menu from second element');
+          items = items[1];
+          console.log(`✅ Extracted actual menu array with ${items.length} items`);
+        }
+      }
+    } else {
+      console.log('⚠️ Parsed successfully but result is not an array, type:', typeof items);
+      console.log('🔍 Result sample:', JSON.stringify(items, null, 2).substring(0, 500));
+    }
+  } else {
+    console.log('💥 All JSON parsing attempts failed');
   }
 
   // Post-process: If a single item contains multiple variants in price or name, split them into separate items
@@ -220,111 +361,110 @@ Example output:
     return { ...item, id };
   });
 
-  // Ingredient enrichment logic
-  let inventory: any[] = [];
-  let menuDishes: any[] = [];
-  if (userId) {
-    try { inventory = getInventory(userId); } catch {}
-    try { menuDishes = getDishes(userId); } catch {}
-  }
-
-  // Helper to find ingredient with quantity in inventory or menu
-  function findIngredientWithQuantity(ingredientName: string): { name: string, quantity: number, unit: string } | null {
-    // Check inventory
-    if (inventory && Array.isArray(inventory)) {
-      const inv = inventory.find(i => i.name.toLowerCase() === ingredientName.toLowerCase());
-      if (inv && inv.quantity && inv.unit) {
-        return { name: inv.name, quantity: inv.quantity, unit: inv.unit };
-      }
+  // Ingredient enrichment logic (only if not skipped)
+  if (!skipIngredients) {
+    let inventory: any[] = [];
+    let menuDishes: any[] = [];
+    if (userId) {
+      try { inventory = getInventory(userId); } catch {}
+      try { menuDishes = getDishes(userId); } catch {}
     }
-    // Check menu
-    if (menuDishes && Array.isArray(menuDishes)) {
-      for (const dish of menuDishes) {
-        if (dish.ingredients && Array.isArray(dish.ingredients)) {
-          for (const ing of dish.ingredients) {
-            if (typeof ing === 'object' && ing.inventoryItemName && ing.inventoryItemName.toLowerCase() === ingredientName.toLowerCase()) {
-              return { name: ing.inventoryItemName, quantity: ing.quantityPerDish, unit: ing.unit };
+
+    // Helper to find ingredient with quantity in inventory or menu
+    function findIngredientWithQuantity(ingredientName: string): { name: string, quantity: number, unit: string } | null {
+      // Check inventory
+      if (inventory && Array.isArray(inventory)) {
+        const inv = inventory.find(i => i.name.toLowerCase() === ingredientName.toLowerCase());
+        if (inv && inv.quantity && inv.unit) {
+          return { name: inv.name, quantity: inv.quantity, unit: inv.unit };
+        }
+      }
+      // Check menu
+      if (menuDishes && Array.isArray(menuDishes)) {
+        for (const dish of menuDishes) {
+          if (dish.ingredients && Array.isArray(dish.ingredients)) {
+            for (const ing of dish.ingredients) {
+              if (typeof ing === 'object' && ing.inventoryItemName && ing.inventoryItemName.toLowerCase() === ingredientName.toLowerCase()) {
+                return { name: ing.inventoryItemName, quantity: ing.quantityPerDish, unit: ing.unit };
+              }
             }
           }
         }
       }
+      return null;
     }
-    return null;
-  }
 
-  // Collect all AI ingredient generation tasks
-  const aiTasks: { idx: number, name: string, missing: string[] }[] = [];
-  for (let i = 0; i < mergedWithIds.length; i++) {
-    const item = mergedWithIds[i];
-    if (item.ingredients && Array.isArray(item.ingredients) && item.ingredients.length > 0) {
-      const missing: string[] = [];
-      for (const ing of item.ingredients) {
-        let found = findIngredientWithQuantity(ing);
-        if (!found) missing.push(ing);
-      }
-      if (missing.length > 0) {
-        aiTasks.push({ idx: i, name: item.name, missing });
-      }
-    } else if (item.name) {
-      aiTasks.push({ idx: i, name: item.name, missing: [] });
-    }
-  }
-
-  // Batch AI calls for ingredient generation (concurrency limit 5)
-  const aiResults = await batchWithConcurrencyLimit(aiTasks, async (task) => {
-    try {
-      return await generateIngredientsList({ dishName: task.name, numberOfServings });
-    } catch {
-      return { ingredients: [] };
-    }
-  }, 5);
-
-  // Map AI results back to menu items
-  for (let i = 0; i < aiTasks.length; i++) {
-    const { idx, missing } = aiTasks[i];
-    const aiResult = aiResults[i];
-    if (!mergedWithIds[idx].ingredients || mergedWithIds[idx].ingredients.length === 0) {
-      // No ingredients, use full AI list
-      // Normalize to { inventoryItemName, quantityPerDish, unit }
-      mergedWithIds[idx].ingredients = aiResult.ingredients.map((ing: any) => ({
-        inventoryItemName: ing.name,
-        quantityPerDish: ing.quantity,
-        unit: ing.unit
-      }));
-    } else {
-      // If original ingredients are just names (strings), and AI returns objects, use AI's list directly
-      if (
-        Array.isArray(mergedWithIds[idx].ingredients) &&
-        mergedWithIds[idx].ingredients.every((ing: any) => typeof ing === 'string') &&
-        Array.isArray(aiResult.ingredients) &&
-        aiResult.ingredients.length > 0 &&
-        aiResult.ingredients.every((aii: any) => typeof aii === 'object' && 'name' in aii && 'quantity' in aii && 'unit' in aii)
-      ) {
-        mergedWithIds[idx].ingredients = aiResult.ingredients;
-      } else {
-        // Only fill in missing ingredients
-        const enriched: any[] = [];
-        for (const ing of mergedWithIds[idx].ingredients) {
+    // Collect all AI ingredient generation tasks
+    const aiTasks: { idx: number, name: string, missing: string[] }[] = [];
+    for (let i = 0; i < mergedWithIds.length; i++) {
+      const item = mergedWithIds[i];
+      if (item.ingredients && Array.isArray(item.ingredients) && item.ingredients.length > 0) {
+        const missing: string[] = [];
+        for (const ing of item.ingredients) {
           let found = findIngredientWithQuantity(ing);
-          if (found) {
-            enriched.push(found);
+          if (!found) missing.push(ing);
+        }
+        if (missing.length > 0) {
+          aiTasks.push({ idx: i, name: item.name, missing });
+        }
+      } else if (item.name) {
+        aiTasks.push({ idx: i, name: item.name, missing: [] });
+      }
+    }
+
+    // Batch AI calls for ingredient generation (concurrency limit 5)
+    try {
+      const aiResults = await batchWithConcurrencyLimit(aiTasks, async (task) => {
+        try {
+          return await generateIngredientsList({ dishName: task.name, numberOfServings });
+        } catch {
+          return { ingredients: [] };
+        }
+      }, 5);
+
+      // Map AI results back to menu items
+      for (let i = 0; i < aiTasks.length; i++) {
+        const { idx, missing } = aiTasks[i];
+        const aiResult = aiResults[i];
+        if (!mergedWithIds[idx].ingredients || mergedWithIds[idx].ingredients.length === 0) {
+          // No ingredients, use full AI list
+          // Normalize to { inventoryItemName, quantityPerDish, unit }
+          if (aiResult && aiResult.ingredients && Array.isArray(aiResult.ingredients)) {
+            mergedWithIds[idx].ingredients = aiResult.ingredients.map((ing: any) => ({
+              inventoryItemName: ing.name,
+              quantityPerDish: ing.quantity,
+              unit: ing.unit
+            }));
           } else {
-            // Find in AI result
-            const aiIng = aiResult.ingredients.find(aii => aii.name.toLowerCase() === (typeof ing === 'string' ? ing.toLowerCase() : ''));
-            if (aiIng) {
-              enriched.push(aiIng);
-            } else {
-              enriched.push({ name: typeof ing === 'string' ? ing : '', quantity: 0, unit: '' });
+            mergedWithIds[idx].ingredients = [];
+          }
+        } else {
+          // If original ingredients are just names (strings), and AI returns objects, use AI's list directly
+          if (aiResult && aiResult.ingredients && Array.isArray(aiResult.ingredients) && 
+              mergedWithIds[idx].ingredients.every((ing: any) => typeof ing === 'string')) {
+            mergedWithIds[idx].ingredients = aiResult.ingredients.map((ing: any) => ({
+              inventoryItemName: ing.name,
+              quantityPerDish: ing.quantity,
+              unit: ing.unit
+            }));
+          } else {
+            // Mix and match
+            for (const missingName of missing) {
+              const found = aiResult && aiResult.ingredients && Array.isArray(aiResult.ingredients) ?
+                aiResult.ingredients.find((ing: any) => ing.name.toLowerCase() === missingName.toLowerCase()) : null;
+              if (found) {
+                mergedWithIds[idx].ingredients.push({
+                  inventoryItemName: found.name,
+                  quantityPerDish: found.quantity,
+                  unit: found.unit
+                });
+              }
             }
           }
         }
-        // Normalize to { inventoryItemName, quantityPerDish, unit }
-        mergedWithIds[idx].ingredients = enriched.map((ing: any) => ({
-          inventoryItemName: ing.name,
-          quantityPerDish: ing.quantity,
-          unit: ing.unit
-        }));
       }
+    } catch (ingredientError) {
+      console.warn('⚠️ Ingredient enrichment failed, continuing with basic menu items:', ingredientError);
     }
   }
 

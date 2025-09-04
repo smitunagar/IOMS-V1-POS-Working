@@ -101,7 +101,7 @@ const APP_REGISTRY = [
             'Hardware Integration'
         ],
         pricing: 'enterprise',
-        route: '/apps/wastewatchdog/dashboard',
+        route: '/apps/waste-watchdog',
         requiresAuth: true,
         permissions: [
             'analytics:read',

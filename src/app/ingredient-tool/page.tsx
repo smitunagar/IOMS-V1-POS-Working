@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect } from 'react';
-import { AppLayout } from "@/components/layout/AppLayout";
+import { EnterpriseLayout } from "@/components/layout/EnterpriseLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -402,7 +402,7 @@ export default function IngredientToolPage() {
   };
 
   return (
-    <AppLayout pageTitle="AI Ingredient Tool">
+    <EnterpriseLayout pageTitle="AI Ingredient Tool">
       <div className="max-w-4xl mx-auto space-y-8">
         <Tabs defaultValue="single" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -734,6 +734,6 @@ export default function IngredientToolPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 }

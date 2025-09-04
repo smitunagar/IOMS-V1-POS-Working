@@ -72,7 +72,7 @@ export const APP_REGISTRY: AppMetadata[] = [
     author: 'IOMS team',
     features: ['Real-time Waste Monitoring', 'AI Waste Analysis', 'Carbon Footprint Tracking', 'Compliance Management', 'Hardware Integration'],
     pricing: 'enterprise',
-    route: '/apps/wastewatchdog/dashboard',
+    route: '/apps/waste-watchdog',
     requiresAuth: true,
     permissions: ['analytics:read', 'hardware:manage', 'compliance:view']
   },

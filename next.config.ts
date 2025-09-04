@@ -25,6 +25,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/dining-area-setup',
+        destination: '/apps/pos/table-management',
+        permanent: true,
+      },
+      // Keep backward compatibility for existing table-management route
+      {
+        source: '/table-management',
+        destination: '/apps/pos/table-management',
+        permanent: true,
+      },
+    ];
+  },
 }
 
 export default nextConfig 

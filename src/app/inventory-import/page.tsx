@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { EnterpriseLayout } from '@/components/layout/EnterpriseLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -159,7 +159,7 @@ Olive Oil,Condiments,5,liters,12.00,2025-06-30,Dry Storage,Import Supplier`;
   };
 
   return (
-    <AppLayout pageTitle="Inventory Import">
+    <EnterpriseLayout pageTitle="Inventory Import">
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -362,6 +362,6 @@ Olive Oil,Condiments,5,liters,12.00,2025-06-30,Dry Storage,Import Supplier`;
           )}
         </div>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 }

@@ -413,10 +413,8 @@ const AuthProvider = ({ children })=>{
     const saveUserToStorage = (user)=>{
         if (user) {
             localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
-            console.log('[AuthProvider] Saved user to localStorage:', user);
         } else {
             localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-            console.log('[AuthProvider] Removed user from localStorage');
         }
     };
     // Function to load user from localStorage
@@ -458,46 +456,29 @@ const AuthProvider = ({ children })=>{
     }, [
         currentUser
     ]);
-    // Check auth status on every render
+    // Check auth status on mount only
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         checkAuthStatus();
-    });
+    }, [
+        checkAuthStatus
+    ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        console.log('[AuthProvider] useEffect: Starting user load');
         setIsLoading(true);
         setIsInitialized(false);
         const user = loadUserFromStorage();
         // Validate that the user still exists in the users list
         if (user && validateUserExists(user)) {
             setCurrentUser(user);
-            console.log('[AuthProvider] Valid user loaded:', user);
         } else if (user) {
-            console.log('[AuthProvider] User found but invalid, clearing...');
             saveUserToStorage(null);
             setCurrentUser(null);
         } else {
             setCurrentUser(null);
-            console.log('[AuthProvider] No user found in localStorage');
         }
         setIsInitialized(true);
         setIsLoading(false);
-        console.log('[AuthProvider] Finished user load, currentUser:', user);
     }, []);
-    // Debug effect to log state changes
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
-        console.log('[AuthProvider] State changed - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
-        // Log localStorage state for debugging
-        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-        ;
-    }, [
-        currentUser,
-        isLoading,
-        isInitialized
-    ]);
-    // Log every render for debugging
-    console.log('[AuthProvider] Render - currentUser:', currentUser, 'isLoading:', isLoading, 'isInitialized:', isInitialized);
     const login = async (email, pass)=>{
-        console.log('[AuthProvider] Login attempt for:', email);
         setIsLoading(true);
         try {
             // Simulate checking user credentials
@@ -568,7 +549,7 @@ const AuthProvider = ({ children })=>{
         children: children
     }, void 0, false, {
         fileName: "[project]/src/contexts/AuthContext.tsx",
-        lineNumber: 206,
+        lineNumber: 183,
         columnNumber: 5
     }, ("TURBOPACK compile-time value", void 0));
 };

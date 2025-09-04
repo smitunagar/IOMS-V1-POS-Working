@@ -4,7 +4,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { SuggestExpiryDateInput } from '@/ai/flows/ingredient-types';
 import { suggestExpiryDate } from '@/ai/flows/suggest-expiry-date';
 import * as inventoryService from '@/lib/inventoryService'; // Assuming an inventory service exists
-import { AppLayout } from '../../components/layout/AppLayout';
+import { EnterpriseLayout } from '../../components/layout/EnterpriseLayout';
 import { useToast } from '@/hooks/use-toast';
 // import { useAuth } from '@/contexts/AuthContext';      
 import { QRCodeCanvas } from 'qrcode.react';
@@ -406,8 +406,8 @@ const BarcodeScannerPage: React.FC = () => {
   };
 
   return (
-    // AppLayout provides a consistent layout for the page
-    <AppLayout>
+    // EnterpriseLayout provides a consistent layout for the page
+    <EnterpriseLayout pageTitle="Barcode Scanner">
       <div className="bg-muted/50 min-h-screen">
         <div className="w-full max-w-lg mx-auto mt-8 mb-8 p-4 bg-white rounded-lg shadow">
           <p style={{ maxWidth: 400, textAlign: 'center', marginBottom: 8 }}>
@@ -629,7 +629,7 @@ const BarcodeScannerPage: React.FC = () => {
           <script src="https://cdn.tailwindcss.com"></script>
         </div>
       </div>
-    </AppLayout>
+    </EnterpriseLayout>
   );
 };
 

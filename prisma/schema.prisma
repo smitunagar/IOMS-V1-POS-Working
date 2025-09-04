@@ -167,3 +167,74 @@ model CoverCount {
   revenue     Float?
   createdAt   DateTime @default(now())
 }
+
+// Table Management Models - Production Ready
+model FloorLayout {
+  id           String   @id @default(cuid())
+  tenantId     String
+  siteId       String
+  floorId      String   @unique
+  layoutDraft  Json?
+  layoutActive Json?
+  version      Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  updatedBy    String
+  metadata     Json?
+  
+  @@index([tenantId])
+  @@index([floorId])
+  @@index([version])
+}
+
+model TableStatus {
+  tableId   String      @id
+  tenantId  String
+  status    TableState  @default(FREE)
+  updatedAt DateTime    @updatedAt
+  metadata  Json?
+  
+  @@index([tenantId])
+  @@index([status])
+}
+
+enum TableState { 
+  FREE 
+  SEATED 
+  DIRTY 
+  RESERVED 
+}
+
+model PosReservation {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tableId     String
+  customerName String
+  partySize   Int
+  startAt     DateTime
+  endAt       DateTime
+  status      String   @default("ACTIVE")
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  metadata    Json?
+  
+  @@index([tenantId])
+  @@index([tableId, startAt, endAt])
+  @@index([startAt, endAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String?
+  action    String   // FLOOR_DRAFT_SAVED, LAYOUT_ACTIVATED, etc.
+  entityType String  // FLOOR, TABLE, RESERVATION
+  entityId  String?
+  metadata  Json
+  timestamp DateTime @default(now())
+  
+  @@index([tenantId])
+  @@index([action])
+  @@index([timestamp])
+}
