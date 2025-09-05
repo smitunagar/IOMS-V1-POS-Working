@@ -1,12 +1,26 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "npm ci",
   "framework": "nextjs",
   "outputDirectory": ".next",
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "builds": [
     {
       "src": "package.json",
       "use": "@vercel/next"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "production": true
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
 } 
