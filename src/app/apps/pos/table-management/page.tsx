@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Settings, Save, Grid3x3, Layout, BarChart3, Download, Upload, Home, DoorOpen, Square, Circle, Scissors, Users, Calculator, Target, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Settings, Save, Grid3x3, Layout, BarChart3, Download, Upload, Home, DoorOpen, Square, Scissors, Users, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppLayout } from '@/components/layout/AppLayout';
 
+// Type definitions with proper TypeScript interfaces
+type TableStatus = 'available' | 'occupied' | 'reserved' | 'out-of-service';
+type TableShape = 'circle' | 'square' | 'rectangle';
+type FixtureType = 'wall' | 'door' | 'window' | 'bar' | 'kitchen' | 'restroom' | 'entrance';
+
 interface Table {
   id: number;
   number: string;
   seats: number;
-  status: 'available' | 'occupied' | 'reserved' | 'out-of-service';
+  status: TableStatus;
   zone?: string;
-  shape: 'circle' | 'square' | 'rectangle';
+  shape: TableShape;
   x: number;
   y: number;
   width: number;
@@ -45,7 +50,7 @@ interface FloorPlan {
 
 interface Fixture {
   id: string;
-  type: 'wall' | 'door' | 'window' | 'bar' | 'kitchen' | 'restroom' | 'entrance';
+  type: FixtureType;
   x: number;
   y: number;
   width: number;
@@ -64,18 +69,30 @@ interface FloorAnalytics {
   averageTableSize: number; // average seats per table
 }
 
+interface DragState {
+  isDragging: boolean;
+  draggedTable: Table | null;
+  dragOffset: { x: number; y: number };
+}
+
 export default function TableManagementPage() {
+  // State management with proper typing
   const [tables, setTables] = useState<Table[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [activeTab, setActiveTab] = useState('layout');
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [draggedTable, setDraggedTable] = useState<Table | null>(null);
-  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [activeTab, setActiveTab] = useState<string>('layout');
+  const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
+  
+  // Drag state consolidated into single object
+  const [dragState, setDragState] = useState<DragState>({
+    isDragging: false,
+    draggedTable: null,
+    dragOffset: { x: 0, y: 0 }
+  });
+  
   const gridSize = 20;
   
-  // Floor Plan Management
+  // Floor Plan Management with proper typing
   const [floorPlan, setFloorPlan] = useState<FloorPlan>({
     id: 'main-floor',
     name: 'Main Dining Area',
@@ -89,12 +106,45 @@ export default function TableManagementPage() {
   });
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
+
+  // Memoized functions for better performance
+  const loadTableConfiguration = useCallback(() => {
+    const defaultTables: Table[] = [
+      { id: 1, number: '1', seats: 4, status: 'available', zone: 'main', shape: 'circle', x: 100, y: 100, width: 80, height: 80 },
+      { id: 2, number: '2', seats: 2, status: 'occupied', zone: 'main', shape: 'square', x: 200, y: 100, width: 60, height: 60 },
+      { id: 3, number: '3', seats: 6, status: 'available', zone: 'patio', shape: 'rectangle', x: 300, y: 100, width: 100, height: 60 },
+    ];
+
+    const defaultZones: Zone[] = [
+      { id: 'main', name: 'Main Dining', color: '#3b82f6', tables: [1, 2] },
+      { id: 'patio', name: 'Patio', color: '#10b981', tables: [3] },
+    ];
+
+    setTables(defaultTables);
+    setZones(defaultZones);
+  }, []);
+
+  const saveConfiguration = useCallback(() => {
+    try {
+      // TODO: Implement actual save functionality to backend/localStorage
+      const configData = { tables, zones, floorPlan, fixtures };
+      // In production, this would save to a database or localStorage
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Saving table configuration...', configData);
+      }
+      // Show success feedback to user
+      // toast.success('Configuration saved successfully!');
+    } catch (error) {
+      console.error('Failed to save configuration:', error);
+      // toast.error('Failed to save configuration');
+    }
+  }, [tables, zones, floorPlan, fixtures]);
 
   useEffect(() => {
     loadTableConfiguration();
     
-    // Add keyboard shortcuts
+    // Keyboard shortcuts handler
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Delete' && selectedTable) {
         deleteTable(selectedTable.id);
@@ -110,122 +160,111 @@ export default function TableManagementPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTable]);
+  }, [selectedTable, loadTableConfiguration, saveConfiguration]);
 
-  // Initialize with sample fixtures for demonstration
+  // Initialize sample fixtures (memoized to prevent unnecessary re-creation)
   useEffect(() => {
     if (fixtures.length === 0) {
       const sampleFixtures: Fixture[] = [
-        { id: 'wall-1', type: 'wall', x: 0, y: 0, width: 600, height: 20, rotation: 0, label: 'North Wall' },
-        { id: 'wall-2', type: 'wall', x: 0, y: 0, width: 20, height: 450, rotation: 0, label: 'West Wall' },
-        { id: 'wall-3', type: 'wall', x: 0, y: 430, width: 600, height: 20, rotation: 0, label: 'South Wall' },
-        { id: 'wall-4', type: 'wall', x: 580, y: 0, width: 20, height: 450, rotation: 0, label: 'East Wall' },
-        { id: 'entrance-1', type: 'entrance', x: 250, y: 430, width: 100, height: 20, rotation: 0, label: 'Main Entrance' },
-        { id: 'kitchen-1', type: 'kitchen', x: 450, y: 50, width: 120, height: 80, rotation: 0, label: 'Kitchen' },
-        { id: 'bar-1', type: 'bar', x: 50, y: 50, width: 150, height: 60, rotation: 0, label: 'Bar Area' },
+        { id: 'wall-north', type: 'wall', x: 0, y: 0, width: 600, height: 20, rotation: 0, label: 'North Wall' },
+        { id: 'wall-west', type: 'wall', x: 0, y: 0, width: 20, height: 450, rotation: 0, label: 'West Wall' },
+        { id: 'wall-south', type: 'wall', x: 0, y: 430, width: 600, height: 20, rotation: 0, label: 'South Wall' },
+        { id: 'wall-east', type: 'wall', x: 580, y: 0, width: 20, height: 450, rotation: 0, label: 'East Wall' },
+        { id: 'main-entrance', type: 'entrance', x: 250, y: 430, width: 100, height: 20, rotation: 0, label: 'Main Entrance' },
+        { id: 'kitchen-area', type: 'kitchen', x: 450, y: 50, width: 120, height: 80, rotation: 0, label: 'Kitchen' },
+        { id: 'bar-area', type: 'bar', x: 50, y: 50, width: 150, height: 60, rotation: 0, label: 'Bar Area' },
       ];
       setFixtures(sampleFixtures);
     }
-  }, []);
+  }, [fixtures.length]);
 
-  const loadTableConfiguration = () => {
-    const defaultTables: Table[] = [
-      { id: 1, number: '1', seats: 4, status: 'available', zone: 'main', shape: 'circle', x: 100, y: 100, width: 80, height: 80 },
-      { id: 2, number: '2', seats: 2, status: 'occupied', zone: 'main', shape: 'square', x: 200, y: 100, width: 60, height: 60 },
-      { id: 3, number: '3', seats: 6, status: 'available', zone: 'patio', shape: 'rectangle', x: 300, y: 100, width: 100, height: 60 },
-    ];
-
-    const defaultZones: Zone[] = [
-      { id: 'main', name: 'Main Dining', color: '#3b82f6', tables: [1, 2] },
-      { id: 'patio', name: 'Patio', color: '#10b981', tables: [3] },
-    ];
-
-    setTables(defaultTables);
-    setZones(defaultZones);
-  };
-
-  const addTable = () => {
-    // Find a good position for the new table (avoid overlaps)
-    const newId = Math.max(...tables.map(t => t.id), 0) + 1;
-    let x = 50;
-    let y = 50;
-    
-    // Try to find an empty spot
-    for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 8; col++) {
-        const testX = 50 + col * 100;
-        const testY = 50 + row * 100;
-        
-        const hasOverlap = tables.some(table => {
-          const distance = Math.sqrt(Math.pow(table.x - testX, 2) + Math.pow(table.y - testY, 2));
-          return distance < 120; // Minimum distance between tables
-        });
-        
-        if (!hasOverlap) {
-          x = testX;
-          y = testY;
-          break;
+  // Table management functions with better error handling
+  const addTable = useCallback(() => {
+    try {
+      // Find optimal position for new table
+      const newId = Math.max(...tables.map(t => t.id), 0) + 1;
+      let x = 50;
+      let y = 50;
+      
+      // Smart placement algorithm
+      outerLoop: for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 8; col++) {
+          const testX = 50 + col * 100;
+          const testY = 50 + row * 100;
+          
+          const hasOverlap = tables.some(table => {
+            const distance = Math.sqrt(Math.pow(table.x - testX, 2) + Math.pow(table.y - testY, 2));
+            return distance < 120; // Minimum distance between tables
+          });
+          
+          if (!hasOverlap) {
+            x = testX;
+            y = testY;
+            break outerLoop;
+          }
         }
       }
-      if (x !== 50 || y !== 50) break;
+
+      const newTable: Table = {
+        id: newId,
+        number: `${newId}`,
+        seats: 4,
+        status: 'available',
+        shape: 'circle',
+        x,
+        y,
+        width: 80,
+        height: 80
+      };
+      
+      setTables(prevTables => [...prevTables, newTable]);
+      setSelectedTable(newTable);
+    } catch (error) {
+      console.error('Error adding table:', error);
     }
+  }, [tables]);
 
-    const newTable: Table = {
-      id: newId,
-      number: `${newId}`,
-      seats: 4,
-      status: 'available',
-      shape: 'circle',
-      x,
-      y,
-      width: 80,
-      height: 80
-    };
-    setTables([...tables, newTable]);
-    setSelectedTable(newTable);
-  };
+  const updateTable = useCallback((updatedTable: Table) => {
+    setTables(prevTables => 
+      prevTables.map(t => t.id === updatedTable.id ? updatedTable : t)
+    );
+  }, []);
 
-  const updateTable = (updatedTable: Table) => {
-    setTables(tables.map(t => t.id === updatedTable.id ? updatedTable : t));
-  };
-
-  const deleteTable = (tableId: number) => {
-    setTables(tables.filter(t => t.id !== tableId));
+  const deleteTable = useCallback((tableId: number) => {
+    setTables(prevTables => prevTables.filter(t => t.id !== tableId));
     if (selectedTable?.id === tableId) {
       setSelectedTable(null);
     }
-  };
+  }, [selectedTable]);
 
-  const saveConfiguration = () => {
-    console.log('Saving table configuration...', { tables, zones });
-  };
-
-  // Drag and Drop handlers
-  const handleMouseDown = (e: React.MouseEvent, table: Table) => {
+  // Improved drag and drop handlers with better type safety
+  const handleMouseDown = useCallback((e: React.MouseEvent, table: Table) => {
     e.preventDefault();
-    setIsDragging(true);
-    setDraggedTable(table);
-    setSelectedTable(table);
     
     const rect = e.currentTarget.getBoundingClientRect();
     const containerRect = e.currentTarget.parentElement?.getBoundingClientRect();
     
     if (containerRect) {
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+      setDragState({
+        isDragging: true,
+        draggedTable: table,
+        dragOffset: {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        }
       });
+      setSelectedTable(table);
     }
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !draggedTable) return;
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragState.isDragging || !dragState.draggedTable) return;
     
     e.preventDefault();
     const containerRect = e.currentTarget.getBoundingClientRect();
     
-    let newX = e.clientX - containerRect.left - dragOffset.x;
-    let newY = e.clientY - containerRect.top - dragOffset.y;
+    let newX = e.clientX - containerRect.left - dragState.dragOffset.x;
+    let newY = e.clientY - containerRect.top - dragState.dragOffset.y;
     
     // Grid snapping
     if (snapToGrid) {
@@ -234,34 +273,37 @@ export default function TableManagementPage() {
     }
     
     // Bounds checking
-    const maxX = containerRect.width - draggedTable.width;
-    const maxY = containerRect.height - draggedTable.height;
+    const maxX = containerRect.width - dragState.draggedTable.width;
+    const maxY = containerRect.height - dragState.draggedTable.height;
     
     const boundedX = Math.max(0, Math.min(newX, maxX));
     const boundedY = Math.max(0, Math.min(newY, maxY));
     
-    const updatedTable = { ...draggedTable, x: boundedX, y: boundedY };
+    const updatedTable = { ...dragState.draggedTable, x: boundedX, y: boundedY };
     updateTable(updatedTable);
-    setDraggedTable(updatedTable);
-  };
+    setDragState(prev => ({ ...prev, draggedTable: updatedTable }));
+  }, [dragState, snapToGrid, gridSize, updateTable]);
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setDraggedTable(null);
-    setDragOffset({ x: 0, y: 0 });
-  };
+  const handleMouseUp = useCallback(() => {
+    setDragState({
+      isDragging: false,
+      draggedTable: null,
+      dragOffset: { x: 0, y: 0 }
+    });
+  }, []);
 
-  // Handle mouse leave to stop dragging if cursor leaves container
-  const handleMouseLeave = () => {
-    if (isDragging) {
-      setIsDragging(false);
-      setDraggedTable(null);
-      setDragOffset({ x: 0, y: 0 });
+  const handleMouseLeave = useCallback(() => {
+    if (dragState.isDragging) {
+      setDragState({
+        isDragging: false,
+        draggedTable: null,
+        dragOffset: { x: 0, y: 0 }
+      });
     }
-  };
+  }, [dragState.isDragging]);
 
-  // Floor Analytics Calculations
-  const calculateFloorAnalytics = (): FloorAnalytics => {
+  // Floor Analytics Calculations (memoized for performance)
+  const calculateFloorAnalytics = useCallback((): FloorAnalytics => {
     const totalArea = floorPlan.width * floorPlan.height; // sq ft
     const tableArea = tables.reduce((sum, table) => {
       const widthFt = table.width / floorPlan.scale;
@@ -270,10 +312,10 @@ export default function TableManagementPage() {
     }, 0);
     
     const capacity = tables.reduce((sum, table) => sum + table.seats, 0);
-    const utilization = (tableArea / totalArea) * 100;
+    const utilization = totalArea > 0 ? (tableArea / totalArea) * 100 : 0;
     const walkwayArea = totalArea - tableArea;
-    const tablesPerSqFt = tables.length / totalArea;
-    const averageTableSize = capacity / tables.length || 0;
+    const tablesPerSqFt = totalArea > 0 ? tables.length / totalArea : 0;
+    const averageTableSize = tables.length > 0 ? capacity / tables.length : 0;
 
     return {
       totalArea,
@@ -284,12 +326,12 @@ export default function TableManagementPage() {
       tablesPerSqFt,
       averageTableSize
     };
-  };
+  }, [floorPlan.width, floorPlan.height, floorPlan.scale, tables]);
 
-  // Add Fixture Function
-  const addFixture = (type: Fixture['type']) => {
+  // Fixture management with proper typing
+  const addFixture = useCallback((type: FixtureType) => {
     const newFixture: Fixture = {
-      id: `fixture-${Date.now()}`,
+      id: `fixture-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type,
       x: 100,
       y: 100,
@@ -298,24 +340,27 @@ export default function TableManagementPage() {
       rotation: 0,
       label: `${type.charAt(0).toUpperCase() + type.slice(1)} ${fixtures.length + 1}`
     };
-    setFixtures([...fixtures, newFixture]);
-  };
+    setFixtures(prevFixtures => [...prevFixtures, newFixture]);
+  }, [fixtures.length]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'available': return 'bg-green-500';
-      case 'occupied': return 'bg-red-500';
-      case 'reserved': return 'bg-yellow-500';
-      case 'out-of-service': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  // Utility function for status colors
+  const getStatusColor = useCallback((status: TableStatus): string => {
+    const colorMap: Record<TableStatus, string> = {
+      'available': 'bg-green-500',
+      'occupied': 'bg-red-500',
+      'reserved': 'bg-yellow-500',
+      'out-of-service': 'bg-gray-500'
+    };
+    return colorMap[status] || 'bg-gray-500';
+  }, []);
 
-  const renderTable = (table: Table) => {
+  // Render functions with proper typing and accessibility
+  const renderTable = useCallback((table: Table) => {
     const isSelected = selectedTable?.id === table.id;
-    const beingDragged = draggedTable?.id === table.id;
-    const baseClasses = `absolute border-2 cursor-move transition-all duration-200 flex items-center justify-center text-white font-semibold select-none`;
-    const shapeClasses = table.shape === 'circle' ? 'rounded-full' : table.shape === 'square' ? 'rounded-lg' : 'rounded-lg';
+    const beingDragged = dragState.draggedTable?.id === table.id;
+    
+    const baseClasses = "absolute border-2 cursor-move transition-all duration-200 flex items-center justify-center text-white font-semibold select-none";
+    const shapeClasses = table.shape === 'circle' ? 'rounded-full' : 'rounded-lg';
     const statusClasses = getStatusColor(table.status);
     const selectedClasses = isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-300';
     const dragClasses = beingDragged ? 'shadow-lg z-10 scale-105' : '';
@@ -332,25 +377,34 @@ export default function TableManagementPage() {
         }}
         onMouseDown={(e) => handleMouseDown(e, table)}
         title={`Table ${table.number} - ${table.seats} seats - ${table.status}`}
+        role="button"
+        tabIndex={0}
+        aria-label={`Table ${table.number}, ${table.seats} seats, ${table.status}`}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            setSelectedTable(table);
+          }
+        }}
       >
         <span className="text-sm pointer-events-none">{table.number}</span>
       </div>
     );
-  };
+  }, [selectedTable, dragState.draggedTable, getStatusColor, handleMouseDown]);
 
-  const renderFixture = (fixture: Fixture) => {
+  const renderFixture = useCallback((fixture: Fixture) => {
     const isSelected = selectedFixture?.id === fixture.id;
-    const getFixtureStyle = () => {
-      switch (fixture.type) {
-        case 'wall': return 'bg-gray-800 border-gray-900';
-        case 'door': return 'bg-yellow-600 border-yellow-700';
-        case 'window': return 'bg-blue-300 border-blue-400';
-        case 'bar': return 'bg-amber-700 border-amber-800';
-        case 'kitchen': return 'bg-red-600 border-red-700';
-        case 'restroom': return 'bg-purple-500 border-purple-600';
-        case 'entrance': return 'bg-green-600 border-green-700';
-        default: return 'bg-gray-500 border-gray-600';
-      }
+    
+    const getFixtureStyle = (): string => {
+      const styleMap: Record<FixtureType, string> = {
+        'wall': 'bg-gray-800 border-gray-900',
+        'door': 'bg-yellow-600 border-yellow-700',
+        'window': 'bg-blue-300 border-blue-400',
+        'bar': 'bg-amber-700 border-amber-800',
+        'kitchen': 'bg-red-600 border-red-700',
+        'restroom': 'bg-purple-500 border-purple-600',
+        'entrance': 'bg-green-600 border-green-700'
+      };
+      return styleMap[fixture.type] || 'bg-gray-500 border-gray-600';
     };
 
     return (
@@ -366,11 +420,19 @@ export default function TableManagementPage() {
         }}
         onClick={() => setSelectedFixture(fixture)}
         title={fixture.label}
+        role="button"
+        tabIndex={0}
+        aria-label={`${fixture.type} fixture: ${fixture.label}`}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            setSelectedFixture(fixture);
+          }
+        }}
       >
-        <span className="pointer-events-none">{fixture.label}</span>
+        <span className="pointer-events-none truncate px-1">{fixture.label}</span>
       </div>
     );
-  };
+  }, [selectedFixture]);
 
   return (
     <AppLayout>
@@ -392,7 +454,7 @@ export default function TableManagementPage() {
                   <span className="text-yellow-600">Reserved: {tables.filter(t => t.status === 'reserved').length}</span>
                 </div>
                 {selectedTable && <span className="text-blue-600 font-medium">Selected: Table {selectedTable.number}</span>}
-                {isDragging && <span className="text-orange-600 font-medium">Dragging...</span>}
+                {dragState.isDragging && <span className="text-orange-600 font-medium">Dragging...</span>}
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -524,7 +586,7 @@ export default function TableManagementPage() {
                       </div>
                       <div>
                         <Label htmlFor="status">Status</Label>
-                        <Select value={selectedTable.status} onValueChange={(value: any) => updateTable({ ...selectedTable, status: value })}>
+                        <Select value={selectedTable.status} onValueChange={(value: TableStatus) => updateTable({ ...selectedTable, status: value })}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -538,7 +600,7 @@ export default function TableManagementPage() {
                       </div>
                       <div>
                         <Label htmlFor="shape">Shape</Label>
-                        <Select value={selectedTable.shape} onValueChange={(value: any) => updateTable({ ...selectedTable, shape: value })}>
+                        <Select value={selectedTable.shape} onValueChange={(value: TableShape) => updateTable({ ...selectedTable, shape: value })}>
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -637,7 +699,7 @@ export default function TableManagementPage() {
                         <Input
                           id="floorName"
                           value={floorPlan.name}
-                          onChange={(e) => setFloorPlan({...floorPlan, name: e.target.value})}
+                          onChange={(e) => setFloorPlan(prev => ({...prev, name: e.target.value}))}
                           placeholder="e.g., Main Dining Area"
                         />
                       </div>
@@ -648,7 +710,7 @@ export default function TableManagementPage() {
                             id="floorWidth"
                             type="number"
                             value={floorPlan.width}
-                            onChange={(e) => setFloorPlan({...floorPlan, width: parseInt(e.target.value) || 1})}
+                            onChange={(e) => setFloorPlan(prev => ({...prev, width: parseInt(e.target.value) || 1}))}
                           />
                         </div>
                         <div>
@@ -657,7 +719,7 @@ export default function TableManagementPage() {
                             id="floorHeight"
                             type="number"
                             value={floorPlan.height}
-                            onChange={(e) => setFloorPlan({...floorPlan, height: parseInt(e.target.value) || 1})}
+                            onChange={(e) => setFloorPlan(prev => ({...prev, height: parseInt(e.target.value) || 1}))}
                           />
                         </div>
                       </div>
@@ -667,7 +729,7 @@ export default function TableManagementPage() {
                           id="floorScale"
                           type="number"
                           value={floorPlan.scale}
-                          onChange={(e) => setFloorPlan({...floorPlan, scale: parseInt(e.target.value) || 1})}
+                          onChange={(e) => setFloorPlan(prev => ({...prev, scale: parseInt(e.target.value) || 1}))}
                           min="5"
                           max="50"
                         />
@@ -705,13 +767,13 @@ export default function TableManagementPage() {
                   <div className="space-y-4">
                     <h3 className="font-semibold">Restaurant Type Presets</h3>
                     <div className="grid grid-cols-3 gap-3">
-                      <Button variant="outline" onClick={() => setFloorPlan({...floorPlan, width: 30, height: 20})}>
+                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 30, height: 20}))}>
                         Small Café (30×20 ft)
                       </Button>
-                      <Button variant="outline" onClick={() => setFloorPlan({...floorPlan, width: 50, height: 35})}>
+                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 50, height: 35}))}>
                         Medium Restaurant (50×35 ft)
                       </Button>
-                      <Button variant="outline" onClick={() => setFloorPlan({...floorPlan, width: 80, height: 60})}>
+                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 80, height: 60}))}>
                         Large Restaurant (80×60 ft)
                       </Button>
                     </div>
@@ -781,7 +843,7 @@ export default function TableManagementPage() {
                         </div>
                         <div>
                           <Label htmlFor="fixtureType">Type</Label>
-                          <Select value={selectedFixture.type} onValueChange={(value: any) => {
+                          <Select value={selectedFixture.type} onValueChange={(value: FixtureType) => {
                             const updated = {...selectedFixture, type: value};
                             setSelectedFixture(updated);
                             setFixtures(fixtures.map(f => f.id === updated.id ? updated : f));
