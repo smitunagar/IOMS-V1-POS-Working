@@ -83,6 +83,12 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/apps/ioms">
 }
 
+// Validate ..\..\src\app\apps\pos\table-management-3d\page.tsx
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\apps\\pos\\table-management-3d\\page.js")
+  handler satisfies AppPageConfig<"/apps/pos/table-management-3d">
+}
+
 // Validate ..\..\src\app\apps\pos\table-management\page.tsx
 {
   const handler = {} as typeof import("..\\..\\src\\app\\apps\\pos\\table-management\\page.js")
@@ -329,6 +335,30 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies AppPageConfig<"/waste-watchdog">
 }
 
+// Validate ..\..\src\app\api\3d-table-management\layouts\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\3d-table-management\\layouts\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/3d-table-management/layouts">
+}
+
+// Validate ..\..\src\app\api\3d-table-management\qr-export\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\3d-table-management\\qr-export\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/3d-table-management/qr-export">
+}
+
+// Validate ..\..\src\app\api\3d-table-management\scanning\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\3d-table-management\\scanning\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/3d-table-management/scanning">
+}
+
+// Validate ..\..\src\app\api\3d-table-management\table-status\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\3d-table-management\\table-status\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/3d-table-management/table-status">
+}
+
 // Validate ..\..\src\app\api\ai-allergen\route.ts
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\ai-allergen\\route.js")
@@ -443,10 +473,28 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   handler satisfies RouteHandlerConfig<"/api/pos/floor/layout/draft">
 }
 
+// Validate ..\..\src\app\api\pos\qr\[tableId]\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\qr\\[tableId]\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/qr/[tableId]">
+}
+
 // Validate ..\..\src\app\api\pos\reservation\route.ts
 {
   const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\reservation\\route.js")
   handler satisfies RouteHandlerConfig<"/api/pos/reservation">
+}
+
+// Validate ..\..\src\app\api\pos\scan\session\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\scan\\session\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/scan/session">
+}
+
+// Validate ..\..\src\app\api\pos\table-events\route.ts
+{
+  const handler = {} as typeof import("..\\..\\src\\app\\api\\pos\\table-events\\route.js")
+  handler satisfies RouteHandlerConfig<"/api/pos/table-events">
 }
 
 // Validate ..\..\src\app\api\pos\table\status\route.ts

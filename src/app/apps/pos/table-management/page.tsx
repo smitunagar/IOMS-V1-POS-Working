@@ -1,1015 +1,922 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Settings, Save, Grid3x3, Layout, BarChart3, Download, Upload, Home, DoorOpen, Square, Scissors, Users, Target } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { FloorEditorCanvas } from '@/components/table-management/FloorEditorCanvas';
+import { BottomToolbar } from '@/components/table-management/BottomToolbar';
+import { SaveDraftButton } from '@/components/table-management/SaveDraftButton';
+import { ActivateLayoutButton } from '@/components/table-management/ActivateLayoutButton';
+import { ZoneLegend } from '@/components/table-management/ZoneLegend';
+import { TableMergeTool } from '@/components/table-management/TableMergeTool';
+import { TableSplitTool } from '@/components/table-management/TableSplitTool';
+import { QRCodeManager } from '@/components/table-management/QRCodeManager';
+import { ReservationLink } from '@/components/table-management/ReservationLink';
+import { Table3DControls } from '@/components/table-management/Table3DControls';
+import { useTableStore } from '@/contexts/tableStore';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { 
+  Layout, 
+  Grid3X3, 
+  Palette, 
+  Settings, 
+  History, 
+  Users, 
+  QrCode,
+  Calendar,
+  Merge,
+  Split,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Layers,
+  Download,
+  Upload,
+  Camera,
+  Smartphone,
+  Monitor,
+  RotateCcw,
+  Move,
+  AlignCenter,
+  Grid,
+  Eye,
+  EyeOff,
+  Zap,
+  TrendingUp,
+  PieChart,
+  BarChart3,
+  Maximize2,
+  HelpCircle,
+  Command,
+  RefreshCw,
+  Save,
+  FileOutput,
+  Scan
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
-// Type definitions with proper TypeScript interfaces
-type TableStatus = 'available' | 'occupied' | 'reserved' | 'out-of-service';
-type TableShape = 'circle' | 'square' | 'rectangle';
-type FixtureType = 'wall' | 'door' | 'window' | 'bar' | 'kitchen' | 'restroom' | 'entrance';
-
-interface Table {
-  id: number;
-  number: string;
-  seats: number;
-  status: TableStatus;
-  zone?: string;
-  shape: TableShape;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface Zone {
-  id: string;
-  name: string;
-  color: string;
-  tables: number[];
-}
-
-interface FloorPlan {
-  id: string;
-  name: string;
-  width: number;  // in feet
-  height: number; // in feet
-  scale: number;  // pixels per foot
-  zones: Zone[];
-  fixtures: Fixture[];
-  created: Date;
-  lastModified: Date;
-}
-
-interface Fixture {
-  id: string;
-  type: FixtureType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  label?: string;
-}
-
-interface FloorAnalytics {
-  totalArea: number;        // in sq ft
-  tableArea: number;        // area occupied by tables
-  walkwayArea: number;      // area for walking
-  utilization: number;      // percentage of space used
-  capacity: number;         // total seating capacity
-  tablesPerSqFt: number;    // efficiency metric
-  averageTableSize: number; // average seats per table
-}
-
-interface DragState {
-  isDragging: boolean;
-  draggedTable: Table | null;
-  dragOffset: { x: number; y: number };
-}
+// Mock utilization data for sparkline
+const utilizationData = [
+  { hour: '9am', utilization: 45 },
+  { hour: '10am', utilization: 62 },
+  { hour: '11am', utilization: 78 },
+  { hour: '12pm', utilization: 95 },
+  { hour: '1pm', utilization: 88 },
+  { hour: '2pm', utilization: 71 },
+  { hour: '3pm', utilization: 54 }
+];
 
 export default function TableManagementPage() {
-  // State management with proper typing
-  const [tables, setTables] = useState<Table[]>([]);
-  const [zones, setZones] = useState<Zone[]>([]);
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('layout');
-  const [snapToGrid, setSnapToGrid] = useState<boolean>(true);
-  
-  // Drag state consolidated into single object
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    draggedTable: null,
-    dragOffset: { x: 0, y: 0 }
-  });
-  
-  const gridSize = 20;
-  
-  // Floor Plan Management with proper typing
-  const [floorPlan, setFloorPlan] = useState<FloorPlan>({
-    id: 'main-floor',
-    name: 'Main Dining Area',
-    width: 40,  // 40 feet
-    height: 30, // 30 feet
-    scale: 15,  // 15 pixels per foot
-    zones: [],
-    fixtures: [],
-    created: new Date(),
-    lastModified: new Date()
-  });
-  const [fixtures, setFixtures] = useState<Fixture[]>([]);
-  const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
-  const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
+  const { 
+    tables, 
+    zones, 
+    fixtures,
+    selectedTableIds, 
+    isDraftMode, 
+    isLoading, 
+    error, 
+    validationErrors,
+    canUndo,
+    canRedo,
+    viewMode,
+    showGrid,
+    showZones,
+    gridSize,
+    snapToGrid,
+    hasOverlaps,
+    totalTables,
+    totalCapacity,
+    availableTables,
+    tableStates,
+    undo,
+    redo,
+    saveDraft,
+    activateLayout,
+    loadDraft,
+    setViewMode,
+    toggleGrid,
+    toggleZones,
+    setGridSize,
+    toggleSnapToGrid,
+    clearSelection,
+    exportLayout,
+    importLayout,
+    alignTables,
+    distributeTablesEvenly
+  } = useTableStore();
 
-  // Memoized functions for better performance
-  const loadTableConfiguration = useCallback(() => {
-    const defaultTables: Table[] = [
-      { id: 1, number: '1', seats: 4, status: 'available', zone: 'main', shape: 'circle', x: 100, y: 100, width: 80, height: 80 },
-      { id: 2, number: '2', seats: 2, status: 'occupied', zone: 'main', shape: 'square', x: 200, y: 100, width: 60, height: 60 },
-      { id: 3, number: '3', seats: 6, status: 'available', zone: 'patio', shape: 'rectangle', x: 300, y: 100, width: 100, height: 60 },
-    ];
+  const [activeTab, setActiveTab] = useState('designer');
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
 
-    const defaultZones: Zone[] = [
-      { id: 'main', name: 'Main Dining', color: '#3b82f6', tables: [1, 2] },
-      { id: 'patio', name: 'Patio', color: '#10b981', tables: [3] },
-    ];
-
-    setTables(defaultTables);
-    setZones(defaultZones);
-  }, []);
-
-  const saveConfiguration = useCallback(() => {
-    try {
-      // TODO: Implement actual save functionality to backend/localStorage
-      const configData = { tables, zones, floorPlan, fixtures };
-      // In production, this would save to a database or localStorage
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Saving table configuration...', configData);
-      }
-      // Show success feedback to user
-      // toast.success('Configuration saved successfully!');
-    } catch (error) {
-      console.error('Failed to save configuration:', error);
-      // toast.error('Failed to save configuration');
-    }
-  }, [tables, zones, floorPlan, fixtures]);
-
+  // Load draft on mount
   useEffect(() => {
-    loadTableConfiguration();
-    
-    // Keyboard shortcuts handler
+    loadDraft('main-floor');
+  }, [loadDraft]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Delete' && selectedTable) {
-        deleteTable(selectedTable.id);
+      // Ctrl/Cmd + Z for undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
       }
-      if (e.key === 'Escape') {
-        setSelectedTable(null);
+      
+      // Ctrl/Cmd + Shift + Z for redo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        if (canRedo) redo();
       }
+      
+      // Ctrl/Cmd + S for save
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        saveConfiguration();
+        saveDraft('main-floor');
+      }
+      
+      // Escape to clear selection
+      if (e.key === 'Escape') {
+        clearSelection();
+      }
+      
+      // ? to show shortcuts
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        setShowShortcuts(true);
+      }
+      
+      // G to toggle grid
+      if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+        toggleGrid();
+      }
+      
+      // Z to toggle zones
+      if (e.key === 'z' && !e.ctrlKey && !e.metaKey) {
+        toggleZones();
+      }
+      
+      // 1-3 for view modes
+      if (e.key === '2' && !e.ctrlKey && !e.metaKey) {
+        setViewMode('2D');
+      }
+      if (e.key === '3' && !e.ctrlKey && !e.metaKey) {
+        setViewMode('3D');
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedTable, loadTableConfiguration, saveConfiguration]);
+  }, [canUndo, canRedo, undo, redo, saveDraft, clearSelection, toggleGrid, toggleZones, setViewMode]);
 
-  // Initialize sample fixtures (memoized to prevent unnecessary re-creation)
-  useEffect(() => {
-    if (fixtures.length === 0) {
-      const sampleFixtures: Fixture[] = [
-        { id: 'wall-north', type: 'wall', x: 0, y: 0, width: 600, height: 20, rotation: 0, label: 'North Wall' },
-        { id: 'wall-west', type: 'wall', x: 0, y: 0, width: 20, height: 450, rotation: 0, label: 'West Wall' },
-        { id: 'wall-south', type: 'wall', x: 0, y: 430, width: 600, height: 20, rotation: 0, label: 'South Wall' },
-        { id: 'wall-east', type: 'wall', x: 580, y: 0, width: 20, height: 450, rotation: 0, label: 'East Wall' },
-        { id: 'main-entrance', type: 'entrance', x: 250, y: 430, width: 100, height: 20, rotation: 0, label: 'Main Entrance' },
-        { id: 'kitchen-area', type: 'kitchen', x: 450, y: 50, width: 120, height: 80, rotation: 0, label: 'Kitchen' },
-        { id: 'bar-area', type: 'bar', x: 50, y: 50, width: 150, height: 60, rotation: 0, label: 'Bar Area' },
-      ];
-      setFixtures(sampleFixtures);
-    }
-  }, [fixtures.length]);
-
-  // Table management functions with better error handling
-  const addTable = useCallback(() => {
-    try {
-      // Find optimal position for new table
-      const newId = Math.max(...tables.map(t => t.id), 0) + 1;
-      let x = 50;
-      let y = 50;
-      
-      // Smart placement algorithm
-      outerLoop: for (let row = 0; row < 5; row++) {
-        for (let col = 0; col < 8; col++) {
-          const testX = 50 + col * 100;
-          const testY = 50 + row * 100;
-          
-          const hasOverlap = tables.some(table => {
-            const distance = Math.sqrt(Math.pow(table.x - testX, 2) + Math.pow(table.y - testY, 2));
-            return distance < 120; // Minimum distance between tables
-          });
-          
-          if (!hasOverlap) {
-            x = testX;
-            y = testY;
-            break outerLoop;
-          }
-        }
-      }
-
-      const newTable: Table = {
-        id: newId,
-        number: `${newId}`,
-        seats: 4,
-        status: 'available',
-        shape: 'circle',
-        x,
-        y,
-        width: 80,
-        height: 80
-      };
-      
-      setTables(prevTables => [...prevTables, newTable]);
-      setSelectedTable(newTable);
-    } catch (error) {
-      console.error('Error adding table:', error);
-    }
-  }, [tables]);
-
-  const updateTable = useCallback((updatedTable: Table) => {
-    setTables(prevTables => 
-      prevTables.map(t => t.id === updatedTable.id ? updatedTable : t)
-    );
-  }, []);
-
-  const deleteTable = useCallback((tableId: number) => {
-    setTables(prevTables => prevTables.filter(t => t.id !== tableId));
-    if (selectedTable?.id === tableId) {
-      setSelectedTable(null);
-    }
-  }, [selectedTable]);
-
-  // Improved drag and drop handlers with better type safety
-  const handleMouseDown = useCallback((e: React.MouseEvent, table: Table) => {
-    e.preventDefault();
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const containerRect = e.currentTarget.parentElement?.getBoundingClientRect();
-    
-    if (containerRect) {
-      setDragState({
-        isDragging: true,
-        draggedTable: table,
-        dragOffset: {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        }
-      });
-      setSelectedTable(table);
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!dragState.isDragging || !dragState.draggedTable) return;
-    
-    e.preventDefault();
-    const containerRect = e.currentTarget.getBoundingClientRect();
-    
-    let newX = e.clientX - containerRect.left - dragState.dragOffset.x;
-    let newY = e.clientY - containerRect.top - dragState.dragOffset.y;
-    
-    // Grid snapping
-    if (snapToGrid) {
-      newX = Math.round(newX / gridSize) * gridSize;
-      newY = Math.round(newY / gridSize) * gridSize;
-    }
-    
-    // Bounds checking
-    const maxX = containerRect.width - dragState.draggedTable.width;
-    const maxY = containerRect.height - dragState.draggedTable.height;
-    
-    const boundedX = Math.max(0, Math.min(newX, maxX));
-    const boundedY = Math.max(0, Math.min(newY, maxY));
-    
-    const updatedTable = { ...dragState.draggedTable, x: boundedX, y: boundedY };
-    updateTable(updatedTable);
-    setDragState(prev => ({ ...prev, draggedTable: updatedTable }));
-  }, [dragState, snapToGrid, gridSize, updateTable]);
-
-  const handleMouseUp = useCallback(() => {
-    setDragState({
-      isDragging: false,
-      draggedTable: null,
-      dragOffset: { x: 0, y: 0 }
+  // Handle successful activation
+  const handleActivationSuccess = useCallback(() => {
+    setShowSuccessBanner(true);
+    setTimeout(() => setShowSuccessBanner(false), 5000);
+    toast({
+      title: "Layout Activated!",
+      description: "Your table layout is now live and ready for service.",
     });
   }, []);
 
-  const handleMouseLeave = useCallback(() => {
-    if (dragState.isDragging) {
-      setDragState({
-        isDragging: false,
-        draggedTable: null,
-        dragOffset: { x: 0, y: 0 }
-      });
-    }
-  }, [dragState.isDragging]);
-
-  // Floor Analytics Calculations (memoized for performance)
-  const calculateFloorAnalytics = useCallback((): FloorAnalytics => {
-    const totalArea = floorPlan.width * floorPlan.height; // sq ft
-    const tableArea = tables.reduce((sum, table) => {
-      const widthFt = table.width / floorPlan.scale;
-      const heightFt = table.height / floorPlan.scale;
-      return sum + (widthFt * heightFt);
-    }, 0);
-    
-    const capacity = tables.reduce((sum, table) => sum + table.seats, 0);
-    const utilization = totalArea > 0 ? (tableArea / totalArea) * 100 : 0;
-    const walkwayArea = totalArea - tableArea;
-    const tablesPerSqFt = totalArea > 0 ? tables.length / totalArea : 0;
-    const averageTableSize = tables.length > 0 ? capacity / tables.length : 0;
-
-    return {
-      totalArea,
-      tableArea,
-      walkwayArea,
-      utilization,
-      capacity,
-      tablesPerSqFt,
-      averageTableSize
-    };
-  }, [floorPlan.width, floorPlan.height, floorPlan.scale, tables]);
-
-  // Fixture management with proper typing
-  const addFixture = useCallback((type: FixtureType) => {
-    const newFixture: Fixture = {
-      id: `fixture-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      x: 100,
-      y: 100,
-      width: type === 'wall' ? 200 : 80,
-      height: type === 'wall' ? 20 : 60,
-      rotation: 0,
-      label: `${type.charAt(0).toUpperCase() + type.slice(1)} ${fixtures.length + 1}`
-    };
-    setFixtures(prevFixtures => [...prevFixtures, newFixture]);
-  }, [fixtures.length]);
-
-  // Utility function for status colors
-  const getStatusColor = useCallback((status: TableStatus): string => {
-    const colorMap: Record<TableStatus, string> = {
-      'available': 'bg-green-500',
-      'occupied': 'bg-red-500',
-      'reserved': 'bg-yellow-500',
-      'out-of-service': 'bg-gray-500'
-    };
-    return colorMap[status] || 'bg-gray-500';
-  }, []);
-
-  // Render functions with proper typing and accessibility
-  const renderTable = useCallback((table: Table) => {
-    const isSelected = selectedTable?.id === table.id;
-    const beingDragged = dragState.draggedTable?.id === table.id;
-    
-    const baseClasses = "absolute border-2 cursor-move transition-all duration-200 flex items-center justify-center text-white font-semibold select-none";
-    const shapeClasses = table.shape === 'circle' ? 'rounded-full' : 'rounded-lg';
-    const statusClasses = getStatusColor(table.status);
-    const selectedClasses = isSelected ? 'border-blue-500 ring-2 ring-blue-300' : 'border-gray-300';
-    const dragClasses = beingDragged ? 'shadow-lg z-10 scale-105' : '';
-
-    return (
-      <div
-        key={table.id}
-        className={`${baseClasses} ${shapeClasses} ${statusClasses} ${selectedClasses} ${dragClasses}`}
-        style={{
-          left: table.x,
-          top: table.y,
-          width: table.width,
-          height: table.height,
-        }}
-        onMouseDown={(e) => handleMouseDown(e, table)}
-        title={`Table ${table.number} - ${table.seats} seats - ${table.status}`}
-        role="button"
-        tabIndex={0}
-        aria-label={`Table ${table.number}, ${table.seats} seats, ${table.status}`}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            setSelectedTable(table);
-          }
-        }}
-      >
-        <span className="text-sm pointer-events-none">{table.number}</span>
-      </div>
-    );
-  }, [selectedTable, dragState.draggedTable, getStatusColor, handleMouseDown]);
-
-  const renderFixture = useCallback((fixture: Fixture) => {
-    const isSelected = selectedFixture?.id === fixture.id;
-    
-    const getFixtureStyle = (): string => {
-      const styleMap: Record<FixtureType, string> = {
-        'wall': 'bg-gray-800 border-gray-900',
-        'door': 'bg-yellow-600 border-yellow-700',
-        'window': 'bg-blue-300 border-blue-400',
-        'bar': 'bg-amber-700 border-amber-800',
-        'kitchen': 'bg-red-600 border-red-700',
-        'restroom': 'bg-purple-500 border-purple-600',
-        'entrance': 'bg-green-600 border-green-700'
-      };
-      return styleMap[fixture.type] || 'bg-gray-500 border-gray-600';
-    };
-
-    return (
-      <div
-        key={fixture.id}
-        className={`absolute border-2 cursor-pointer transition-all duration-200 flex items-center justify-center text-white text-xs font-medium select-none ${getFixtureStyle()} ${isSelected ? 'ring-2 ring-blue-300' : ''}`}
-        style={{
-          left: fixture.x,
-          top: fixture.y,
-          width: fixture.width,
-          height: fixture.height,
-          transform: `rotate(${fixture.rotation}deg)`,
-        }}
-        onClick={() => setSelectedFixture(fixture)}
-        title={fixture.label}
-        role="button"
-        tabIndex={0}
-        aria-label={`${fixture.type} fixture: ${fixture.label}`}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            setSelectedFixture(fixture);
-          }
-        }}
-      >
-        <span className="pointer-events-none truncate px-1">{fixture.label}</span>
-      </div>
-    );
-  }, [selectedFixture]);
+  // Computed values
+  const hasErrors = validationErrors.length > 0;
+  const selectedTable = selectedTableIds.length === 1 ? tables.find(t => t.id === selectedTableIds[0]) : undefined;
+  const selectedTables = tables.filter(t => selectedTableIds.includes(t.id));
+  
+  const utilizationRate = totalCapacity > 0 ? Math.round((totalCapacity - availableTables) / totalCapacity * 100) : 0;
+  const occupiedTables = Object.values(tableStates).filter(status => status === 'SEATED').length;
+  const reservedTables = Object.values(tableStates).filter(status => status === 'RESERVED').length;
+  const dirtyTables = Object.values(tableStates).filter(status => status === 'DIRTY').length;
 
   return (
-    <AppLayout>
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Table Management & Floor Planning</h1>
-              <p className="text-gray-600 mt-1">Configure dining area layout, floor plan, and restaurant setup</p>
-              <div className="flex gap-6 mt-3 text-sm">
-                <div className="flex gap-4 text-gray-500">
-                  <span>📏 Floor: {floorPlan.width}×{floorPlan.height} ft ({floorPlan.width * floorPlan.height} sq ft)</span>
-                  <span>🪑 Tables: {tables.length}</span>
-                  <span>👥 Capacity: {tables.reduce((sum, t) => sum + t.seats, 0)} seats</span>
+    <AppLayout pageTitle="3D Table Management">
+      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        
+        {/* Success Banner */}
+        <AnimatePresence>
+          {showSuccessBanner && (
+            <motion.div
+              initial={{ opacity: 0, y: -50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 shadow-lg"
+            >
+              <div className="flex items-center justify-between max-w-7xl mx-auto">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle2 className="h-6 w-6" />
+                  <div>
+                    <h3 className="font-semibold">Layout Activated Successfully!</h3>
+                    <p className="text-sm opacity-90">
+                      Real-time table status tracking • QR code generation • Reservation management • Live analytics
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-4 text-gray-500">
-                  <span className="text-green-600">Available: {tables.filter(t => t.status === 'available').length}</span>
-                  <span className="text-red-600">Occupied: {tables.filter(t => t.status === 'occupied').length}</span>
-                  <span className="text-yellow-600">Reserved: {tables.filter(t => t.status === 'reserved').length}</span>
-                </div>
-                {selectedTable && <span className="text-blue-600 font-medium">Selected: Table {selectedTable.number}</span>}
-                {dragState.isDragging && <span className="text-orange-600 font-medium">Dragging...</span>}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowSuccessBanner(false)}
+                  className="text-white hover:bg-white/10"
+                >
+                  ×
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Header Section with KPIs */}
+        <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-2">
+                <Layout className="h-6 w-6 text-blue-600" />
+                <h1 className="text-2xl font-bold text-slate-900">3D Floor Plan Designer</h1>
+              </div>
+              
+              {/* KPI Cards */}
+              <div className="hidden lg:flex items-center space-x-4">
+                <Card className="p-3">
+                  <div className="flex items-center space-x-2">
+                    <Grid3X3 className="h-4 w-4 text-blue-600" />
+                    <div>
+                      <div className="text-sm font-medium">{totalTables}</div>
+                      <div className="text-xs text-slate-500">Tables</div>
+                    </div>
+                  </div>
+                </Card>
+                
+                <Card className="p-3">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-green-600" />
+                    <div>
+                      <div className="text-sm font-medium">{totalCapacity}</div>
+                      <div className="text-xs text-slate-500">Capacity</div>
+                    </div>
+                  </div>
+                </Card>
+                
+                <Card className="p-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col">
+                      <div className="text-xs text-slate-500">Available</div>
+                      <div className="text-sm font-medium text-green-600">{availableTables}</div>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="text-xs text-slate-500">Occupied</div>
+                      <div className="text-sm font-medium text-red-600">{occupiedTables}</div>
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="text-xs text-slate-500">Reserved</div>
+                      <div className="text-sm font-medium text-amber-600">{reservedTables}</div>
+                    </div>
+                  </div>
+                </Card>
+                
+                <Card className="p-3 min-w-[120px]">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-purple-600" />
+                    <div className="flex-1">
+                      <div className="text-sm font-medium">{utilizationRate}%</div>
+                      <div className="text-xs text-slate-500">Utilization</div>
+                      <ResponsiveContainer width="100%" height={20}>
+                        <LineChart data={utilizationData}>
+                          <Line 
+                            type="monotone" 
+                            dataKey="utilization" 
+                            stroke="#8b5cf6" 
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Badge variant={isDraftMode ? "secondary" : "default"} className="text-xs">
+                  {isDraftMode ? "Draft Mode" : "Live Layout"}
+                </Badge>
+                {hasErrors && (
+                  <Badge variant="destructive" className="text-xs animate-pulse">
+                    {validationErrors.length} Issues
+                  </Badge>
+                )}
+                {hasOverlaps && (
+                  <Badge variant="destructive" className="text-xs">
+                    Overlaps Detected
+                  </Badge>
+                )}
               </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={saveConfiguration} className="bg-blue-600 hover:bg-blue-700">
-                <Save className="w-4 h-4 mr-2" />
-                Save Layout
-              </Button>
-              <Button variant="outline" onClick={addTable}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Table
-              </Button>
-              <Button 
-                variant={snapToGrid ? "default" : "outline"} 
-                onClick={() => setSnapToGrid(!snapToGrid)}
-                size="sm"
-              >
-                <Grid3x3 className="w-4 h-4 mr-2" />
-                Snap to Grid
-              </Button>
-              <Button 
-                variant={showAnalytics ? "default" : "outline"} 
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                size="sm"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analytics
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                Import
-              </Button>
+
+            {/* Mode Switch & Actions */}
+            <div className="flex items-center space-x-3">
+              {/* 2D/3D Mode Switch */}
+              <div className="flex items-center space-x-2 bg-slate-100 rounded-lg p-1">
+                <Button
+                  variant={viewMode === '2D' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('2D')}
+                  className="text-xs px-3"
+                >
+                  <Monitor className="h-3 w-3 mr-1" />
+                  2D
+                </Button>
+                <Button
+                  variant={viewMode === '3D' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('3D')}
+                  className="text-xs px-3"
+                >
+                  <Layers className="h-3 w-3 mr-1" />
+                  3D
+                </Button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={undo}
+                  disabled={!canUndo}
+                  className="flex items-center space-x-1"
+                >
+                  <History className="h-4 w-4" />
+                  <span className="hidden sm:inline">Undo</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={redo}
+                  disabled={!canRedo}
+                  className="flex items-center space-x-1"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  <span className="hidden sm:inline">Redo</span>
+                </Button>
+                
+                <Separator orientation="vertical" className="h-6" />
+                
+                <SaveDraftButton />
+                <ActivateLayoutButton onSuccess={handleActivationSuccess} />
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowShortcuts(true)}
+                  className="flex items-center space-x-1"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="layout">Layout Designer</TabsTrigger>
-              <TabsTrigger value="floor-setup">Floor Setup</TabsTrigger>
-              <TabsTrigger value="fixtures">Fixtures</TabsTrigger>
-              <TabsTrigger value="tables">Table List</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
+          {/* Validation Errors */}
+          <AnimatePresence>
+            {hasErrors && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <Alert className="mt-4 border-red-200 bg-red-50">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">
+                    <strong>Layout Issues:</strong> {validationErrors.join(', ')}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-            <TabsContent value="layout" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Layout className="w-5 h-5" />
-                    Dining Area Layout ({floorPlan.width}×{floorPlan.height} ft)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {/* Scale and measurements */}
-                  <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
-                    <div>Scale: 1 foot = {floorPlan.scale} pixels</div>
-                    <div>Total Area: {(floorPlan.width * floorPlan.height).toLocaleString()} sq ft</div>
-                    <div>Grid: {snapToGrid ? `${gridSize}px` : 'Off'}</div>
-                  </div>
-                  
-                  <div 
-                    className={`relative bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 ${snapToGrid ? 'bg-grid' : ''}`}
-                    style={{ 
-                      height: `${floorPlan.height * floorPlan.scale}px`, 
-                      width: `${floorPlan.width * floorPlan.scale}px`,
-                      backgroundImage: snapToGrid ? `radial-gradient(circle, #ccc 1px, transparent 1px)` : 'none',
-                      backgroundSize: snapToGrid ? `${gridSize}px ${gridSize}px` : 'auto',
-                      maxHeight: '600px',
-                      maxWidth: '100%',
-                      overflow: 'auto'
-                    }}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    {/* Render fixtures first (background layer) */}
-                    {fixtures.map(renderFixture)}
-                    
-                    {/* Render tables (foreground layer) */}
-                    {tables.map(renderTable)}
-                    
-                    {/* Measurement rulers */}
-                    <div className="absolute top-0 left-0 w-full h-4 bg-gray-100 border-b flex items-center justify-center text-xs text-gray-600">
-                      {floorPlan.width} feet
-                    </div>
-                    <div className="absolute top-0 left-0 w-4 h-full bg-gray-100 border-r flex items-center justify-center text-xs text-gray-600" style={{ writingMode: 'vertical-lr' }}>
-                      {floorPlan.height} feet
-                    </div>
-                    
-                    {tables.length === 0 && fixtures.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                        <div className="text-center">
-                          <Home className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                          <p>Start designing your restaurant layout</p>
-                          <p className="text-sm">Add tables and fixtures to begin</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          
+          {/* Left Sidebar */}
+          <motion.div 
+            className="w-80 bg-white/80 backdrop-blur-sm border-r border-slate-200 flex flex-col"
+            initial={{ x: -320 }}
+            animate={{ x: 0 }}
+            transition={{ type: "spring", damping: 25 }}
+          >
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+              <TabsList className="grid w-full grid-cols-4 m-2">
+                <TabsTrigger value="designer" className="text-xs">
+                  <Settings className="h-4 w-4 mr-1" />
+                  Designer
+                </TabsTrigger>
+                <TabsTrigger value="zones" className="text-xs">
+                  <Palette className="h-4 w-4 mr-1" />
+                  Zones
+                </TabsTrigger>
+                <TabsTrigger value="tools" className="text-xs">
+                  <Merge className="h-4 w-4 mr-1" />
+                  Tools
+                </TabsTrigger>
+                <TabsTrigger value="export" className="text-xs">
+                  <QrCode className="h-4 w-4 mr-1" />
+                  Export
+                </TabsTrigger>
+              </TabsList>
 
-              {selectedTable && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Table Properties</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="tableNumber">Table Number</Label>
-                        <Input
-                          id="tableNumber"
-                          value={selectedTable.number}
-                          onChange={(e) => updateTable({ ...selectedTable, number: e.target.value })}
+              <div className="flex-1 overflow-y-auto">
+                <TabsContent value="designer" className="p-4 space-y-4">
+                  {/* View Controls */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Controls
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Show Grid</span>
+                        <Switch checked={showGrid} onCheckedChange={toggleGrid} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Show Zones</span>
+                        <Switch checked={showZones} onCheckedChange={toggleZones} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Snap to Grid</span>
+                        <Switch checked={snapToGrid} onCheckedChange={toggleSnapToGrid} />
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-sm">Grid Size: {gridSize}px</span>
+                        <Slider
+                          value={[gridSize]}
+                          onValueChange={([value]) => setGridSize(value)}
+                          min={8}
+                          max={40}
+                          step={4}
+                          className="w-full"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="seats">Seats</Label>
-                        <Input
-                          id="seats"
-                          type="number"
-                          value={selectedTable.seats}
-                          onChange={(e) => updateTable({ ...selectedTable, seats: parseInt(e.target.value) || 1 })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={selectedTable.status} onValueChange={(value: TableStatus) => updateTable({ ...selectedTable, status: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="available">Available</SelectItem>
-                            <SelectItem value="occupied">Occupied</SelectItem>
-                            <SelectItem value="reserved">Reserved</SelectItem>
-                            <SelectItem value="out-of-service">Out of Service</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="shape">Shape</Label>
-                        <Select value={selectedTable.shape} onValueChange={(value: TableShape) => updateTable({ ...selectedTable, shape: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="circle">Circle</SelectItem>
-                            <SelectItem value="square">Square</SelectItem>
-                            <SelectItem value="rectangle">Rectangle</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="positionX">X Position</Label>
-                        <Input
-                          id="positionX"
-                          type="number"
-                          value={Math.round(selectedTable.x)}
-                          onChange={(e) => updateTable({ ...selectedTable, x: parseInt(e.target.value) || 0 })}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="positionY">Y Position</Label>
-                        <Input
-                          id="positionY"
-                          type="number"
-                          value={Math.round(selectedTable.y)}
-                          onChange={(e) => updateTable({ ...selectedTable, y: parseInt(e.target.value) || 0 })}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-4">
+                    </CardContent>
+                  </Card>
+
+                  {/* Add Tables */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Grid3X3 className="h-4 w-4 mr-2" />
+                        Add Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <BottomToolbar />
+                    </CardContent>
+                  </Card>
+
+                  {/* 3D Controls */}
+                  {viewMode === '3D' && (
+                    <Table3DControls />
+                  )}
+
+                  {/* Selected Table Properties */}
+                  {selectedTable && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card className="border-blue-200 bg-blue-50/50">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium flex items-center">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Table Properties
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-slate-600">Table ID</label>
+                            <div className="text-sm font-mono bg-white px-2 py-1 rounded border">
+                              {selectedTable.label}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-600">Capacity</label>
+                            <div className="text-sm">{selectedTable.capacity} guests</div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-600">Shape</label>
+                            <div className="text-sm capitalize">{selectedTable.shape}</div>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-600">Status</label>
+                            <Badge 
+                              variant={selectedTable.status === 'FREE' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {selectedTable.status}
+                            </Badge>
+                          </div>
+                          {selectedTable.zone && (
+                            <div>
+                              <label className="text-xs font-medium text-slate-600">Zone</label>
+                              <div className="text-sm">{selectedTable.zone}</div>
+                            </div>
+                          )}
+                          
+                          {/* Quick Actions */}
+                          <Separator />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                // Duplicate table
+                                useTableStore.getState().duplicateTable(selectedTable.id);
+                              }}
+                              className="text-xs"
+                            >
+                              Duplicate
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                // Center table
+                                const centerX = 600;
+                                const centerY = 400;
+                                useTableStore.getState().moveTable(selectedTable.id, centerX, centerY);
+                              }}
+                              className="text-xs"
+                            >
+                              <AlignCenter className="h-3 w-3 mr-1" />
+                              Center
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* Multi-Selection Tools */}
+                  {selectedTables.length > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Card className="border-purple-200 bg-purple-50/50">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm font-medium flex items-center">
+                            <Move className="h-4 w-4 mr-2" />
+                            {selectedTables.length} Tables Selected
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => alignTables(selectedTableIds, 'left')}
+                              className="text-xs"
+                            >
+                              Align Left
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => alignTables(selectedTableIds, 'right')}
+                              className="text-xs"
+                            >
+                              Align Right
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => alignTables(selectedTableIds, 'top')}
+                              className="text-xs"
+                            >
+                              Align Top
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => alignTables(selectedTableIds, 'bottom')}
+                              className="text-xs"
+                            >
+                              Align Bottom
+                            </Button>
+                          </div>
+                          <Separator />
+                          <div className="grid grid-cols-1 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => distributeTablesEvenly(selectedTableIds, 'horizontal')}
+                              className="text-xs"
+                            >
+                              Distribute Horizontally
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => distributeTablesEvenly(selectedTableIds, 'vertical')}
+                              className="text-xs"
+                            >
+                              Distribute Vertically
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  {/* Reservations */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Reservations
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ReservationLink />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="zones" className="p-4">
+                  <ZoneLegend />
+                </TabsContent>
+
+                <TabsContent value="tools" className="p-4 space-y-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Merge className="h-4 w-4 mr-2" />
+                        Merge Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <TableMergeTool />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Split className="h-4 w-4 mr-2" />
+                        Split Tables
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <TableSplitTool />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Import & Scan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
                       <Button
                         variant="outline"
-                        onClick={() => deleteTable(selectedTable.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        Delete Table
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setSelectedTable(null)}
-                      >
-                        Deselect
-                      </Button>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-2">
-                      <p>💡 Tips: Drag tables to move them, press Delete to remove selected table, Ctrl+S to save</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="tables" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>All Tables</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {tables.map((table) => (
-                      <div key={table.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-3 h-3 rounded-full ${getStatusColor(table.status)}`} />
-                          <span className="font-medium">Table {table.number}</span>
-                          <Badge variant="secondary">{table.seats} seats</Badge>
-                          <Badge variant="outline">{table.status}</Badge>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedTable(table)}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="floor-setup" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Home className="w-5 h-5" />
-                    Floor Plan Configuration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Basic Information</h3>
-                      <div>
-                        <Label htmlFor="floorName">Floor Plan Name</Label>
-                        <Input
-                          id="floorName"
-                          value={floorPlan.name}
-                          onChange={(e) => setFloorPlan(prev => ({...prev, name: e.target.value}))}
-                          placeholder="e.g., Main Dining Area"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="floorWidth">Width (feet)</Label>
-                          <Input
-                            id="floorWidth"
-                            type="number"
-                            value={floorPlan.width}
-                            onChange={(e) => setFloorPlan(prev => ({...prev, width: parseInt(e.target.value) || 1}))}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="floorHeight">Height (feet)</Label>
-                          <Input
-                            id="floorHeight"
-                            type="number"
-                            value={floorPlan.height}
-                            onChange={(e) => setFloorPlan(prev => ({...prev, height: parseInt(e.target.value) || 1}))}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="floorScale">Scale (pixels per foot)</Label>
-                        <Input
-                          id="floorScale"
-                          type="number"
-                          value={floorPlan.scale}
-                          onChange={(e) => setFloorPlan(prev => ({...prev, scale: parseInt(e.target.value) || 1}))}
-                          min="5"
-                          max="50"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Higher values = larger display size</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="font-semibold">Floor Statistics</h3>
-                      <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                        <div className="flex justify-between">
-                          <span>Total Area:</span>
-                          <span className="font-medium">{(floorPlan.width * floorPlan.height).toLocaleString()} sq ft</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Display Size:</span>
-                          <span className="font-medium">{floorPlan.width * floorPlan.scale} × {floorPlan.height * floorPlan.scale} px</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Tables:</span>
-                          <span className="font-medium">{tables.length}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Fixtures:</span>
-                          <span className="font-medium">{fixtures.length}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Total Capacity:</span>
-                          <span className="font-medium">{tables.reduce((sum, t) => sum + t.seats, 0)} seats</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="font-semibold">Restaurant Type Presets</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 30, height: 20}))}>
-                        Small Café (30×20 ft)
-                      </Button>
-                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 50, height: 35}))}>
-                        Medium Restaurant (50×35 ft)
-                      </Button>
-                      <Button variant="outline" onClick={() => setFloorPlan(prev => ({...prev, width: 80, height: 60}))}>
-                        Large Restaurant (80×60 ft)
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="fixtures" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Square className="w-5 h-5" />
-                    Fixtures & Features
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-3">Add Fixtures</h3>
-                    <div className="grid grid-cols-4 gap-2">
-                      <Button variant="outline" size="sm" onClick={() => addFixture('wall')}>
-                        <Square className="w-4 h-4 mr-2" />
-                        Wall
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('door')}>
-                        <DoorOpen className="w-4 h-4 mr-2" />
-                        Door
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('window')}>
-                        <Square className="w-4 h-4 mr-2" />
-                        Window
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('bar')}>
-                        <Square className="w-4 h-4 mr-2" />
-                        Bar
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('kitchen')}>
-                        <Scissors className="w-4 h-4 mr-2" />
-                        Kitchen
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('restroom')}>
-                        <Users className="w-4 h-4 mr-2" />
-                        Restroom
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => addFixture('entrance')}>
-                        <Home className="w-4 h-4 mr-2" />
-                        Entrance
-                      </Button>
-                    </div>
-                  </div>
-
-                  {selectedFixture && (
-                    <div className="border-t pt-4">
-                      <h3 className="font-semibold mb-3">Edit Fixture: {selectedFixture.label}</h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="fixtureLabel">Label</Label>
-                          <Input
-                            id="fixtureLabel"
-                            value={selectedFixture.label || ''}
-                            onChange={(e) => {
-                              const updated = {...selectedFixture, label: e.target.value};
-                              setSelectedFixture(updated);
-                              setFixtures(fixtures.map(f => f.id === updated.id ? updated : f));
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="fixtureType">Type</Label>
-                          <Select value={selectedFixture.type} onValueChange={(value: FixtureType) => {
-                            const updated = {...selectedFixture, type: value};
-                            setSelectedFixture(updated);
-                            setFixtures(fixtures.map(f => f.id === updated.id ? updated : f));
-                          }}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="wall">Wall</SelectItem>
-                              <SelectItem value="door">Door</SelectItem>
-                              <SelectItem value="window">Window</SelectItem>
-                              <SelectItem value="bar">Bar</SelectItem>
-                              <SelectItem value="kitchen">Kitchen</SelectItem>
-                              <SelectItem value="restroom">Restroom</SelectItem>
-                              <SelectItem value="entrance">Entrance</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
+                        className="w-full justify-start"
                         size="sm"
-                        className="mt-3 text-red-600"
                         onClick={() => {
-                          setFixtures(fixtures.filter(f => f.id !== selectedFixture.id));
-                          setSelectedFixture(null);
+                          // Implement import functionality
+                          toast({
+                            title: "Import Layout",
+                            description: "Feature coming soon - import from glTF, USDZ, or JSON",
+                          });
                         }}
                       >
-                        Delete Fixture
+                        <Upload className="h-4 w-4 mr-2" />
+                        Import Layout
                       </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="sm"
+                        onClick={() => {
+                          // Implement camera scan
+                          toast({
+                            title: "Camera Scan",
+                            description: "Feature coming soon - scan with device camera",
+                          });
+                        }}
+                      >
+                        <Smartphone className="h-4 w-4 mr-2" />
+                        Camera Scan
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="sm"
+                        onClick={() => {
+                          // Export current layout
+                          const layout = exportLayout();
+                          const blob = new Blob([JSON.stringify(layout, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `floor-layout-${new Date().toISOString().split('T')[0]}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          
+                          toast({
+                            title: "Layout Exported",
+                            description: "Floor layout downloaded as JSON file",
+                          });
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export JSON
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-            <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="w-5 h-5" />
-                      Space Analytics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-blue-50 p-4 rounded-lg text-center">
-                          <div className="text-3xl font-bold text-blue-600">{calculateFloorAnalytics().utilization.toFixed(1)}%</div>
-                          <div className="text-sm text-gray-600">Space Utilization</div>
-                        </div>
-                        <div className="bg-green-50 p-4 rounded-lg text-center">
-                          <div className="text-3xl font-bold text-green-600">{calculateFloorAnalytics().capacity}</div>
-                          <div className="text-sm text-gray-600">Total Capacity</div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Total Floor Area:</span>
-                          <span className="font-medium">{calculateFloorAnalytics().totalArea.toLocaleString()} sq ft</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Table Area:</span>
-                          <span className="font-medium">{calculateFloorAnalytics().tableArea.toFixed(1)} sq ft</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Walkway Area:</span>
-                          <span className="font-medium">{calculateFloorAnalytics().walkwayArea.toFixed(1)} sq ft</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Tables per sq ft:</span>
-                          <span className="font-medium">{calculateFloorAnalytics().tablesPerSqFt.toFixed(3)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Average Table Size:</span>
-                          <span className="font-medium">{calculateFloorAnalytics().averageTableSize.toFixed(1)} seats</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="w-5 h-5" />
-                      Efficiency Insights
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <h4 className="font-medium text-yellow-800">Recommendations</h4>
-                        <ul className="text-sm text-yellow-700 mt-2 space-y-1">
-                          {calculateFloorAnalytics().utilization < 40 && (
-                            <li>• Consider adding more tables - space utilization is low</li>
-                          )}
-                          {calculateFloorAnalytics().utilization > 70 && (
-                            <li>• Space is well utilized, ensure adequate walkway space</li>
-                          )}
-                          {calculateFloorAnalytics().averageTableSize < 3 && (
-                            <li>• Consider larger tables for better revenue per sq ft</li>
-                          )}
-                          {calculateFloorAnalytics().walkwayArea < calculateFloorAnalytics().totalArea * 0.3 && (
-                            <li>• Ensure at least 30% space for walkways and comfort</li>
-                          )}
-                        </ul>
-                      </div>
-
-                      <div className="space-y-2">
-                        <h4 className="font-medium">Table Status Distribution</h4>
-                        <div className="space-y-1">
-                          <div className="flex justify-between">
-                            <span className="text-green-600">Available:</span>
-                            <span>{tables.filter(t => t.status === 'available').length} ({((tables.filter(t => t.status === 'available').length / tables.length) * 100 || 0).toFixed(1)}%)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-red-600">Occupied:</span>
-                            <span>{tables.filter(t => t.status === 'occupied').length} ({((tables.filter(t => t.status === 'occupied').length / tables.length) * 100 || 0).toFixed(1)}%)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-yellow-600">Reserved:</span>
-                            <span>{tables.filter(t => t.status === 'reserved').length} ({((tables.filter(t => t.status === 'reserved').length / tables.length) * 100 || 0).toFixed(1)}%)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Out of Service:</span>
-                            <span>{tables.filter(t => t.status === 'out-of-service').length} ({((tables.filter(t => t.status === 'out-of-service').length / tables.length) * 100 || 0).toFixed(1)}%)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TabsContent value="export" className="p-4">
+                  <QRCodeManager />
+                </TabsContent>
               </div>
-            </TabsContent>
+            </Tabs>
+          </motion.div>
 
-            <TabsContent value="zones" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Zone Management</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {zones.map((zone) => (
-                      <div key={zone.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-4 h-4 rounded"
-                            style={{ backgroundColor: zone.color }}
-                          />
-                          <span className="font-medium">{zone.name}</span>
-                          <Badge variant="secondary">{zone.tables.length} tables</Badge>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
+          {/* Canvas Area */}
+          <div className="flex-1 relative">
+            <FloorEditorCanvas />
+            
+            {/* Loading Overlay */}
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center"
+                >
+                  <div className="flex items-center space-x-3 bg-white px-6 py-4 rounded-lg shadow-lg">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="text-sm text-slate-600">Processing...</span>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Canvas Help */}
+            <motion.div 
+              className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg text-xs text-slate-600 max-w-xs"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <div className="flex items-center space-x-1 mb-2">
+                <Info className="h-3 w-3" />
+                <span className="font-medium">Quick Help</span>
+              </div>
+              <div className="space-y-1">
+                {viewMode === '3D' ? (
+                  <>
+                    <div>• Left-click + drag: Rotate view</div>
+                    <div>• Right-click + drag: Pan around</div>
+                    <div>• Scroll wheel: Zoom in/out</div>
+                    <div>• Click tables: Select/deselect</div>
+                  </>
+                ) : (
+                  <>
+                    <div>• Click and drag to move tables</div>
+                    <div>• Use corner handles to resize</div>
+                    <div>• Arrow keys for precise positioning</div>
+                    <div>• Shift+Click for multi-select</div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Status Indicator */}
+            <div className="absolute bottom-4 right-4 flex items-center space-x-2">
+              <AnimatePresence>
+                {!hasErrors ? (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="flex items-center space-x-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-medium"
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>Layout Valid</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.8, opacity: 0 }}
+                    className="flex items-center space-x-1 bg-red-50 text-red-700 px-3 py-1 rounded-full text-xs font-medium"
+                  >
+                    <AlertTriangle className="h-3 w-3" />
+                    <span>{validationErrors.length} Issues</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              <div className="flex items-center space-x-1 bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs">
+                <Clock className="h-3 w-3" />
+                <span>Auto-save: ON</span>
+              </div>
+              
+              <div className="flex items-center space-x-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">
+                <Zap className="h-3 w-3" />
+                <span>{viewMode} Mode</span>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Shortcuts Modal */}
+        <AnimatePresence>
+          {showShortcuts && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+              onClick={() => setShowShortcuts(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center">
+                    <Command className="h-5 w-5 mr-2" />
+                    Keyboard Shortcuts
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowShortcuts(false)}
+                  >
+                    ×
+                  </Button>
+                </div>
+                
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span>Undo</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">Ctrl+Z</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Redo</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">Ctrl+Shift+Z</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Save Draft</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">Ctrl+S</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Clear Selection</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">Esc</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Toggle Grid</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">G</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Toggle Zones</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">Z</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>2D View</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">2</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>3D View</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">3</kbd>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Show Shortcuts</span>
+                    <kbd className="bg-slate-100 px-2 py-1 rounded text-xs">?</kbd>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );

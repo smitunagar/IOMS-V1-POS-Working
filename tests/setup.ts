@@ -1,16 +1,43 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
+import { PrismaClient } from '@prisma/client';
+import { beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { setupZustandTests } from './mocks/zustand';
 
 // Setup Zustand testing utilities
 setupZustandTests();
 
+// Prisma client for testing
+const prisma = new PrismaClient();
+
+beforeAll(async () => {
+  // Setup test database
+  await prisma.$connect();
+});
+
+afterAll(async () => {
+  // Cleanup test database
+  await prisma.$disconnect();
+});
+
+beforeEach(async () => {
+  // Clean up data before each test
+  try {
+    await prisma.auditLog.deleteMany();
+    await prisma.tableStatus.deleteMany();
+    await prisma.scanningSession.deleteMany();
+    await prisma.floorLayout.deleteMany();
+  } catch (error) {
+    console.warn('Test cleanup error:', error);
+  }
+});
+
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter() {
     return {
-      push: jest.fn(),
-      replace: jest.fn(),
-      back: jest.fn(),
+      push: vi.fn(),
+      replace: vi.fn(),
+      back: vi.fn(),
       pathname: '/test',
     };
   },
@@ -22,39 +49,70 @@ jest.mock('next/navigation', () => ({
   },
 }));
 
-// Mock Prisma client
-jest.mock('@/lib/database', () => ({
-  prisma: {
-    floorLayout: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    tableStatus: {
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    posReservation: {
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-  },
-}));
-
 // Global test utilities
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
 }));
 
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
 }));
+
+// Test helper functions
+export const createTestLayout = async () => {
+  return await prisma.floorLayout.create({
+    data: {
+      floorId: 'test-floor-1',
+      name: 'Test Floor Layout',
+      description: 'Test layout for unit tests',
+      version: 1,
+      isActive: true,
+      layout: JSON.stringify({
+        tables: [
+          {
+            id: 'table-1',
+            name: 'Table 1',
+            x: 10,
+            y: 10,
+            z: 0,
+            rotation: 0,
+            shape: 'circle',
+            width: 2,
+            height: 2,
+            seats: 4,
+            status: 'available',
+          }
+        ],
+        fixtures: [],
+        walls: [],
+      }),
+      tenantId: 'test-tenant',
+    },
+  });
+};
+
+export const createTestTableStatus = async (tableId: string = 'table-1') => {
+  return await prisma.tableStatus.create({
+    data: {
+      tableId,
+      status: 'available',
+      tenantId: 'test-tenant',
+    },
+  });
+};
+
+export const createTestScanningSession = async (floorId: string = 'test-floor-1') => {
+  return await prisma.scanningSession.create({
+    data: {
+      floorId,
+      status: 'in_progress',
+      progress: 50,
+      scanType: 'full',
+      tenantId: 'test-tenant',
+    },
+  });
+};

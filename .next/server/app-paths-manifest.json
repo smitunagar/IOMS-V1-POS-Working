@@ -1,4 +1,8 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/inventory/low-stock/route": "app/api/inventory/low-stock/route.js",
+  "/api/pos/floor/layout/draft/route": "app/api/pos/floor/layout/draft/route.js",
   "/apps/pos/table-management/page": "app/apps/pos/table-management/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
 }

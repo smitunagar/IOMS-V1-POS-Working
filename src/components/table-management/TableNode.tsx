@@ -141,7 +141,3 @@ export function TableNode({
     </div>
   );
 }
-      )}
-    </div>
-  );
-}
